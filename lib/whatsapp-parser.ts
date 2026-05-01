@@ -19,7 +19,7 @@ export function parseWhatsAppExport(rawContent: string, targetSender: string): W
   const messages: WhatsAppMessage[] = [];
   let currentMessage: WhatsAppMessage | null = null;
 
-  for (let line of lines) {
+  for (const line of lines) {
     const match = line.match(messageStartRegex);
 
     if (match) {

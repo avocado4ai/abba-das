@@ -2,8 +2,13 @@
 
 import React, { useState } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Save } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns';
+
+const generateSlug = (dateStr: string) => {
+  const randomSuffix = Math.random().toString(36).substring(2, 7);
+  return `${dateStr}-${randomSuffix}`;
+};
 
 export default function AdminPage() {
   const [sender, setSender] = useState('');
@@ -29,7 +34,7 @@ export default function AdminPage() {
       if (parsedMessages.length === 0) {
         setError('No messages found for this sender.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to parse file.');
     } finally {
       setIsParsing(false);
@@ -43,7 +48,7 @@ export default function AdminPage() {
     // Generate a simple slug and title
     const dateStr = format(msg.date, 'yyyy-MM-dd');
     const title = msg.content.split('\n')[0].substring(0, 50) || `Post from ${dateStr}`;
-    const slug = `${dateStr}-${Math.random().toString(36).substring(2, 7)}`;
+    const slug = generateSlug(dateStr);
 
     try {
       const res = await fetch('/api/github', {
@@ -61,8 +66,8 @@ export default function AdminPage() {
       
       // Remove message from list after successful save
       setMessages(prev => prev.filter((_, i) => i !== index));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setIsSaving(null);
     }
