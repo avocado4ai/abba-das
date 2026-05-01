@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 const generateSlug = (dateStr: string) => {
   const randomSuffix = Math.random().toString(36).substring(2, 7);
@@ -74,11 +75,17 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F1] text-[#0A2647] p-8 dir-rtl" dir="rtl">
+    <div className="min-h-screen bg-[#F5F5F1] text-[#0A2647] p-4 md:p-8 dir-rtl" dir="rtl">
       <div className="max-w-4xl mx-auto">
-        <header className="mb-12 border-b border-[#7E9983]/30 pb-6">
-          <h1 className="text-4xl font-bold mb-2">ניהול הבלוג של אבא</h1>
-          <p className="text-[#7E9983]">ייבוא הודעות וואטסאפ והפיכתן לפוסטים</p>
+        <header className="mb-8 md:mb-12 border-b border-[#7E9983]/30 pb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">ניהול הבלוג של אבא</h1>
+            <p className="text-[#7E9983]">ייבוא הודעות וואטסאפ והפיכתן לפוסטים</p>
+          </div>
+          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-[#0A2647]/60 hover:text-[#0A2647] transition-colors self-start md:self-auto">
+            חזרה לבלוג
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </header>
 
         <section className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-[#7E9983]/20">

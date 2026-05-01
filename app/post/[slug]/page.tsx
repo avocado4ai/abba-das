@@ -1,9 +1,11 @@
-import { getPostBySlug } from "@/lib/github";
+import { getPostBySlug, getAdjacentPosts } from "@/lib/github";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { Sun, Cloud, CloudRain, Wind, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import FavoriteButton from "@/components/FavoriteButton";
+import PostNavigation from "@/components/PostNavigation";
 
 const WeatherIcon = ({ weather }: { weather?: string }) => {
   switch (weather?.toLowerCase()) {
@@ -28,6 +30,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
+  const { next, prev } = await getAdjacentPosts(slug);
+
   return (
     <div className="flex flex-col min-h-screen bg-cream selection:bg-sage/30">
       {/* Header */}
@@ -45,21 +49,27 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       <main className="flex-grow py-20">
         <article className="max-w-2xl mx-auto px-6">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-sm font-medium text-navy/40">
-              {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
-            </span>
-            <div className="w-1 h-1 rounded-full bg-navy/20" />
-            <WeatherIcon weather={post.weather} />
+          <div className="flex justify-between items-start mb-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-navy/40">
+                  {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
+                </span>
+                <div className="w-1 h-1 rounded-full bg-navy/20" />
+                <WeatherIcon weather={post.weather} />
+              </div>
+              <h1 className="text-4xl font-bold text-navy leading-tight">
+                {post.title}
+              </h1>
+            </div>
+            <FavoriteButton slug={slug} />
           </div>
-          
-          <h1 className="text-4xl font-bold text-navy mb-12 leading-tight">
-            {post.title}
-          </h1>
           
           <div className="font-stories text-xl text-navy/90 leading-relaxed whitespace-pre-wrap bg-white p-8 rounded-2xl border border-navy/5 shadow-sm">
             {post.content}
           </div>
+
+          <PostNavigation next={next} prev={prev} />
         </article>
       </main>
 

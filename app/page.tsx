@@ -1,5 +1,6 @@
 import { getAllPosts } from "@/lib/github";
 import PostList from "@/components/PostList";
+import ExportButton from "@/components/ExportButton";
 
 export default async function Home() {
   const posts = await getAllPosts();
@@ -10,11 +11,12 @@ export default async function Home() {
       <header className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md border-b border-navy/10 py-6">
         <div className="max-w-2xl mx-auto px-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-navy tracking-tight">אבא-דס</h1>
-          <nav>
+          <div className="flex items-center gap-4">
+            <ExportButton posts={posts} />
             <a href="/admin" className="text-sm font-medium text-navy/60 hover:text-navy transition-colors">
               ניהול
             </a>
-          </nav>
+          </div>
         </div>
       </header>
 

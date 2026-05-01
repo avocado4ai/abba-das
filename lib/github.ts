@@ -100,6 +100,28 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
     return null;
   }
 }
+
+/**
+ * Fetches adjacent posts (next and previous) for a given slug.
+ */
+export async function getAdjacentPosts(slug: string): Promise<{ next: PostData | null, prev: PostData | null }> {
+  const allPosts = await getAllPosts();
+  const currentIndex = allPosts.findIndex(p => p.slug === slug);
+
+  if (currentIndex === -1) return { next: null, prev: null };
+
+  // Posts are sorted newest first, so:
+  // prev (older) is at index + 1
+  // next (newer) is at index - 1
+  return {
+    next: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
+    prev: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
+  };
+}
+
+/**
+ * Fetches all posts from the content/posts directory with their content parsed.
+ */
 export async function getAllPosts(): Promise<PostData[]> {
   try {
     const { data } = await octokit.rest.repos.getContent({
