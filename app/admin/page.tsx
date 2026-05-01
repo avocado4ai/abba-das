@@ -24,24 +24,32 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const fetchPosts = async () => {
-    setIsLoadingPosts(true);
-    try {
-      const res = await fetch('/api/posts');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setPublishedPosts(data);
-      }
-    } catch {
-      console.error('Failed to fetch published posts');
-    } finally {
-      setIsLoadingPosts(false);
-    }
-  };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchPosts();
+    let isMounted = true;
+
+    const loadPosts = async () => {
+      if (!isMounted) return;
+      setIsLoadingPosts(true);
+      try {
+        const res = await fetch('/api/posts');
+        const data = await res.json();
+        if (isMounted && Array.isArray(data)) {
+          setPublishedPosts(data);
+        }
+      } catch {
+        console.error('Failed to fetch published posts');
+      } finally {
+        if (isMounted) {
+          setIsLoadingPosts(false);
+        }
+      }
+    };
+
+    loadPosts();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,10 +156,22 @@ export default function AdminPage() {
       });
 
       if (!res.ok) throw new Error('נכשל בשמירה ל-GitHub');
-      
+
       setMessages(prev => prev.filter((_, i) => i !== index));
       setSuccess('הסיפור פורסם בהצלחה!');
-      fetchPosts();
+
+      setIsLoadingPosts(true);
+      try {
+        const res = await fetch('/api/posts');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setPublishedPosts(data);
+        }
+      } catch {
+        console.error('Failed to fetch published posts');
+      } finally {
+        setIsLoadingPosts(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'אירעה שגיאה לא ידועה');
     } finally {
