@@ -6,6 +6,28 @@
   --navy: #0A2647;
   --sage: #7E9983;
   --cream: #F5F5F1;
+  --border: rgba(10, 38, 71, 0.1);
+  --muted: rgba(10, 38, 71, 0.4);
+}
+
+[data-theme="dark"] {
+  --background: #0A2647; /* Navy */
+  --foreground: #F5F5F1; /* Cream */
+  --navy: #F5F5F1;
+  --sage: #7E9983;
+  --cream: #0A2647;
+  --border: rgba(245, 245, 241, 0.1);
+  --muted: rgba(245, 245, 241, 0.4);
+}
+
+[data-theme="paper"] {
+  --background: #E8E2D2; /* Aged Paper */
+  --foreground: #3E2723; /* Dark Brown */
+  --navy: #3E2723;
+  --sage: #5D4037;
+  --cream: #E8E2D2;
+  --border: rgba(62, 39, 35, 0.1);
+  --muted: rgba(62, 39, 35, 0.4);
 }
 
 @theme inline {
@@ -14,6 +36,8 @@
   --color-navy: var(--navy);
   --color-sage: var(--sage);
   --color-cream: var(--cream);
+  --color-border-theme: var(--border);
+  --color-muted-theme: var(--muted);
   --font-heebo: var(--font-heebo);
   --font-assistant: var(--font-assistant);
 }
@@ -22,8 +46,23 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-heebo), sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-stories {
   font-family: var(--font-assistant), sans-serif;
+}
+
+/* Texture overlay for paper theme */
+[data-theme="paper"]::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 50;
+  background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
 }

@@ -30,8 +30,8 @@ export default function FavoriteButton({ slug }: { slug: string }) {
       onClick={toggleFavorite}
       className={`p-3 rounded-full border transition-all ${
         isFavorite 
-          ? 'bg-red-50 border-red-200 text-red-500 shadow-sm' 
-          : 'bg-white border-navy/10 text-navy/40 hover:text-red-400 hover:border-red-200'
+          ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm' 
+          : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
       }`}
       title={isFavorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
     >

@@ -8,6 +8,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import PostNavigation from "@/components/PostNavigation";
 import ShareButtons from "@/components/ShareButtons";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -61,19 +62,22 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const readingTime = Math.max(1, Math.ceil(words / 200));
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream selection:bg-sage/30">
+    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300">
       <ReadingProgressBar />
       
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md border-b border-navy/10 py-6">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border-theme py-6 transition-colors duration-300">
         <div className="max-w-2xl mx-auto px-6 flex justify-between items-center">
           <Link href="/" className="text-3xl font-bold text-navy tracking-tight">
             אבא-דס
           </Link>
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-navy/60 hover:text-navy transition-colors">
-            חזרה לבלוג
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeSwitcher />
+            <Link href="/" className="flex items-center gap-2 text-sm font-medium text-muted-theme hover:text-navy transition-colors">
+              חזרה לבלוג
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -82,13 +86,13 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <div className="flex justify-between items-start mb-8">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-medium text-navy/40">
+                <span className="text-sm font-medium text-muted-theme">
                   {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
                 </span>
-                <div className="w-1 h-1 rounded-full bg-navy/20" />
+                <div className="w-1 h-1 rounded-full bg-border-theme" />
                 <WeatherIcon weather={post.weather} />
-                <div className="w-1 h-1 rounded-full bg-navy/20" />
-                <div className="flex items-center gap-1 text-sm font-medium text-navy/40">
+                <div className="w-1 h-1 rounded-full bg-border-theme" />
+                <div className="flex items-center gap-1 text-sm font-medium text-muted-theme">
                   <Clock className="w-4 h-4" />
                   <span>{readingTime} דק&apos; קריאה</span>
                 </div>
@@ -100,7 +104,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <FavoriteButton slug={slug} />
           </div>
           
-          <div className="font-stories text-xl text-navy/90 leading-relaxed whitespace-pre-wrap bg-white p-8 rounded-2xl border border-navy/5 shadow-sm">
+          <div className="font-stories text-xl text-foreground/90 leading-relaxed whitespace-pre-wrap bg-white/5 p-8 rounded-2xl border border-border-theme shadow-sm">
             {post.content}
           </div>
 
@@ -111,8 +115,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-navy/5 bg-navy/5">
-        <div className="max-w-2xl mx-auto px-6 text-center text-navy/40 text-sm">
+      <footer className="py-12 border-t border-border-theme bg-navy/5">
+        <div className="max-w-2xl mx-auto px-6 text-center text-muted-theme text-sm">
           <p>© {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.</p>
         </div>
       </footer>

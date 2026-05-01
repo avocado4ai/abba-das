@@ -1,19 +1,21 @@
 import { getAllPosts } from "@/lib/github";
 import PostList from "@/components/PostList";
 import ExportButton from "@/components/ExportButton";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 export default async function Home() {
   const posts = await getAllPosts();
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream selection:bg-sage/30">
+    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md border-b border-navy/10 py-6">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border-theme py-6 transition-colors duration-300">
         <div className="max-w-2xl mx-auto px-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-navy tracking-tight">אבא-דס</h1>
           <div className="flex items-center gap-4">
+            <ThemeSwitcher />
             <ExportButton posts={posts} />
-            <a href="/admin" className="text-sm font-medium text-navy/60 hover:text-navy transition-colors">
+            <a href="/admin" className="text-sm font-medium text-muted-theme hover:text-navy transition-colors">
               ניהול
             </a>
           </div>

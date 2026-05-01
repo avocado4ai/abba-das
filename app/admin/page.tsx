@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { PostData } from '@/lib/github';
 
 const generateSlug = (dateStr: string) => {
@@ -20,6 +21,7 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState<number | null>(null);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     setIsLoadingPosts(true);
@@ -36,7 +38,6 @@ export default function AdminPage() {
     }
   };
 
-  // Fetch published posts on mount
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPosts();
@@ -45,34 +46,40 @@ export default function AdminPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !sender) {
-      setError(sender ? 'Please select a file' : 'Please enter sender name/number first');
+      setError(sender ? 'אנא בחר קובץ' : 'אנא הזן שם שולח תחילה');
       return;
     }
 
     setIsParsing(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const text = await file.text();
       const parsedMessages = parseWhatsAppExport(text, sender);
       setMessages(parsedMessages);
       if (parsedMessages.length === 0) {
-        setError('No messages found for this sender.');
+        setError('לא נמצאו הודעות עבור שולח זה.');
+      } else {
+        setSuccess(`נטענו ${parsedMessages.length} הודעות בהצלחה`);
       }
     } catch {
-      setError('Failed to parse file.');
+      setError('נכשל בניתוח הקובץ.');
     } finally {
       setIsParsing(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
 
   const handleSavePost = async (index: number, msg: WhatsAppMessage) => {
     setIsSaving(index);
     setError(null);
+    setSuccess(null);
 
-    // Generate a simple slug and title
     const dateStr = format(msg.date, 'yyyy-MM-dd');
-    const title = msg.content.split('\n')[0].substring(0, 50) || `Post from ${dateStr}`;
+    const firstLine = msg.content.split('\n')[0].trim();
+    const title = firstLine.substring(0, 50) || `סיפור מ-${dateStr}`;
     const slug = generateSlug(dateStr);
 
     try {
@@ -87,43 +94,50 @@ export default function AdminPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save to GitHub');
+      if (!res.ok) throw new Error('נכשל בשמירה ל-GitHub');
       
-      // Remove message from list after successful save
       setMessages(prev => prev.filter((_, i) => i !== index));
-      // Refresh published list
+      setSuccess('הסיפור פורסם בהצלחה!');
       fetchPosts();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setError(err instanceof Error ? err.message : 'אירעה שגיאה לא ידועה');
     } finally {
       setIsSaving(null);
     }
   };
 
+  const dismissMessage = (index: number) => {
+    setMessages(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
-    <div className="min-h-screen bg-[#F5F5F1] text-[#0A2647] p-4 md:p-8 dir-rtl" dir="rtl">
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-8 md:mb-12 border-b border-[#7E9983]/30 pb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+    <div className="min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300 dir-rtl" dir="rtl">
+      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+        <header className="mb-12 border-b border-border-theme pb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">ניהול הבלוג של אבא</h1>
-            <p className="text-[#7E9983]">ייבוא הודעות וואטסאפ והפיכתן לפוסטים</p>
+            <h1 className="text-4xl font-bold mb-3 tracking-tight">ניהול הבלוג</h1>
+            <p className="text-sage font-medium">ייבוא הודעות וואטסאפ והפיכתן לסיפורים</p>
           </div>
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-[#0A2647]/60 hover:text-[#0A2647] transition-colors self-start md:self-auto">
-            חזרה לבלוג
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-6 self-start md:self-auto">
+            <ThemeSwitcher />
+            <Link href="/" className="flex items-center gap-2 text-sm font-bold text-muted-theme hover:text-navy transition-all group">
+              חזרה לבלוג
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </header>
 
-        <section className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-[#7E9983]/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-            <div>
-              <label className="block text-sm font-medium mb-2">זיהוי השולח (שם או מספר)</label>
+        {/* Upload Section */}
+        <section className="bg-white/5 rounded-3xl shadow-sm p-8 mb-12 border border-border-theme">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-muted-theme">זיהוי השולח (שם כפי שמופיע בוואטסאפ)</label>
               <input
                 type="text"
                 value={sender}
                 onChange={(e) => setSender(e.target.value)}
-                placeholder="למשל: אבא או +972..."
-                className="w-full p-3 rounded-lg border border-[#7E9983]/40 focus:ring-2 focus:ring-[#7E9983] outline-none transition-all"
+                placeholder="למשל: אבא"
+                className="w-full p-4 rounded-2xl border border-border-theme bg-white/5 focus:ring-2 focus:ring-sage/50 outline-none transition-all text-lg"
               />
             </div>
             
@@ -138,44 +152,66 @@ export default function AdminPage() {
               />
               <label
                 htmlFor="file-upload"
-                className={`flex items-center justify-center gap-2 p-3 rounded-lg cursor-pointer transition-all ${
-                  !sender ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0A2647] text-white hover:bg-[#0A2647]/90'
+                className={`flex items-center justify-center gap-3 p-4 rounded-2xl cursor-pointer transition-all text-lg font-bold shadow-sm ${
+                  !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90 active:scale-[0.98]'
                 }`}
               >
-                {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={20} />}
-                <span>טעינת קובץ שיחה (txt)</span>
+                {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
+                <span>טעינת קובץ (txt)</span>
               </label>
             </div>
           </div>
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg flex items-center gap-2">
-              <AlertCircle size={18} />
-              <span>{error}</span>
+          {(error || success) && (
+            <div className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-medium animate-in fade-in slide-in-from-top-2 ${
+              error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
+            }`}>
+              {error ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
+              <span>{error || success}</span>
             </div>
           )}
         </section>
 
-        <section className="space-y-6">
-          <h2 className="text-xl font-bold border-b border-[#7E9983]/10 pb-2">הודעות חדשות מהקובץ ({messages.length})</h2>
+        {/* Messages List */}
+        <section className="space-y-8">
+          <div className="flex justify-between items-center border-b border-border-theme pb-4">
+            <h2 className="text-2xl font-bold">הודעות חדשות ({messages.length})</h2>
+            {messages.length > 0 && (
+              <button 
+                onClick={() => setMessages([])}
+                className="text-sm font-bold text-red-400 hover:text-red-500 transition-colors"
+              >
+                נקה הכל
+              </button>
+            )}
+          </div>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {messages.map((msg, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-sm border border-[#7E9983]/20 overflow-hidden hover:border-[#7E9983] transition-colors">
-                <div className="bg-[#7E9983]/5 px-4 py-2 border-b border-[#7E9983]/10 flex justify-between items-center text-sm">
-                  <span className="font-mono text-[#7E9983]">{format(msg.date, 'dd/MM/yyyy HH:mm')}</span>
-                  <span className="bg-[#7E9983]/10 px-2 py-0.5 rounded text-[#7E9983]">{msg.sender}</span>
+              <div key={index} className="bg-white/5 rounded-3xl shadow-sm border border-border-theme overflow-hidden group hover:border-sage/30 transition-all hover:shadow-md animate-in fade-in zoom-in-95 duration-300">
+                <div className="bg-navy/[0.02] px-6 py-3 border-b border-border-theme flex justify-between items-center text-xs font-bold text-muted-theme">
+                  <span className="font-mono">{format(msg.date, 'dd/MM/yyyy HH:mm')}</span>
+                  <div className="flex items-center gap-4">
+                    <span>{msg.sender}</span>
+                    <button 
+                      onClick={() => dismissMessage(index)}
+                      className="p-1 hover:text-red-400 transition-colors"
+                      title="הסר"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p className="whitespace-pre-wrap text-lg leading-relaxed mb-4">{msg.content}</p>
+                <div className="p-8">
+                  <p className="whitespace-pre-wrap text-xl leading-relaxed text-foreground/90 mb-8 font-stories">{msg.content}</p>
                   <div className="flex justify-end">
                     <button
                       onClick={() => handleSavePost(index, msg)}
                       disabled={isSaving !== null}
-                      className="flex items-center gap-2 bg-[#7E9983] text-white px-4 py-2 rounded-lg hover:bg-[#7E9983]/90 transition-all disabled:opacity-50"
+                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 transition-all disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98]"
                     >
-                      {isSaving === index ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                      <span>שמירה כפוסט</span>
+                      {isSaving === index ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                      <span>פרסם כסיפור</span>
                     </button>
                   </div>
                 </div>
@@ -183,39 +219,39 @@ export default function AdminPage() {
             ))}
 
             {messages.length === 0 && !isParsing && (
-              <div className="text-center py-20 bg-white/50 rounded-xl border-2 border-dashed border-[#7E9983]/20">
-                <FileText className="mx-auto text-[#7E9983]/30 mb-4" size={48} />
-                <p className="text-[#7E9983]">העלה קובץ כדי לראות הודעות חדשות כאן</p>
+              <div className="text-center py-24 bg-white/[0.02] rounded-3xl border-2 border-dashed border-border-theme">
+                <FileText className="mx-auto text-muted-theme/20 mb-6" size={64} />
+                <p className="text-muted-theme text-lg font-medium">העלה קובץ שיחה כדי לראות הודעות כאן</p>
               </div>
             )}
           </div>
         </section>
 
-        {/* Published Posts List (Bottom) */}
-        <section className="mt-20 pt-10 border-t border-[#7E9983]/30">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            סיפורים שכבר פורסמו
-            {isLoadingPosts && <Loader2 className="w-4 h-4 animate-spin text-[#7E9983]" />}
-          </h2>
+        {/* Published Posts List */}
+        <section className="mt-32 pt-16 border-t border-border-theme">
+          <div className="flex items-center gap-4 mb-8">
+            <h2 className="text-3xl font-bold">סיפורים שכבר פורסמו</h2>
+            {isLoadingPosts && <Loader2 className="w-5 h-5 animate-spin text-sage" />}
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {publishedPosts.map((post) => (
-              <div key={post.slug} className="bg-white p-4 rounded-xl border border-[#7E9983]/20 flex justify-between items-center group">
+              <div key={post.slug} className="bg-white/5 p-5 rounded-2xl border border-border-theme flex justify-between items-center group hover:bg-white/10 hover:shadow-sm transition-all">
                 <div className="overflow-hidden">
-                  <h4 className="font-bold text-[#0A2647] truncate">{post.title}</h4>
-                  <p className="text-xs text-[#7E9983]">{format(new Date(post.date), 'dd/MM/yyyy')}</p>
+                  <h4 className="font-bold text-navy truncate mb-1 group-hover:text-sage transition-colors">{post.title}</h4>
+                  <p className="text-xs font-bold text-muted-theme">{format(new Date(post.date), 'dd/MM/yyyy')}</p>
                 </div>
                 <Link 
                   href={`/post/${post.slug}`}
                   target="_blank"
-                  className="p-2 text-[#7E9983] hover:text-[#0A2647] transition-all opacity-0 group-hover:opacity-100"
+                  className="p-3 text-muted-theme/20 hover:text-navy transition-all bg-white/5 rounded-xl group-hover:bg-sage/10 group-hover:text-sage"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-5 h-5" />
                 </Link>
               </div>
             ))}
             {publishedPosts.length === 0 && !isLoadingPosts && (
-              <p className="text-sm text-[#7E9983]/60 italic">עדיין לא פורסמו סיפורים.</p>
+              <p className="text-muted-theme italic font-medium">עדיין לא פורסמו סיפורים.</p>
             )}
           </div>
         </section>

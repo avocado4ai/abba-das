@@ -11,13 +11,13 @@ export default function PostNavigation({
   prev: PostData | null 
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-16 pt-8 border-t border-navy/10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-16 pt-8 border-t border-border-theme">
       {prev ? (
         <Link 
           href={`/post/${prev.slug}`}
-          className="flex flex-col items-start p-6 rounded-2xl bg-white border border-navy/5 hover:border-sage transition-all group"
+          className="flex flex-col items-start p-6 rounded-2xl bg-white/5 border border-border-theme hover:border-sage transition-all group"
         >
-          <span className="flex items-center gap-2 text-sm text-navy/40 mb-2">
+          <span className="flex items-center gap-2 text-sm text-muted-theme mb-2">
             <ArrowRight className="w-4 h-4" />
             הסיפור הקודם
           </span>
@@ -30,9 +30,9 @@ export default function PostNavigation({
       {next ? (
         <Link 
           href={`/post/${next.slug}`}
-          className="flex flex-col items-end p-6 rounded-2xl bg-white border border-navy/5 hover:border-sage transition-all group text-left"
+          className="flex flex-col items-end p-6 rounded-2xl bg-white/5 border border-border-theme hover:border-sage transition-all group text-left"
         >
-          <span className="flex items-center gap-2 text-sm text-navy/40 mb-2">
+          <span className="flex items-center gap-2 text-sm text-muted-theme mb-2">
             הסיפור הבא
             <ArrowLeft className="w-4 h-4" />
           </span>
