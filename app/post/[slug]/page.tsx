@@ -90,7 +90,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <div className="w-1 h-1 rounded-full bg-navy/20" />
                 <div className="flex items-center gap-1 text-sm font-medium text-navy/40">
                   <Clock className="w-4 h-4" />
-                  <span>{readingTime} דק' קריאה</span>
+                  <span>{readingTime} דק&apos; קריאה</span>
                 </div>
               </div>
               <h1 className="text-4xl font-bold text-navy leading-tight">
