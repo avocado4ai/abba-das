@@ -10,12 +10,12 @@
 ### 1. **EXPOSED GITHUB TOKEN** - SEVERITY: CRITICAL
 - **File:** `.env`
 - **Issue:** Real GitHub Personal Access Token is committed to git history
-- **Token:** `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+- **Token:** `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx` (REDACTED - See SECURITY_MIGRATION.md)
 - **Impact:** Anyone with repo access can use this token to access GitHub resources
 - **Fix Required:**
   1. Rotate the token immediately in GitHub settings (Settings → Developer settings → Personal access tokens)
   2. Delete token history from git (use `git-filter-repo` or similar)
-  3. Push to GitHub to update history
+  3. See SECURITY_MIGRATION.md for detailed steps
 
 ### 2. **HARDCODED AUTH SECRETS** - SEVERITY: CRITICAL
 - **File:** `.env.local`
