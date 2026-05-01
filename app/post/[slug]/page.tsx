@@ -1,11 +1,35 @@
 import { getPostBySlug, getAdjacentPosts } from "@/lib/github";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
-import { Sun, Cloud, CloudRain, Wind, ArrowRight } from "lucide-react";
+import { Sun, Cloud, CloudRain, Wind, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FavoriteButton from "@/components/FavoriteButton";
 import PostNavigation from "@/components/PostNavigation";
+import ShareButtons from "@/components/ShareButtons";
+import ReadingProgressBar from "@/components/ReadingProgressBar";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  
+  if (!post) return { title: "הסיפור לא נמצא" };
+
+  const description = post.content.substring(0, 160).replace(/\n/g, ' ');
+
+  return {
+    title: `${post.title} | אבא-דס`,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime: post.date,
+      url: `https://abba-das.vercel.app/post/${slug}`,
+    },
+  };
+}
 
 const WeatherIcon = ({ weather }: { weather?: string }) => {
   switch (weather?.toLowerCase()) {
@@ -31,9 +55,15 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   }
 
   const { next, prev } = await getAdjacentPosts(slug);
+  
+  // Calculate reading time (~200 words per minute)
+  const words = post.content.trim().split(/\s+/).length;
+  const readingTime = Math.max(1, Math.ceil(words / 200));
 
   return (
     <div className="flex flex-col min-h-screen bg-cream selection:bg-sage/30">
+      <ReadingProgressBar />
+      
       {/* Header */}
       <header className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md border-b border-navy/10 py-6">
         <div className="max-w-2xl mx-auto px-6 flex justify-between items-center">
@@ -51,12 +81,17 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <article className="max-w-2xl mx-auto px-6">
           <div className="flex justify-between items-start mb-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-medium text-navy/40">
                   {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
                 </span>
                 <div className="w-1 h-1 rounded-full bg-navy/20" />
                 <WeatherIcon weather={post.weather} />
+                <div className="w-1 h-1 rounded-full bg-navy/20" />
+                <div className="flex items-center gap-1 text-sm font-medium text-navy/40">
+                  <Clock className="w-4 h-4" />
+                  <span>{readingTime} דק' קריאה</span>
+                </div>
               </div>
               <h1 className="text-4xl font-bold text-navy leading-tight">
                 {post.title}
@@ -69,6 +104,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             {post.content}
           </div>
 
+          <ShareButtons title={post.title} slug={slug} />
+          
           <PostNavigation next={next} prev={prev} />
         </article>
       </main>
