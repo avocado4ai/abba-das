@@ -1,4 +1,4 @@
-import { getPostBySlug, getAdjacentPosts } from "@/lib/github";
+import { getPostBySlug, getAdjacentPosts, getCommentsForPost } from "@/lib/github";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { Sun, Cloud, CloudRain, Wind, ArrowRight, Clock } from "lucide-react";
@@ -9,6 +9,8 @@ import PostNavigation from "@/components/PostNavigation";
 import ShareButtons from "@/components/ShareButtons";
 import ReadingProgressBar from "@/components/ReadingProgressBar";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import Comments from "@/components/Comments";
+import AudioPlayer from "@/components/AudioPlayer";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -56,6 +58,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   }
 
   const { next, prev } = await getAdjacentPosts(slug);
+  const initialComments = await getCommentsForPost(slug);
   
   // Calculate reading time (~200 words per minute)
   const words = post.content.trim().split(/\s+/).length;
@@ -100,6 +103,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               <h1 className="text-4xl font-bold text-navy leading-tight">
                 {post.title}
               </h1>
+              <AudioPlayer text={post.content} />
             </div>
             <FavoriteButton slug={slug} />
           </div>
@@ -109,6 +113,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </div>
 
           <ShareButtons title={post.title} slug={slug} />
+          
+          <Comments slug={slug} initialComments={initialComments} />
           
           <PostNavigation next={next} prev={prev} />
         </article>

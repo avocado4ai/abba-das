@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [sender, setSender] = useState('');
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
   const [publishedPosts, setPublishedPosts] = useState<PostData[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [isSaving, setIsSaving] = useState<number | null>(null);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
@@ -44,9 +45,9 @@ export default function AdminPage() {
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !sender) {
-      setError(sender ? 'אנא בחר קובץ' : 'אנא הזן שם שולח תחילה');
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !sender) {
+      setError(sender ? 'אנא בחר קבצים' : 'אנא הזן שם שולח תחילה');
       return;
     }
 
@@ -55,20 +56,48 @@ export default function AdminPage() {
     setSuccess(null);
 
     try {
-      const text = await file.text();
-      const parsedMessages = parseWhatsAppExport(text, sender);
-      setMessages(parsedMessages);
-      if (parsedMessages.length === 0) {
-        setError('לא נמצאו הודעות עבור שולח זה.');
+      const txtFile = files.find(f => f.name.endsWith('.txt'));
+      const otherFiles = files.filter(f => !f.name.endsWith('.txt'));
+
+      if (otherFiles.length > 0) {
+        setAttachedFiles(prev => [...prev, ...otherFiles]);
+      }
+
+      if (txtFile) {
+        const text = await txtFile.text();
+        const parsedMessages = parseWhatsAppExport(text, sender);
+        setMessages(parsedMessages);
+        if (parsedMessages.length === 0) {
+          setError('לא נמצאו הודעות עבור שולח זה.');
+        } else {
+          setSuccess(`נטענו ${parsedMessages.length} הודעות, ו-${otherFiles.length} קבצים מצורפים`);
+        }
       } else {
-        setSuccess(`נטענו ${parsedMessages.length} הודעות בהצלחה`);
+        setSuccess(`נוספו ${otherFiles.length} קבצים מצורפים`);
       }
     } catch {
-      setError('נכשל בניתוח הקובץ.');
+      setError('נכשל בניתוח הקבצים.');
     } finally {
       setIsParsing(false);
       // Reset file input
       e.target.value = '';
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      return data.url;
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   };
 
@@ -77,9 +106,32 @@ export default function AdminPage() {
     setError(null);
     setSuccess(null);
 
+    let finalContent = msg.content;
+
+    // Process attachments
+    if (msg.attachments && msg.attachments.length > 0) {
+      for (const attachmentName of msg.attachments) {
+        const fileToUpload = attachedFiles.find(f => f.name === attachmentName);
+        if (fileToUpload) {
+          const url = await uploadFile(fileToUpload);
+          if (url) {
+            // Replace the attachment placeholder with markdown
+            const isVideo = fileToUpload.type.startsWith('video/');
+            const markdownMedia = isVideo ? `\n\n<video controls src="${url}"></video>\n\n` : `\n\n![${attachmentName}](${url})\n\n`;
+            
+            // Regex to replace either "filename.jpg (file attached)" or "<attached: filename.jpg>"
+            const regex = new RegExp(`${attachmentName}\\s*\\(file attached\\)|<attached:\\s*${attachmentName}>`, 'gi');
+            finalContent = finalContent.replace(regex, markdownMedia);
+          }
+        }
+      }
+    }
+
     const dateStr = format(msg.date, 'yyyy-MM-dd');
-    const firstLine = msg.content.split('\n')[0].trim();
-    const title = firstLine.substring(0, 50) || `סיפור מ-${dateStr}`;
+    const firstLine = finalContent.split('\n')[0].trim();
+    // remove markdown image syntax from title if present
+    const cleanFirstLine = firstLine.replace(/!\[.*?\]\(.*?\)/g, '').trim();
+    const title = cleanFirstLine.substring(0, 50) || `סיפור מ-${dateStr}`;
     const slug = generateSlug(dateStr);
 
     try {
@@ -88,9 +140,10 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          content: msg.content,
+          content: finalContent,
           date: msg.date.toISOString(),
           slug,
+          tags: msg.tags || [],
         }),
       });
 
@@ -144,7 +197,8 @@ export default function AdminPage() {
             <div className="relative">
               <input
                 type="file"
-                accept=".txt"
+                accept=".txt,.jpg,.jpeg,.png,.gif,.mp4,.webp"
+                multiple
                 onChange={handleFileUpload}
                 className="hidden"
                 id="file-upload"
@@ -152,12 +206,19 @@ export default function AdminPage() {
               />
               <label
                 htmlFor="file-upload"
-                className={`flex items-center justify-center gap-3 p-4 rounded-2xl cursor-pointer transition-all text-lg font-bold shadow-sm ${
+                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl cursor-pointer transition-all text-lg font-bold shadow-sm ${
                   !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90 active:scale-[0.98]'
                 }`}
               >
-                {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
-                <span>טעינת קובץ (txt)</span>
+                <div className="flex items-center gap-3">
+                  {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
+                  <span>טעינת קובץ (txt + תמונות)</span>
+                </div>
+                {attachedFiles.length > 0 && (
+                  <span className="text-sm font-normal text-cream/70">
+                    {attachedFiles.length} קבצים ממתינים לפרסום
+                  </span>
+                )}
               </label>
             </div>
           </div>
@@ -203,7 +264,46 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div className="p-8">
-                  <p className="whitespace-pre-wrap text-xl leading-relaxed text-foreground/90 mb-8 font-stories">{msg.content}</p>
+                  <p className="whitespace-pre-wrap text-xl leading-relaxed text-foreground/90 mb-6 font-stories">{msg.content}</p>
+                  
+                  {/* Tags Editor */}
+                  <div className="flex flex-wrap gap-2 mb-8 items-center bg-navy/[0.02] p-4 rounded-2xl border border-border-theme">
+                    <span className="text-xs font-bold text-muted-theme ml-2">תגיות:</span>
+                    {msg.tags?.map((tag, tIndex) => (
+                      <span key={tIndex} className="bg-sage/10 text-sage text-xs font-bold px-3 py-1 rounded-full flex items-center gap-2 group/tag">
+                        #{tag}
+                        <button 
+                          onClick={() => {
+                            const newTags = msg.tags?.filter((_, i) => i !== tIndex);
+                            const newMessages = [...messages];
+                            newMessages[index] = { ...msg, tags: newTags };
+                            setMessages(newMessages);
+                          }}
+                          className="hover:text-red-500 transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      placeholder="הוסף תגית (ואנטר)..."
+                      className="bg-transparent text-xs font-medium outline-none text-navy placeholder:text-muted-theme/40 min-w-[120px]"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = e.currentTarget.value.trim().replace(/^#/, '');
+                          if (val) {
+                            const newTags = [...(msg.tags || []), val];
+                            const newMessages = [...messages];
+                            newMessages[index] = { ...msg, tags: newTags };
+                            setMessages(newMessages);
+                            e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+
                   <div className="flex justify-end">
                     <button
                       onClick={() => handleSavePost(index, msg)}

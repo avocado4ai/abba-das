@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Heebo, Assistant } from "next/font/google";
 import "./globals.css";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const heebo = Heebo({
   variable: "--font-heebo",
@@ -28,7 +29,10 @@ export default function RootLayout({
       dir="rtl"
       className={`${heebo.variable} ${assistant.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-heebo">{children}</body>
+      <body className="min-h-full flex flex-col font-heebo">
+        {children}
+        <ScrollToTop />
+      </body>
     </html>
   );
 }

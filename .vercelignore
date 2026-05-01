@@ -1,0 +1,5 @@
+node_modules
+.git
+authelia-config-backup.yml
+.gemini
+tmp

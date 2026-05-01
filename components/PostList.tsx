@@ -26,6 +26,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
   const [search, setSearch] = useState('');
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('abba_favorites') || '[]');
@@ -33,11 +34,23 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
     setFavorites(stored);
   }, []);
 
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    initialPosts.forEach(post => {
+      post.tags?.forEach(tag => tags.add(tag));
+    });
+    return Array.from(tags).sort();
+  }, [initialPosts]);
+
   const filteredPosts = useMemo(() => {
     let posts = initialPosts;
     
     if (showFavorites) {
       posts = posts.filter(post => favorites.includes(post.slug));
+    }
+
+    if (selectedTag) {
+      posts = posts.filter(post => post.tags?.includes(selectedTag));
     }
 
     if (!search) return posts;
@@ -48,12 +61,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         post.title.toLowerCase().includes(s) ||
         post.content.toLowerCase().includes(s)
     );
-  }, [initialPosts, search, showFavorites, favorites]);
+  }, [initialPosts, search, showFavorites, favorites, selectedTag]);
 
   return (
     <div className="space-y-12">
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center mb-12">
+      <div className="flex flex-col md:flex-row gap-4 items-center mb-8">
         <div className="relative flex-grow w-full">
           <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
             <Search className="w-5 h-5 text-muted-theme" />
@@ -80,10 +93,39 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         </button>
       </div>
 
+      {/* Tags Cloud */}
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-12">
+          <button
+            onClick={() => setSelectedTag(null)}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+              !selectedTag 
+                ? 'bg-sage text-cream border-sage' 
+                : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
+            }`}
+          >
+            הכל
+          </button>
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                tag === selectedTag 
+                  ? 'bg-sage text-cream border-sage shadow-sm' 
+                  : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
+              }`}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       {filteredPosts.length > 0 ? (
         filteredPosts.map((post) => (
           <article key={post.slug} className="group">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
               <span className="text-sm font-medium text-muted-theme">
                 {post.date
                   ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
@@ -91,6 +133,9 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
               </span>
               <div className="w-1 h-1 rounded-full bg-border-theme" />
               <WeatherIcon weather={post.weather} />
+              {post.tags?.map(tag => (
+                <span key={tag} className="text-[10px] font-bold text-sage opacity-70">#{tag}</span>
+              ))}
               {favorites.includes(post.slug) && (
                 <>
                   <div className="w-1 h-1 rounded-full bg-border-theme" />

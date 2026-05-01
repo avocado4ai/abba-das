@@ -15,6 +15,86 @@ export interface PostData {
   date: string;
   slug: string;
   weather?: string;
+  tags?: string[];
+}
+
+export interface CommentData {
+  id: string;
+  name: string;
+  message: string;
+  date: string;
+}
+
+/**
+ * Saves a comment to the GitHub repository.
+ */
+export async function saveCommentToGitHub(slug: string, comment: CommentData) {
+  const path = `content/comments/${slug}.json`;
+  const message = `Add comment to post: ${slug}`;
+  
+  try {
+    let currentComments: CommentData[] = [];
+    let sha: string | undefined;
+
+    // Try to fetch existing comments
+    try {
+      const { data } = await octokit.rest.repos.getContent({
+        owner: OWNER,
+        repo: REPO,
+        path,
+        ref: BRANCH,
+      });
+
+      if (!Array.isArray(data) && "content" in data) {
+        sha = data.sha;
+        currentComments = JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
+      }
+    } catch {
+      // File doesn't exist yet, which is fine
+    }
+
+    // Add new comment to the list
+    const updatedComments = [comment, ...currentComments];
+    const contentBase64 = Buffer.from(JSON.stringify(updatedComments, null, 2)).toString("base64");
+
+    const response = await octokit.rest.repos.createOrUpdateFileContents({
+      owner: OWNER,
+      repo: REPO,
+      path,
+      content: contentBase64,
+      message,
+      sha,
+      branch: BRANCH,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error saving comment for ${slug}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches all comments for a specific post slug.
+ */
+export async function getCommentsForPost(slug: string): Promise<CommentData[]> {
+  try {
+    const path = `content/comments/${slug}.json`;
+    const { data } = await octokit.rest.repos.getContent({
+      owner: OWNER,
+      repo: REPO,
+      path,
+      ref: BRANCH,
+    });
+
+    if (!Array.isArray(data) && "content" in data) {
+      return JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
+    }
+    return [];
+  } catch {
+    // If file doesn't exist, return empty array
+    return [];
+  }
 }
 
 /**
@@ -28,6 +108,7 @@ export async function savePostToGitHub(post: PostData) {
 title: "${post.title}"
 date: "${post.date}"
 weather: "${post.weather || 'sunny'}"
+tags: ${JSON.stringify(post.tags || [])}
 ---
 
 ${post.content}
@@ -90,6 +171,7 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
         title: frontmatter.title || slug,
         date: frontmatter.date || "",
         weather: frontmatter.weather || "sunny",
+        tags: frontmatter.tags || [],
         slug: slug,
         content: body,
       };
@@ -152,6 +234,7 @@ export async function getAllPosts(): Promise<PostData[]> {
             title: frontmatter.title || file.name.replace(".md", ""),
             date: frontmatter.date || "",
             weather: frontmatter.weather || "sunny",
+            tags: frontmatter.tags || [],
             slug: file.name.replace(".md", ""),
             content: body,
           };

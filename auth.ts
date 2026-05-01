@@ -1,4 +1,15 @@
-import NextAuth from "next-auth"
+import NextAuth, { type DefaultSession } from "next-auth"
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      groups?: string[];
+    } & DefaultSession["user"]
+  }
+  interface Profile {
+    groups?: string[];
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -23,7 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).groups = token.groups;
+        session.user.groups = token.groups as string[] | undefined;
       }
       return session;
     },
