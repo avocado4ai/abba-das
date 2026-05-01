@@ -47,10 +47,83 @@ body {
   color: var(--foreground);
   font-family: var(--font-heebo), sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
 }
 
 .font-stories {
   font-family: var(--font-assistant), sans-serif;
+  line-height: 1.8;
+}
+
+/* Typography Improvements */
+h1 {
+  @apply text-4xl md:text-5xl font-bold tracking-tight leading-tight;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  @apply text-3xl md:text-4xl font-bold tracking-tight leading-tight;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  @apply text-2xl md:text-3xl font-bold;
+  letter-spacing: -0.005em;
+}
+
+p {
+  @apply text-base md:text-lg leading-relaxed;
+  word-spacing: 0.1em;
+}
+
+/* Post Content Styling */
+article p {
+  @apply mb-6;
+}
+
+article h2 {
+  @apply mt-12 mb-4 pt-4;
+}
+
+article h3 {
+  @apply mt-8 mb-3;
+}
+
+article blockquote {
+  @apply border-r-4 pl-6 pr-4 py-3 my-6 italic opacity-80;
+  border-right-color: var(--sage);
+}
+
+article code {
+  @apply bg-white/10 px-2 py-1 rounded font-mono text-sm;
+}
+
+article pre {
+  @apply bg-white/5 p-4 rounded-lg overflow-x-auto my-6;
+}
+
+article ul, article ol {
+  @apply ml-6 mb-6;
+}
+
+article li {
+  @apply mb-3;
+}
+
+/* Drop Cap for first letter */
+article p:first-of-type::first-letter {
+  @apply font-bold text-3xl float-right mr-2 leading-none pt-1;
+  color: var(--sage);
+}
+
+/* Links */
+a {
+  @apply transition-colors duration-200;
+}
+
+a:hover {
+  @apply underline;
 }
 
 /* Texture overlay for paper theme */

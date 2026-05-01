@@ -124,45 +124,41 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
       {filteredPosts.length > 0 ? (
         filteredPosts.map((post) => (
-          <article key={post.slug} className="group">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="text-sm font-medium text-muted-theme">
-                {post.date
-                  ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
-                  : 'תאריך לא ידוע'}
-              </span>
-              <div className="w-1 h-1 rounded-full bg-border-theme" />
-              <WeatherIcon weather={post.weather} />
-              {post.tags?.map(tag => (
-                <span key={tag} className="text-[10px] font-bold text-sage opacity-70">#{tag}</span>
-              ))}
-              {favorites.includes(post.slug) && (
-                <>
-                  <div className="w-1 h-1 rounded-full bg-border-theme" />
-                  <Heart className="w-4 h-4 text-red-400 fill-current" />
-                </>
-              )}
-            </div>
+          <Link href={`/post/${post.slug}`} key={post.slug}>
+            <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme transition-all duration-300 hover:bg-white/10 hover:border-sage/30 hover:shadow-lg hover:-translate-y-1">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <span className="text-xs md:text-sm font-medium text-muted-theme">
+                  {post.date
+                    ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
+                    : 'תאריך לא ידוע'}
+                </span>
+                <div className="w-1 h-1 rounded-full bg-border-theme" />
+                <WeatherIcon weather={post.weather} />
+                {post.tags?.map(tag => (
+                  <span key={tag} className="text-[10px] font-bold text-sage opacity-70 bg-sage/10 px-2 py-1 rounded-full">#{tag}</span>
+                ))}
+                {favorites.includes(post.slug) && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-border-theme" />
+                    <Heart className="w-4 h-4 text-red-400 fill-current" />
+                  </>
+                )}
+              </div>
 
-            <Link href={`/post/${post.slug}`}>
-              <h3 className="text-2xl font-bold text-navy mb-4 group-hover:text-sage transition-colors cursor-pointer">
+              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-sage transition-colors">
                 {post.title}
               </h3>
-            </Link>
 
-            <div className="font-stories text-lg text-foreground/80 leading-relaxed whitespace-pre-wrap line-clamp-4">
-              {post.content}
-            </div>
-            
-            <Link 
-              href={`/post/${post.slug}`}
-              className="inline-block mt-4 text-sm font-bold text-sage hover:text-navy transition-colors"
-            >
-              קרא עוד ←
-            </Link>
+              <p className="font-stories text-base md:text-lg text-foreground/75 leading-relaxed line-clamp-3 mb-5">
+                {post.content}
+              </p>
 
-            <div className="mt-12 h-px bg-border-theme w-full opacity-30 group-last:hidden" />
-          </article>
+              <div className="inline-flex items-center text-sm font-bold text-sage group-hover:text-navy transition-colors gap-2">
+                קרא עוד
+                <span className="transition-transform group-hover:translate-x-1">←</span>
+              </div>
+            </article>
+          </Link>
         ))
       ) : (
         <div className="text-center py-20 bg-white/5 rounded-3xl border-2 border-dashed border-border-theme">
