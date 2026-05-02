@@ -26,13 +26,11 @@ function SignInContent() {
       setIsLoading(true);
       setError(null);
       await signIn("authelia", {
-        redirectTo: callbackUrl,
-        redirect: true
+        redirectTo: callbackUrl
       });
     } catch (err) {
       console.error('Sign in error:', err);
       setError('נכשל בהתחברות. אנא נסה שוב.');
-    } finally {
       setIsLoading(false);
     }
   };
