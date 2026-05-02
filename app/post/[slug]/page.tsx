@@ -11,6 +11,7 @@ import ReadingProgressBar from "@/components/ReadingProgressBar";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import Comments from "@/components/Comments";
 import AudioPlayer from "@/components/AudioPlayer";
+import StoryImage from "@/components/StoryImage";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -83,6 +84,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </div>
         </div>
       </header>
+
+      {/* Story Image Hero */}
+      <div className="w-full h-80 md:h-96 mb-12">
+        <StoryImage slug={slug} title={post.title} className="h-full" />
+      </div>
 
       <main className="flex-grow py-20">
         <article className="max-w-2xl mx-auto px-6">

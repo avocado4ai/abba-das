@@ -1,0 +1,153 @@
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Story 1: The Long Path -->
+  <defs>
+    <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="sunsetGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE66D;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#pathGradient)"/>
+  
+  <!-- Sun -->
+  <circle cx="200" cy="150" r="80" fill="#FFD700" opacity="0.8"/>
+  
+  <!-- Mountains -->
+  <polygon points="0,500 300,200 600,450 900,150 1200,500 1200,800 0,800" fill="#8B7355" opacity="0.7"/>
+  <polygon points="100,500 350,250 650,480 950,200 1200,520 1200,800 0,800" fill="#A0826D" opacity="0.8"/>
+  
+  <!-- Path -->
+  <path d="M 600 700 Q 500 600, 400 500 T 200 200" stroke="#D2B48C" stroke-width="60" fill="none" opacity="0.7"/>
+  
+  <!-- Trees -->
+  <g id="tree1" transform="translate(150, 350)">
+    <rect x="-20" y="0" width="40" height="80" fill="#8B4513"/>
+    <circle cx="0" cy="-20" r="60" fill="#228B22"/>
+  </g>
+  <use href="#tree1" transform="translate(900, 250)"/>
+</svg>
+
+<!-- Story 2: Stories with Grandchildren -->
+<svg id="grandchildren" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="warmGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE4B5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F5DEB3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="800" fill="url(#warmGradient)"/>
+  
+  <!-- Fireplace/Table -->
+  <rect x="400" y="350" width="400" height="300" rx="20" fill="#CD853F" opacity="0.6"/>
+  
+  <!-- Chairs around table -->
+  <circle cx="300" cy="450" r="50" fill="#A0522D" opacity="0.7"/>
+  <circle cx="900" cy="450" r="50" fill="#A0522D" opacity="0.7"/>
+  <circle cx="600" cy="250" r="50" fill="#A0522D" opacity="0.7"/>
+  <circle cx="600" cy="650" r="50" fill="#A0522D" opacity="0.7"/>
+  
+  <!-- Candles -->
+  <rect x="550" y="280" width="30" height="100" fill="#FFA500" opacity="0.8"/>
+  <polygon points="565,280 540,250 590,250" fill="#FFD700"/>
+</svg>
+
+<!-- Story 3: My Birthday -->
+<svg id="birthday" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="partyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB6C1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFF0F5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="800" fill="url(#partyGradient)"/>
+  
+  <!-- Balloons -->
+  <circle cx="200" cy="200" r="30" fill="#FF6B6B"/>
+  <circle cx="300" cy="150" r="30" fill="#FFD93D"/>
+  <circle cx="400" cy="180" r="30" fill="#6BCB77"/>
+  <circle cx="500" cy="140" r="30" fill="#4D96FF"/>
+  <circle cx="1000" cy="250" r="30" fill="#FF006E"/>
+  
+  <!-- Strings from balloons -->
+  <line x1="200" y1="230" x2="200" y2="400" stroke="#FFB6C1" stroke-width="3"/>
+  <line x1="300" y1="180" x2="300" y2="400" stroke="#FFD93D" stroke-width="3"/>
+  
+  <!-- Cake -->
+  <rect x="500" y="500" width="200" height="150" rx="10" fill="#8B4513" opacity="0.8"/>
+  <circle cx="600" cy="500" r="30" fill="#FFD700"/>
+  
+  <!-- Confetti -->
+  <circle cx="150" cy="400" r="5" fill="#FF006E"/>
+  <circle cx="800" cy="350" r="5" fill="#FFD93D"/>
+  <circle cx="950" cy="600" r="5" fill="#6BCB77"/>
+</svg>
+
+<!-- Story 4: Morning in Garden -->
+<svg id="garden" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="morningGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="800" fill="url(#morningGradient)"/>
+  
+  <!-- Sun -->
+  <circle cx="1100" cy="100" r="60" fill="#FFD700" opacity="0.9"/>
+  
+  <!-- Grass -->
+  <rect x="0" y="500" width="1200" height="300" fill="#228B22" opacity="0.7"/>
+  
+  <!-- Flowers -->
+  <circle cx="200" cy="500" r="20" fill="#FF69B4"/>
+  <circle cx="300" cy="480" r="20" fill="#FFB6C1"/>
+  <circle cx="450" cy="490" r="20" fill="#DDA0DD"/>
+  <circle cx="900" cy="510" r="20" fill="#FF69B4"/>
+  
+  <!-- Stems -->
+  <line x1="200" y1="520" x2="200" y2="600" stroke="#228B22" stroke-width="3"/>
+  <line x1="300" y1="500" x2="300" y2="600" stroke="#228B22" stroke-width="3"/>
+  
+  <!-- Butterfly -->
+  <ellipse cx="600" cy="300" rx="25" ry="35" fill="#FF1493"/>
+  <ellipse cx="550" cy="280" rx="20" ry="25" fill="#FF69B4"/>
+</svg>
+
+<!-- Story 5: Car Trip Memories -->
+<svg id="cartrip" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="roadGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE4B5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="800" fill="url(#roadGradient)"/>
+  
+  <!-- Road -->
+  <rect x="0" y="500" width="1200" height="150" fill="#444444"/>
+  
+  <!-- Road lines -->
+  <line x1="0" y1="575" x2="1200" y2="575" stroke="#FFD700" stroke-width="5" stroke-dasharray="50,50"/>
+  
+  <!-- Car -->
+  <rect x="500" y="480" width="200" height="100" rx="20" fill="#DC143C"/>
+  <circle cx="550" cy="600" r="30" fill="#333333"/>
+  <circle cx="650" cy="600" r="30" fill="#333333"/>
+  <rect x="530" y="490" width="60" height="40" fill="#87CEEB" opacity="0.6"/>
+  
+  <!-- Sun/Sky -->
+  <circle cx="200" cy="150" r="70" fill="#FFD700" opacity="0.8"/>
+  
+  <!-- Hills -->
+  <path d="M 0 400 Q 300 200, 600 400 T 1200 400" fill="#8FBC8F" opacity="0.6"/>
+</svg>

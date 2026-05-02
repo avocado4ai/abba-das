@@ -16,6 +16,8 @@ export interface PostData {
   slug: string;
   weather?: string;
   tags?: string[];
+  contentType?: 'story' | 'audio-story' | 'whatsapp-friday' | 'photo' | 'message' | 'memory';
+  category?: 'family' | 'memories' | 'thoughts' | 'inspiration' | 'reflection' | 'moments';
 }
 
 export interface CommentData {
@@ -108,6 +110,8 @@ export async function savePostToGitHub(post: PostData) {
 title: "${post.title}"
 date: "${post.date}"
 weather: "${post.weather || 'sunny'}"
+contentType: "${post.contentType || 'story'}"
+category: "${post.category || 'memories'}"
 tags: ${JSON.stringify(post.tags || [])}
 ---
 
@@ -166,7 +170,7 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
     if ("content" in fileData) {
       const content = Buffer.from(fileData.content, "base64").toString("utf-8");
       const { data: frontmatter, content: body } = matter(content);
-      
+
       return {
         title: frontmatter.title || slug,
         date: frontmatter.date || "",
@@ -174,6 +178,8 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
         tags: frontmatter.tags || [],
         slug: slug,
         content: body,
+        contentType: frontmatter.contentType || "story",
+        category: frontmatter.category || "memories",
       };
     }
     return null;
@@ -229,7 +235,7 @@ export async function getAllPosts(): Promise<PostData[]> {
         if ("content" in fileData) {
           const content = Buffer.from(fileData.content, "base64").toString("utf-8");
           const { data: frontmatter, content: body } = matter(content);
-          
+
           const post: PostData = {
             title: frontmatter.title || file.name.replace(".md", ""),
             date: frontmatter.date || "",
@@ -237,6 +243,8 @@ export async function getAllPosts(): Promise<PostData[]> {
             tags: frontmatter.tags || [],
             slug: file.name.replace(".md", ""),
             content: body,
+            contentType: frontmatter.contentType || "story",
+            category: frontmatter.category || "memories",
           };
           return post;
         }

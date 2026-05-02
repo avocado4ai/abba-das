@@ -24,6 +24,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [senderError, setSenderError] = useState<string | null>(null);
+  const [messageMetadata, setMessageMetadata] = useState<Record<number, {contentType: string; category: string; weather: string}>>({});
 
 
   useEffect(() => {
@@ -149,6 +150,8 @@ export default function AdminPage() {
     const slug = generateSlug(dateStr);
 
     try {
+      const metadata = messageMetadata[index] || { contentType: 'story', category: 'memories', weather: 'sunny' };
+
       const res = await fetch('/api/github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,6 +161,9 @@ export default function AdminPage() {
           date: msg.date.toISOString(),
           slug,
           tags: msg.tags || [],
+          contentType: metadata.contentType,
+          category: metadata.category,
+          weather: metadata.weather,
         }),
       });
 
@@ -324,7 +330,7 @@ export default function AdminPage() {
                     {msg.tags?.map((tag, tIndex) => (
                       <span key={tIndex} className="bg-sage/10 text-sage text-xs font-bold px-3 py-1 rounded-full flex items-center gap-2 group/tag">
                         #{tag}
-                        <button 
+                        <button
                           onClick={() => {
                             const newTags = msg.tags?.filter((_, i) => i !== tIndex);
                             const newMessages = [...messages];
@@ -355,6 +361,73 @@ export default function AdminPage() {
                         }
                       }}
                     />
+                  </div>
+
+                  {/* Content Metadata Editor */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-navy/[0.02] p-4 rounded-2xl border border-border-theme">
+                    <div>
+                      <label htmlFor={`type-${index}`} className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
+                      <select
+                        id={`type-${index}`}
+                        value={messageMetadata[index]?.contentType || 'story'}
+                        onChange={(e) => {
+                          setMessageMetadata(prev => ({
+                            ...prev,
+                            [index]: { ...prev[index], contentType: e.target.value }
+                          }));
+                        }}
+                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                      >
+                        <option value="story">סיפור</option>
+                        <option value="audio-story">סיפור אודיו</option>
+                        <option value="whatsapp-friday">וואטס יום ו׳</option>
+                        <option value="photo">תמונה</option>
+                        <option value="message">הודעה</option>
+                        <option value="memory">זיכרון</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor={`cat-${index}`} className="block text-xs font-bold text-muted-theme mb-2">קטגוריה</label>
+                      <select
+                        id={`cat-${index}`}
+                        value={messageMetadata[index]?.category || 'memories'}
+                        onChange={(e) => {
+                          setMessageMetadata(prev => ({
+                            ...prev,
+                            [index]: { ...prev[index], category: e.target.value }
+                          }));
+                        }}
+                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                      >
+                        <option value="family">משפחה</option>
+                        <option value="memories">זכרונות</option>
+                        <option value="thoughts">מחשבות</option>
+                        <option value="inspiration">השראה</option>
+                        <option value="reflection">הרהור</option>
+                        <option value="moments">רגעים</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor={`weather-${index}`} className="block text-xs font-bold text-muted-theme mb-2">מזג אוויר</label>
+                      <select
+                        id={`weather-${index}`}
+                        value={messageMetadata[index]?.weather || 'sunny'}
+                        onChange={(e) => {
+                          setMessageMetadata(prev => ({
+                            ...prev,
+                            [index]: { ...prev[index], weather: e.target.value }
+                          }));
+                        }}
+                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                      >
+                        <option value="sunny">שמש</option>
+                        <option value="cloudy">עננים</option>
+                        <option value="rainy">גשום</option>
+                        <option value="windy">רוחות</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="flex justify-end">

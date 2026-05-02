@@ -381,6 +381,22 @@ select:focus-visible {
   }
 }
 
+/* Background Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(126, 153, 131, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(217, 119, 96, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(196, 165, 114, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* Dark Mode Text Visibility */
 @media (prefers-color-scheme: dark) {
   body {
