@@ -21,16 +21,16 @@ export default function ExportButton({ posts }: { posts: PostData[] }) {
       <button
         onClick={exportToJson}
         title="ייצוא ל-JSON"
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-navy/10 text-navy rounded-full text-sm font-medium hover:bg-navy/5 transition-all shadow-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-warm-gold/10 to-coral/10 border border-warm-gold/30 text-warm-gold rounded-full text-sm font-medium hover:from-warm-gold/20 hover:to-coral/20 hover:border-warm-gold/50 transition-all duration-250 shadow-sm hover:shadow-md"
       >
         <Download className="w-4 h-4" />
         <span className="hidden md:inline">JSON</span>
       </button>
-      
+
       <Link
         href="/print"
         title="הדפסה / שמירה כ-PDF"
-        className="flex items-center gap-2 px-4 py-2 bg-navy text-cream rounded-full text-sm font-medium hover:bg-navy/90 transition-all shadow-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-navy to-navy/80 text-cream rounded-full text-sm font-medium hover:from-navy/90 hover:to-navy/70 transition-all duration-250 shadow-sm hover:shadow-md"
       >
         <Printer className="w-4 h-4" />
         <span className="hidden md:inline">PDF / הדפסה</span>

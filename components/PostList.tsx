@@ -134,27 +134,27 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       {filteredPosts.length > 0 ? (
         filteredPosts.map((post) => (
           <Link href={`/post/${post.slug}`} key={post.slug}>
-            <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/10 hover:border-sage/30 hover:shadow-md hover:scale-[1.01]">
+            <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/10 hover:border-coral/30 hover:shadow-md hover:scale-[1.01] hover:shadow-coral/10">
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <span className="text-xs md:text-sm font-medium text-muted-theme">
                   {post.date
                     ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                     : 'תאריך לא ידוע'}
                 </span>
-                <div className="w-1 h-1 rounded-full bg-border-theme" />
+                <div className="w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
                 <WeatherIcon weather={post.weather} />
                 {post.tags?.map(tag => (
-                  <span key={tag} className="text-[10px] font-bold text-sage opacity-70 bg-sage/10 px-2 py-1 rounded-full">#{tag}</span>
+                  <span key={tag} className="text-[10px] font-bold text-coral opacity-80 bg-coral/10 px-2 py-1 rounded-full">#{tag}</span>
                 ))}
                 {favorites.includes(post.slug) && (
                   <>
                     <div className="w-1 h-1 rounded-full bg-border-theme" />
-                    <Heart className="w-4 h-4 text-red-400 fill-current" />
+                    <Heart className="w-4 h-4 text-coral fill-current" />
                   </>
                 )}
               </div>
 
-              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-sage transition-colors duration-250">
+              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-coral transition-colors duration-250">
                 {post.title}
               </h3>
 
@@ -162,7 +162,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 {post.content}
               </p>
 
-              <div className="inline-flex items-center text-sm font-bold text-sage group-hover:text-navy transition-colors duration-250 gap-2">
+              <div className="inline-flex items-center text-sm font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                 קרא עוד
                 <span className="transition-transform duration-250 group-hover:translate-x-1">←</span>
               </div>

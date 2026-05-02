@@ -6,6 +6,7 @@ import DynamicStats from "@/components/DynamicStats";
 import OnThisDay from "@/components/OnThisDay";
 import Image from "next/image";
 import Link from "next/link";
+import MobileNav from "@/components/MobileNav";
 
 export default async function Home() {
   const posts = await getAllPosts();
@@ -13,52 +14,76 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border-theme py-6 transition-colors duration-300 shadow-sm">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border-theme py-4 md:py-6 transition-colors duration-300 shadow-sm">
         <div className="max-w-2xl mx-auto px-6 flex justify-between items-center">
-          <Link href="/" className="text-3xl font-bold text-foreground tracking-tight hover:text-sage transition-colors">
+          <Link href="/" className="text-2xl md:text-3xl font-bold text-foreground tracking-tight hover:text-coral transition-colors duration-250">
             אבא-דס
           </Link>
-          <nav className="flex items-center gap-6">
-            <Link href="/guestbook" className="text-sm font-medium text-muted-theme hover:text-sage transition-colors hover:underline">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/guestbook" className="text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250 hover:underline">
               ספר אורחים
             </Link>
             <ThemeSwitcher />
             <ExportButton posts={posts} />
-            <Link href="/admin" className="text-sm font-medium text-muted-theme hover:text-sage transition-colors hover:underline">
+            <Link href="/admin" className="text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250 hover:underline">
               ניהול
             </Link>
           </nav>
+
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center gap-4">
+            <ThemeSwitcher />
+            <MobileNav posts={posts} />
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-24 md:py-32 px-6 overflow-hidden">
-        {/* Gradient Background */}
+      <section className="relative py-16 md:py-32 px-6 overflow-hidden">
+        {/* Gradient Background with Decorative Elements */}
         <div className="absolute inset-0 -z-10">
+          {/* Main gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-sage/5 via-transparent to-transparent" />
-          <div className="absolute inset-0 z-0 opacity-30 pointer-events-none flex justify-center items-center">
+
+          {/* Decorative glowing elements */}
+          <div className="absolute top-20 right-10 w-64 h-64 bg-coral/10 rounded-full blur-3xl animate-glow" />
+          <div className="absolute bottom-20 left-10 w-80 h-80 bg-warm-gold/5 rounded-full blur-3xl animate-glow" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-teal/5 rounded-full blur-3xl animate-glow" style={{ animationDelay: '2s' }} />
+
+          {/* Hero illustration */}
+          <div className="absolute inset-0 z-0 opacity-25 pointer-events-none flex justify-center items-center">
             <Image src="/hero-illustration.svg" alt="" width={800} height={400} className="w-full max-w-4xl object-cover blur-sm" priority />
           </div>
         </div>
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <div className="inline-block px-4 py-2 bg-sage/10 border border-sage/30 rounded-full mb-6">
-            <span className="text-sm font-bold text-sage">סיפורים שלנו</span>
+          {/* Badge with new color */}
+          <div className="inline-block px-4 py-2 bg-gradient-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-6 animate-fadeInUp">
+            <span className="text-sm font-bold bg-gradient-to-r from-coral to-warm-gold bg-clip-text text-transparent">סיפורים שלנו</span>
           </div>
 
-          <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight tracking-tight">
+          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight tracking-tight animate-fadeInUp">
             הסיפורים של אבא
           </h2>
 
-          <div className="flex justify-center mb-8">
-            <Image src="/ornament.svg" alt="" width={200} height={40} className="h-8 w-auto opacity-60" priority />
+          {/* Decorative line with accent colors */}
+          <div className="flex justify-center gap-2 mb-8">
+            <div className="w-12 h-1 bg-coral/40 rounded-full" />
+            <div className="w-12 h-1 bg-warm-gold/40 rounded-full" />
+            <div className="w-12 h-1 bg-teal/40 rounded-full" />
+            <Image src="/ornament.svg" alt="" width={200} height={40} className="h-8 w-auto opacity-60 mx-2" priority />
+            <div className="w-12 h-1 bg-teal/40 rounded-full" />
+            <div className="w-12 h-1 bg-warm-gold/40 rounded-full" />
+            <div className="w-12 h-1 bg-coral/40 rounded-full" />
           </div>
 
-          <p className="text-lg md:text-xl text-foreground/70 max-w-xl mx-auto leading-relaxed mb-16 font-stories">
+          <p className="text-base md:text-xl text-foreground/70 max-w-xl mx-auto leading-relaxed mb-16 font-stories animate-fadeInUp">
             זכרונות, מחשבות ורגעים קטנים מהחיים, כפי שתועדו בבוקר של יום חדש.
           </p>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center animate-fadeInUp">
             <DynamicStats posts={posts} />
           </div>
         </div>

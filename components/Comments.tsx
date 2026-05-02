@@ -75,7 +75,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
         {!isExpanded && (
           <button
             onClick={() => setIsExpanded(true)}
-            className="text-sage font-bold text-sm hover:text-navy transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-sage/50 rounded px-2 py-1"
+            className="text-coral font-bold text-sm hover:text-warm-gold transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-coral/50 rounded px-2 py-1"
             aria-label="כתוב תגובה חדשה לאבא"
           >
             + כיתבו לאבא

@@ -35,31 +35,33 @@ export default function ThemeSwitcher() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full hover:bg-navy/5 transition-all text-navy/60 hover:text-navy border border-transparent hover:border-navy/10"
+        className="p-2 rounded-full hover:bg-coral/10 transition-all duration-250 text-foreground/60 hover:text-coral border border-transparent hover:border-coral/20"
         title="החלף ערכת נושא"
+        aria-label={isOpen ? 'סגור בחירת נושא' : 'פתח בחירת נושא'}
+        aria-expanded={isOpen}
       >
         <Palette className="w-5 h-5" />
       </button>
 
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setIsOpen(false)} 
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
           />
-          <div className="absolute left-0 mt-2 w-40 bg-white rounded-2xl shadow-xl border border-navy/5 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+          <div className="absolute left-0 mt-2 w-44 bg-background/95 backdrop-blur-md rounded-2xl shadow-lg border border-border-theme/50 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-left">
             <div className="p-2 space-y-1">
               {themes.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => changeTheme(t.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                    theme === t.id 
-                      ? 'bg-navy/5 text-navy' 
-                      : 'text-navy/60 hover:bg-navy/[0.02] hover:text-navy'
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-250 ${
+                    theme === t.id
+                      ? 'bg-coral/20 text-coral border border-coral/30'
+                      : 'text-foreground/70 hover:bg-warm-gold/10 hover:text-warm-gold border border-transparent'
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center border border-navy/5 ${t.color} ${theme === t.id ? 'ring-2 ring-sage ring-offset-1' : ''}`}>
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${t.color} ${theme === t.id ? 'ring-2 ring-coral ring-offset-1' : 'border-border-theme/30'}`}>
                     {t.icon}
                   </div>
                   <span>{t.label}</span>

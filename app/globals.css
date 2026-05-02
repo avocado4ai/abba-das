@@ -6,6 +6,11 @@
   --navy: #0A2647;
   --sage: #7E9983;
   --cream: #F5F5F1;
+  --coral: #D97760;
+  --warm-gold: #C4A572;
+  --teal: #A8C5BA;
+  --terracotta: #B8634F;
+  --soft-mauve: #9B8B7E;
   --border: rgba(10, 38, 71, 0.1);
   --muted: rgba(10, 38, 71, 0.4);
 }
@@ -16,6 +21,11 @@
   --navy: #F5F5F1;
   --sage: #7E9983;
   --cream: #0A2647;
+  --coral: #E89074;
+  --warm-gold: #D4B896;
+  --teal: #B8D5CA;
+  --terracotta: #D0826D;
+  --soft-mauve: #AFA19A;
   --border: rgba(245, 245, 241, 0.1);
   --muted: rgba(245, 245, 241, 0.4);
 }
@@ -26,6 +36,11 @@
   --navy: #3E2723;
   --sage: #5D4037;
   --cream: #E8E2D2;
+  --coral: #C9614F;
+  --warm-gold: #B8935F;
+  --teal: #7A8D82;
+  --terracotta: #A55243;
+  --soft-mauve: #8B7B71;
   --border: rgba(62, 39, 35, 0.1);
   --muted: rgba(62, 39, 35, 0.4);
 }
@@ -36,6 +51,11 @@
   --color-navy: var(--navy);
   --color-sage: var(--sage);
   --color-cream: var(--cream);
+  --color-coral: var(--coral);
+  --color-warm-gold: var(--warm-gold);
+  --color-teal: var(--teal);
+  --color-terracotta: var(--terracotta);
+  --color-soft-mauve: var(--soft-mauve);
   --color-border-theme: var(--border);
   --color-muted-theme: var(--muted);
   --font-heebo: var(--font-heebo);
@@ -132,6 +152,55 @@ article p:first-of-type::first-letter {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+    filter: blur(20px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(30px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 4s ease-in-out infinite;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fadeInUp:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.animate-fadeInUp:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.animate-fadeInUp:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.animate-fadeInUp:nth-child(4) {
+  animation-delay: 0.4s;
 }
 
 /* Links */

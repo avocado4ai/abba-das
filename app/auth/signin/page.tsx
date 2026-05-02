@@ -1,10 +1,22 @@
 'use client';
 
-import { signIn } from "@/auth"
 import { useState, useEffect, Suspense } from "react";
 import { Loader2, LogIn, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+
+async function handleSignInAction(callbackUrl: string) {
+  'use server';
+  const { signIn } = await import("@/auth");
+  try {
+    await signIn("authelia", {
+      redirectTo: callbackUrl
+    });
+  } catch (err) {
+    console.error('Server sign in error:', err);
+    throw err;
+  }
+}
 
 function SignInContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,9 +37,7 @@ function SignInContent() {
     try {
       setIsLoading(true);
       setError(null);
-      await signIn("authelia", {
-        redirectTo: callbackUrl
-      });
+      await handleSignInAction(callbackUrl);
     } catch (err) {
       console.error('Sign in error:', err);
       setError('נכשל בהתחברות. אנא נסה שוב.');
@@ -87,7 +97,7 @@ function SignInContent() {
             onClick={handleSignIn}
             disabled={isLoading}
             aria-busy={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-navy hover:bg-navy/90 text-cream px-6 py-4 rounded-2xl font-bold focus:outline-none focus:ring-2 focus:ring-navy/50 focus:ring-offset-2"
+            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-coral to-warm-gold hover:from-coral/90 hover:to-warm-gold/90 text-cream px-6 py-4 rounded-2xl font-bold focus:outline-none focus:ring-2 focus:ring-coral/50 focus:ring-offset-2 transition-all duration-250 shadow-md hover:shadow-lg"
           >
             {isLoading ? (
               <>
