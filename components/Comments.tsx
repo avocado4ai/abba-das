@@ -75,7 +75,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
         {!isExpanded && (
           <button
             onClick={() => setIsExpanded(true)}
-            className="text-sage font-bold text-sm hover:text-navy transition-colors focus:outline-none focus:ring-2 focus:ring-sage/50 rounded px-2 py-1"
+            className="text-sage font-bold text-sm hover:text-navy transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-sage/50 rounded px-2 py-1"
             aria-label="כתוב תגובה חדשה לאבא"
           >
             + כיתבו לאבא
@@ -148,7 +148,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="px-4 py-2 text-sm text-muted-theme hover:text-navy transition-colors focus:outline-none focus:ring-2 focus:ring-sage/50 rounded"
+                className="px-4 py-2 text-sm text-muted-theme hover:text-navy transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-sage/50 rounded"
               >
                 ביטול
               </button>
@@ -156,7 +156,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                 type="submit"
                 disabled={isSubmitting || !name.trim() || !message.trim()}
                 aria-busy={isSubmitting}
-                className="bg-navy text-cream px-6 py-2 rounded-full text-sm font-bold hover:bg-sage transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-navy/50"
+                className="bg-navy text-cream px-6 py-2 rounded-full text-sm font-bold hover:bg-sage focus:outline-none focus:ring-2 focus:ring-navy/50"
               >
                 {isSubmitting ? 'שולח...' : 'פרסום תגובה'}
               </button>

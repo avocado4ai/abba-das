@@ -40,6 +40,11 @@
   --color-muted-theme: var(--muted);
   --font-heebo: var(--font-heebo);
   --font-assistant: var(--font-assistant);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.25);
 }
 
 body {
@@ -117,13 +122,44 @@ article p:first-of-type::first-letter {
   color: var(--sage);
 }
 
+/* Transition Standardization (250ms baseline) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Links */
 a {
-  @apply transition-colors duration-200;
+  @apply transition-colors duration-250;
+  color: inherit;
 }
 
 a:hover {
-  @apply underline;
+  @apply underline text-sage;
+}
+
+/* Button States Standardization */
+button {
+  @apply transition-all duration-250 ease-out;
+}
+
+button:hover:not(:disabled) {
+  @apply shadow-md;
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
 }
 
 /* Texture overlay for paper theme */

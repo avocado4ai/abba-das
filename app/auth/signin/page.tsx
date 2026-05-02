@@ -89,7 +89,7 @@ function SignInContent() {
             onClick={handleSignIn}
             disabled={isLoading}
             aria-busy={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-navy hover:bg-navy/90 disabled:bg-navy/50 text-cream px-6 py-4 rounded-2xl font-bold transition-all duration-200 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-navy/50 focus:ring-offset-2 active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-3 bg-navy hover:bg-navy/90 text-cream px-6 py-4 rounded-2xl font-bold focus:outline-none focus:ring-2 focus:ring-navy/50 focus:ring-offset-2"
           >
             {isLoading ? (
               <>

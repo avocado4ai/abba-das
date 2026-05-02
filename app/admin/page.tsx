@@ -199,9 +199,9 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-6 self-start md:self-auto">
             <ThemeSwitcher />
-            <Link href="/" className="flex items-center gap-2 text-sm font-bold text-muted-theme hover:text-navy transition-all group">
+            <Link href="/" className="flex items-center gap-2 text-sm font-bold text-muted-theme hover:text-navy transition-colors duration-250 group">
               חזרה לבלוג
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-250" />
             </Link>
           </div>
         </header>
@@ -253,9 +253,9 @@ export default function AdminPage() {
               />
               <label
                 htmlFor="file-upload"
-                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl cursor-pointer transition-all text-lg font-bold shadow-sm ${
-                  !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90 active:scale-[0.98]'
-                }`}
+                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl cursor-pointer text-lg font-bold ${
+                  !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90'
+                } transition-all duration-250`}
               >
                 <div className="flex items-center gap-3">
                   {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
@@ -290,9 +290,9 @@ export default function AdminPage() {
           <div className="flex justify-between items-center border-b border-border-theme pb-4">
             <h2 className="text-2xl font-bold">הודעות חדשות ({messages.length})</h2>
             {messages.length > 0 && (
-              <button 
+              <button
                 onClick={() => setMessages([])}
-                className="text-sm font-bold text-red-400 hover:text-red-500 transition-colors"
+                className="text-sm font-bold text-red-400 hover:text-red-500 transition-colors duration-250"
               >
                 נקה הכל
               </button>
@@ -306,9 +306,9 @@ export default function AdminPage() {
                   <span className="font-mono">{format(msg.date, 'dd/MM/yyyy HH:mm')}</span>
                   <div className="flex items-center gap-4">
                     <span>{msg.sender}</span>
-                    <button 
+                    <button
                       onClick={() => dismissMessage(index)}
-                      className="p-1 hover:text-red-400 transition-colors"
+                      className="p-1 hover:text-red-400 transition-colors duration-250"
                       title="הסר"
                     >
                       <X size={16} />
@@ -363,7 +363,7 @@ export default function AdminPage() {
                       disabled={isSaving !== null}
                       aria-busy={isSaving === index}
                       aria-label={isSaving === index ? 'ממתין לפרסום הסיפור' : 'פרסם סיפור זה ל-GitHub'}
-                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 transition-all disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
+                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
                     >
                       {isSaving === index ? <Loader2 className="animate-spin" size={20} aria-hidden="true" /> : <Save size={20} aria-hidden="true" />}
                       <span>{isSaving === index ? 'מפרסם...' : 'פרסם כסיפור'}</span>
@@ -396,10 +396,10 @@ export default function AdminPage() {
                   <h4 className="font-bold text-navy truncate mb-1 group-hover:text-sage transition-colors">{post.title}</h4>
                   <p className="text-xs font-bold text-muted-theme">{format(new Date(post.date), 'dd/MM/yyyy')}</p>
                 </div>
-                <Link 
+                <Link
                   href={`/post/${post.slug}`}
                   target="_blank"
-                  className="p-3 text-muted-theme/20 hover:text-navy transition-all bg-white/5 rounded-xl group-hover:bg-sage/10 group-hover:text-sage"
+                  className="p-3 text-muted-theme/20 hover:text-navy bg-white/5 rounded-xl group-hover:bg-sage/10 group-hover:text-sage transition-all duration-250"
                 >
                   <ExternalLink className="w-5 h-5" />
                 </Link>

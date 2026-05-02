@@ -76,7 +76,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             id="search-posts"
             type="text"
             placeholder="חיפוש סיפורים..."
-            className="w-full py-3 pr-12 pl-4 bg-white/5 border border-border-theme rounded-2xl focus:outline-none focus:ring-2 focus:ring-sage/50 transition-all text-foreground"
+            className="w-full py-3 pr-12 pl-4 bg-white/5 border border-border-theme rounded-2xl focus:outline-none focus:ring-2 focus:ring-sage/50 transition-all duration-250 text-foreground"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="חיפוש סיפורים לפי כותרת או תוכן"
@@ -85,7 +85,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         
         <button
           onClick={() => setShowFavorites(!showFavorites)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all duration-250 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 ${
             showFavorites
               ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm'
               : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
@@ -103,7 +103,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         <div className="flex flex-wrap gap-2 mb-12" role="group" aria-label="סנן לפי תגיות">
           <button
             onClick={() => setSelectedTag(null)}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
               !selectedTag
                 ? 'bg-sage text-cream border-sage'
                 : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
@@ -117,7 +117,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             <button
               key={tag}
               onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
                 tag === selectedTag
                   ? 'bg-sage text-cream border-sage shadow-sm'
                   : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
@@ -134,7 +134,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       {filteredPosts.length > 0 ? (
         filteredPosts.map((post) => (
           <Link href={`/post/${post.slug}`} key={post.slug}>
-            <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme transition-all duration-300 hover:bg-white/10 hover:border-sage/30 hover:shadow-lg hover:-translate-y-1">
+            <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/10 hover:border-sage/30 hover:shadow-md hover:scale-[1.01]">
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <span className="text-xs md:text-sm font-medium text-muted-theme">
                   {post.date
@@ -154,7 +154,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 )}
               </div>
 
-              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-sage transition-colors">
+              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-sage transition-colors duration-250">
                 {post.title}
               </h3>
 
@@ -162,9 +162,9 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 {post.content}
               </p>
 
-              <div className="inline-flex items-center text-sm font-bold text-sage group-hover:text-navy transition-colors gap-2">
+              <div className="inline-flex items-center text-sm font-bold text-sage group-hover:text-navy transition-colors duration-250 gap-2">
                 קרא עוד
-                <span className="transition-transform group-hover:translate-x-1">←</span>
+                <span className="transition-transform duration-250 group-hover:translate-x-1">←</span>
               </div>
             </article>
           </Link>
