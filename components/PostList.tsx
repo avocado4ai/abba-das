@@ -136,7 +136,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
           <Link href={`/post/${post.slug}`} key={post.slug}>
             <article className="group cursor-pointer p-8 rounded-2xl bg-white/5 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/10 hover:border-coral/30 hover:shadow-md hover:scale-[1.01] hover:shadow-coral/10">
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className="text-xs md:text-sm font-medium text-muted-theme">
+                <span className="text-sm md:text-base font-medium text-muted-theme">
                   {post.date
                     ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                     : 'תאריך לא ידוע'}
@@ -144,7 +144,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 <div className="w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
                 <WeatherIcon weather={post.weather} />
                 {post.tags?.map(tag => (
-                  <span key={tag} className="text-[10px] font-bold text-coral opacity-80 bg-coral/10 px-2 py-1 rounded-full">#{tag}</span>
+                  <span key={tag} className="text-xs md:text-sm font-bold text-coral opacity-80 bg-coral/10 px-2 py-1 rounded-full">#{tag}</span>
                 ))}
                 {favorites.includes(post.slug) && (
                   <>
@@ -154,15 +154,15 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 )}
               </div>
 
-              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3 group-hover:text-coral transition-colors duration-250">
+              <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3 group-hover:text-coral transition-colors duration-250">
                 {post.title}
               </h3>
 
-              <p className="font-stories text-base md:text-lg text-foreground/75 leading-relaxed line-clamp-3 mb-5">
+              <p className="font-stories text-lg md:text-xl text-foreground/75 leading-relaxed line-clamp-3 mb-5">
                 {post.content}
               </p>
 
-              <div className="inline-flex items-center text-sm font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
+              <div className="inline-flex items-center text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                 קרא עוד
                 <span className="transition-transform duration-250 group-hover:translate-x-1">←</span>
               </div>

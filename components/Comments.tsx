@@ -71,11 +71,11 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
   return (
     <section className="mt-20 pt-20 border-t border-border-theme" aria-label="תגובות">
       <div className="flex justify-between items-center mb-10">
-        <h3 className="text-2xl font-bold text-navy">תגובות ({comments.length})</h3>
+        <h3 className="text-3xl font-bold text-navy">תגובות ({comments.length})</h3>
         {!isExpanded && (
           <button
             onClick={() => setIsExpanded(true)}
-            className="text-coral font-bold text-sm hover:text-warm-gold transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-coral/50 rounded px-2 py-1"
+            className="text-coral font-bold text-base hover:text-warm-gold transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-coral/50 rounded px-2 py-1"
             aria-label="כתוב תגובה חדשה לאבא"
           >
             + כיתבו לאבא
@@ -100,7 +100,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="comment-name" className="block text-xs font-bold text-muted-theme mb-2">
+              <label htmlFor="comment-name" className="block text-sm font-bold text-muted-theme mb-2">
                 השם שלכם *
               </label>
               <input
@@ -119,13 +119,13 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
               />
             </div>
             <div>
-              <label htmlFor="comment-message" className="block text-xs font-bold text-muted-theme mb-2">
+              <label htmlFor="comment-message" className="block text-sm font-bold text-muted-theme mb-2">
                 ההודעה שלכם ({message.length}/1000) *
               </label>
               <textarea
                 id="comment-message"
                 placeholder="מה תרצו לכתוב?"
-                className="w-full bg-transparent border-b-2 border-border-theme py-2 focus:outline-none focus:border-sage transition-colors text-foreground font-stories text-lg min-h-[100px] resize-none"
+                className="w-full bg-transparent border-b-2 border-border-theme py-2 focus:outline-none focus:border-sage transition-colors text-foreground font-stories text-xl min-h-[100px] resize-none"
                 value={message}
                 onChange={(e) => {
                   setMessage(e.target.value.slice(0, 1000));
