@@ -113,8 +113,8 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                   setName(e.target.value);
                   if (error) setError(null);
                 }}
-                aria-required="true"
-                aria-invalid={!!error && !message}
+                aria-required={true}
+                aria-invalid={!!(error && !message)}
                 maxLength={100}
               />
             </div>
@@ -131,8 +131,8 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                   setMessage(e.target.value.slice(0, 1000));
                   if (error) setError(null);
                 }}
-                aria-required="true"
-                aria-invalid={!!error && message}
+                aria-required={true}
+                aria-invalid={!!(error && message)}
                 aria-describedby={error ? 'comment-error' : 'comment-counter'}
                 maxLength={1000}
               />
