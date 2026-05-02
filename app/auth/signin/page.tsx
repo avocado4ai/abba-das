@@ -4,19 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { Loader2, LogIn, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-
-async function handleSignInAction(callbackUrl: string) {
-  'use server';
-  const { signIn } = await import("@/auth");
-  try {
-    await signIn("authelia", {
-      redirectTo: callbackUrl
-    });
-  } catch (err) {
-    console.error('Server sign in error:', err);
-    throw err;
-  }
-}
+import { handleSignInAction } from "@/app/auth/actions";
 
 function SignInContent() {
   const [isLoading, setIsLoading] = useState(false);
