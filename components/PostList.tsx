@@ -64,45 +64,52 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
   }, [initialPosts, search, showFavorites, favorites, selectedTag]);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12" role="region" aria-label="סיפורים">
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center mb-8">
+      <div className="flex flex-col md:flex-row gap-4 items-center mb-8" role="search">
         <div className="relative flex-grow w-full">
+          <label htmlFor="search-posts" className="sr-only">חיפוש סיפורים</label>
           <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-            <Search className="w-5 h-5 text-muted-theme" />
+            <Search className="w-5 h-5 text-muted-theme" aria-hidden="true" />
           </div>
           <input
+            id="search-posts"
             type="text"
             placeholder="חיפוש סיפורים..."
             className="w-full py-3 pr-12 pl-4 bg-white/5 border border-border-theme rounded-2xl focus:outline-none focus:ring-2 focus:ring-sage/50 transition-all text-foreground"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="חיפוש סיפורים לפי כותרת או תוכן"
           />
         </div>
         
         <button
           onClick={() => setShowFavorites(!showFavorites)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all whitespace-nowrap ${
-            showFavorites 
-              ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm' 
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl border transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+            showFavorites
+              ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm'
               : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
           }`}
+          aria-pressed={showFavorites}
+          aria-label={showFavorites ? 'הצג את כל הסיפורים' : 'הצג רק סיפורים מועדפים'}
         >
-          <Heart className={`w-5 h-5 ${showFavorites ? 'fill-current' : ''}`} />
+          <Heart className={`w-5 h-5 ${showFavorites ? 'fill-current' : ''}`} aria-hidden="true" />
           <span className="font-medium">{showFavorites ? 'כל הסיפורים' : 'מועדפים'}</span>
         </button>
       </div>
 
       {/* Tags Cloud */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-12">
+        <div className="flex flex-wrap gap-2 mb-12" role="group" aria-label="סנן לפי תגיות">
           <button
             onClick={() => setSelectedTag(null)}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
-              !selectedTag 
-                ? 'bg-sage text-cream border-sage' 
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+              !selectedTag
+                ? 'bg-sage text-cream border-sage'
                 : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
             }`}
+            aria-pressed={!selectedTag}
+            aria-label="הצג את כל התגיות"
           >
             הכל
           </button>
@@ -110,11 +117,13 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             <button
               key={tag}
               onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
-                tag === selectedTag 
-                  ? 'bg-sage text-cream border-sage shadow-sm' 
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+                tag === selectedTag
+                  ? 'bg-sage text-cream border-sage shadow-sm'
                   : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
               }`}
+              aria-pressed={tag === selectedTag}
+              aria-label={`${tag === selectedTag ? 'הסר' : 'סנן'} לפי תגית ${tag}`}
             >
               #{tag}
             </button>
@@ -161,10 +170,20 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
           </Link>
         ))
       ) : (
-        <div className="text-center py-20 bg-white/5 rounded-3xl border-2 border-dashed border-border-theme">
-          <p className="text-muted-theme italic">
-            {showFavorites ? 'אין עדיין סיפורים במועדפים...' : 'לא נמצאו סיפורים התואמים לחיפוש...'}
+        <div className="text-center py-20 bg-white/5 rounded-3xl border-2 border-dashed border-border-theme" role="status" aria-label="אין סיפורים">
+          <p className="text-muted-theme italic text-lg" aria-live="polite">
+            {showFavorites ? '🤍 אין עדיין סיפורים במועדפים...' : '🔍 לא נמצאו סיפורים התואמים לחיפוש...'}
           </p>
+          {showFavorites && (
+            <p className="text-muted-theme/60 text-sm mt-3">
+              בחר על סיפורים כדי להוסיף אותם למועדפים
+            </p>
+          )}
+          {!showFavorites && search && (
+            <p className="text-muted-theme/60 text-sm mt-3">
+              נסה לחפש בטקסט שונה או בחר תגית שונה
+            </p>
+          )}
         </div>
       )}
     </div>

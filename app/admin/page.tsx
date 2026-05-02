@@ -23,6 +23,7 @@ export default function AdminPage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [senderError, setSenderError] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -54,13 +55,18 @@ export default function AdminPage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length === 0 || !sender) {
-      setError(sender ? 'אנא בחר קבצים' : 'אנא הזן שם שולח תחילה');
+    if (files.length === 0) {
+      setError('אנא בחר קבצים');
+      return;
+    }
+    if (!sender.trim()) {
+      setSenderError('אנא הזן שם שולח תחילה');
       return;
     }
 
     setIsParsing(true);
     setError(null);
+    setSenderError(null);
     setSuccess(null);
 
     try {
@@ -204,14 +210,35 @@ export default function AdminPage() {
         <section className="bg-white/5 rounded-3xl shadow-sm p-8 mb-12 border border-border-theme">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-muted-theme">זיהוי השולח (שם כפי שמופיע בוואטסאפ)</label>
+              <label htmlFor="sender-input" className="block text-sm font-bold text-muted-theme">זיהוי השולח (שם כפי שמופיע בוואטסאפ)</label>
               <input
+                id="sender-input"
                 type="text"
                 value={sender}
-                onChange={(e) => setSender(e.target.value)}
+                onChange={(e) => {
+                  setSender(e.target.value);
+                  if (senderError) setSenderError(null);
+                }}
+                onBlur={() => {
+                  if (!sender.trim() && sender) {
+                    setSenderError('שם השולח לא יכול להיות ריק');
+                  }
+                }}
                 placeholder="למשל: אבא"
-                className="w-full p-4 rounded-2xl border border-border-theme bg-white/5 focus:ring-2 focus:ring-sage/50 outline-none transition-all text-lg"
+                aria-required="true"
+                aria-invalid={!!senderError}
+                aria-describedby={senderError ? "sender-error" : undefined}
+                className={`w-full p-4 rounded-2xl border-2 bg-white/5 outline-none transition-all text-lg focus:ring-2 focus:ring-sage/50 ${
+                  senderError
+                    ? 'border-red-500/50 focus:ring-red-500/30'
+                    : 'border-border-theme'
+                }`}
               />
+              {senderError && (
+                <p id="sender-error" className="text-sm text-red-500 font-medium animate-in fade-in">
+                  ⚠️ {senderError}
+                </p>
+              )}
             </div>
             
             <div className="relative">
@@ -244,10 +271,15 @@ export default function AdminPage() {
           </div>
 
           {(error || success) && (
-            <div className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-medium animate-in fade-in slide-in-from-top-2 ${
-              error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
-            }`}>
-              {error ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
+            <div
+              className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-medium animate-in fade-in slide-in-from-top-2 ${
+                error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
+              }`}
+              role="alert"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {error ? <AlertCircle size={20} aria-hidden="true" /> : <CheckCircle2 size={20} aria-hidden="true" />}
               <span>{error || success}</span>
             </div>
           )}
@@ -308,7 +340,8 @@ export default function AdminPage() {
                     <input
                       type="text"
                       placeholder="הוסף תגית (ואנטר)..."
-                      className="bg-transparent text-xs font-medium outline-none text-navy placeholder:text-muted-theme/40 min-w-[120px]"
+                      className="bg-transparent text-xs font-medium outline-none text-navy placeholder:text-muted-theme/40 min-w-[120px] focus:ring-1 focus:ring-sage/50 rounded px-1"
+                      aria-label="הוסף תגית חדשה"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           const val = e.currentTarget.value.trim().replace(/^#/, '');
@@ -328,10 +361,12 @@ export default function AdminPage() {
                     <button
                       onClick={() => handleSavePost(index, msg)}
                       disabled={isSaving !== null}
-                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 transition-all disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98]"
+                      aria-busy={isSaving === index}
+                      aria-label={isSaving === index ? 'ממתין לפרסום הסיפור' : 'פרסם סיפור זה ל-GitHub'}
+                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 transition-all disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
                     >
-                      {isSaving === index ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                      <span>פרסם כסיפור</span>
+                      {isSaving === index ? <Loader2 className="animate-spin" size={20} aria-hidden="true" /> : <Save size={20} aria-hidden="true" />}
+                      <span>{isSaving === index ? 'מפרסם...' : 'פרסם כסיפור'}</span>
                     </button>
                   </div>
                 </div>
