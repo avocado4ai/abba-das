@@ -49,7 +49,7 @@ export default function ThemeSwitcher() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute left-0 mt-2 w-44 bg-background/95 backdrop-blur-md rounded-2xl shadow-lg border border-border-theme/50 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+          <div className="absolute right-0 mt-2 w-44 bg-background border border-border-theme rounded-2xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
             <div className="p-2 space-y-1">
               {themes.map((t) => (
                 <button

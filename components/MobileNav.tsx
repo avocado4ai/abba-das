@@ -39,7 +39,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
 
       {/* Mobile Menu Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-2 w-48 bg-background/95 backdrop-blur-md border border-border-theme rounded-2xl shadow-lg p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border-theme rounded-2xl shadow-lg p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
           <Link
             href="/guestbook"
             className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-coral/10 transition-colors duration-250 text-sm font-medium text-foreground"
