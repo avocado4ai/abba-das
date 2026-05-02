@@ -197,6 +197,17 @@ select:focus-visible {
   @apply outline-2 outline-offset-2 outline-sage;
 }
 
+/* Better mobile focus handling */
+@media (max-width: 768px) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-offset-0;
+  }
+}
+
 /* Accessible Skip Link */
 .skip-link {
   @apply absolute -top-10 left-0 bg-sage text-cream px-4 py-2 rounded focus:top-0 transition-all z-50;
@@ -221,6 +232,47 @@ select:focus-visible {
 
   a {
     text-decoration: underline;
+  }
+}
+
+/* Touch Device Support */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  p {
+    @apply text-base;
   }
 }
 
