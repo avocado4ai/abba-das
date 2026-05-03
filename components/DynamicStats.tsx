@@ -16,7 +16,7 @@ export default function DynamicStats({ posts }: { posts: PostData[] }) {
   }, [posts]);
 
   return (
-    <div className="w-full max-w-md bg-gradient-to-br from-white/5 to-white/10 border border-border-theme rounded-3xl p-8 relative overflow-hidden group hover:border-coral/30 transition-all duration-500 shadow-sm hover:shadow-md">
+    <div className="w-full max-w-md bg-gradient-to-br from-white/5 to-white/10 border border-border-theme rounded-2xl p-8 relative overflow-hidden group hover:border-coral/30 transition-all duration-250 shadow-sm hover:shadow-md">
       {/* Background decoration with new colors */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-coral/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-coral/10 transition-colors" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-warm-gold/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl group-hover:bg-warm-gold/10 transition-colors" />

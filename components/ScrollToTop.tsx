@@ -31,7 +31,7 @@ export default function ScrollToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-8 left-8 p-3 rounded-full bg-navy text-cream shadow-lg hover:bg-sage transition-all z-50 animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="fixed bottom-8 left-8 p-3 rounded-full bg-navy text-cream shadow-lg hover:bg-sage transition-all z-50 animate-in fade-in slide-in-from-bottom-4 duration-250"
       title="חזרה למעלה"
     >
       <ArrowUp className="w-6 h-6" />

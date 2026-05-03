@@ -23,7 +23,7 @@ export default function Toast({ type, message, onClose, autoClose = 5000 }: Toas
 
   if (!isVisible) return null;
 
-  const baseStyles = 'fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm flex items-start gap-3 p-4 rounded-2xl border shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300 z-50';
+  const baseStyles = 'fixed bottom-4 right-4 left-4 md:left-auto md:max-w-sm flex items-start gap-3 p-4 rounded-2xl border shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-250 z-50';
 
   const styles = {
     success: `${baseStyles} bg-sage/10 border-sage/20 text-sage`,

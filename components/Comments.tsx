@@ -84,7 +84,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
       </div>
 
       {isExpanded && (
-        <form onSubmit={handleSubmit} className="mb-12 sm:mb-16 bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border-theme animate-in fade-in slide-in-from-top-4 duration-300">
+        <form onSubmit={handleSubmit} className="mb-12 sm:mb-16 bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border-theme animate-in fade-in slide-in-from-top-4 duration-250">
           {(error || success) && (
             <div
               className={`mb-4 p-4 rounded-xl flex items-center gap-3 font-medium animate-in fade-in ${
