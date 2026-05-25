@@ -46,7 +46,7 @@ export default async function Home() {
         {/* Gradient Background with Decorative Elements */}
         <div className="absolute inset-0 -z-10">
           {/* Main gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-sage/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-b from-sage/5 via-transparent to-transparent" />
 
           {/* Decorative glowing elements */}
           <div className="absolute top-10 sm:top-20 right-5 sm:right-10 w-40 sm:w-64 h-40 sm:h-64 bg-coral/10 rounded-full blur-3xl animate-glow" />
@@ -61,8 +61,8 @@ export default async function Home() {
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
           {/* Badge with new color */}
-          <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-3 sm:mb-6 animate-fadeInUp">
-            <span className="text-xs sm:text-sm font-bold bg-gradient-to-r from-coral to-warm-gold bg-clip-text text-transparent">סיפורים שלנו</span>
+          <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-linear-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-3 sm:mb-6 animate-fadeInUp">
+            <span className="text-xs sm:text-sm font-bold bg-linear-to-r from-coral to-warm-gold bg-clip-text text-transparent">סיפורים שלנו</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-3 sm:mb-6 leading-tight tracking-tight animate-fadeInUp">
@@ -98,7 +98,7 @@ export default async function Home() {
       </section>
 
       {/* Posts Feed */}
-      <main className="flex-grow pb-16 sm:pb-32">
+      <main className="grow pb-16 sm:pb-32">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <OnThisDay posts={posts} />
           <PostList initialPosts={posts} />
@@ -106,14 +106,14 @@ export default async function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="py-8 sm:py-16 border-t border-border-theme bg-white/2 backdrop-blur-sm">
+      <footer className="py-8 sm:py-12 border-t border-border-theme">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <div className="space-y-2 sm:space-y-4">
+          <div className="space-y-1.5">
             <p className="text-xs sm:text-sm font-medium text-muted-theme">
               © {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.
             </p>
-            <p className="text-xs text-muted-theme/60">
-              עשויה באהבה עם ❤️ עבור משפחתנו
+            <p className="text-xs text-muted-theme/50">
+              עשויה באהבה עבור משפחתנו
             </p>
           </div>
         </div>

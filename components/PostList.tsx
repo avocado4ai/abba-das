@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Sun, Cloud, CloudRain, Wind, Search, Heart } from 'lucide-react';
+import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import { PostData } from '@/lib/github';
 import ContentTypeBadge from './ContentTypeBadge';
@@ -100,12 +100,17 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         </button>
       </div>
 
-      {/* Tags Cloud */}
+      {/* Tags Cloud — horizontal scroll on mobile */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-8 sm:mb-12" role="group" aria-label="סנן לפי תגיות">
+        <div
+          className="flex gap-1.5 sm:gap-2 mb-8 sm:mb-12 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none"
+          role="group"
+          aria-label="סנן לפי תגיות"
+          style={{ scrollbarWidth: 'none' }}
+        >
           <button
             onClick={() => setSelectedTag(null)}
-            className={`px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-xs font-bold transition-all duration-250 border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
               !selectedTag
                 ? 'bg-sage text-cream border-sage'
                 : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
@@ -119,7 +124,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             <button
               key={tag}
               onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-xs font-bold transition-all duration-250 border focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
                 tag === selectedTag
                   ? 'bg-sage text-cream border-sage shadow-sm'
                   : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
@@ -176,7 +181,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
                   <div className="inline-flex items-center text-sm sm:text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                     קרא עוד
-                    <span className="transition-transform duration-250 group-hover:translate-x-1">←</span>
+                    <span className="transition-transform duration-250 group-hover:-translate-x-1" aria-hidden="true">←</span>
                   </div>
                 </div>
               </article>
@@ -185,12 +190,18 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         </div>
       ) : (
         <div className="text-center py-12 sm:py-20 bg-white/5 rounded-2xl sm:rounded-3xl border-2 border-dashed border-border-theme" role="status" aria-label="אין סיפורים">
+          <div className="flex justify-center mb-3">
+            {showFavorites
+              ? <BookmarkX className="w-10 h-10 text-muted-theme/40" aria-hidden="true" />
+              : <SearchX className="w-10 h-10 text-muted-theme/40" aria-hidden="true" />
+            }
+          </div>
           <p className="text-muted-theme italic text-base sm:text-lg" aria-live="polite">
-            {showFavorites ? '🤍 אין עדיין סיפורים במועדפים...' : '🔍 לא נמצאו סיפורים התואמים לחיפוש...'}
+            {showFavorites ? 'אין עדיין סיפורים במועדפים' : 'לא נמצאו סיפורים התואמים לחיפוש'}
           </p>
           {showFavorites && (
             <p className="text-muted-theme/60 text-xs sm:text-sm mt-2 sm:mt-3">
-              בחר על סיפורים כדי להוסיף אותם למועדפים
+              לחץ על הלב בסיפור כדי להוסיפו למועדפים
             </p>
           )}
           {!showFavorites && search && (
