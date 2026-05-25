@@ -15,7 +15,7 @@ export default function PostNavigation({
       {prev ? (
         <Link 
           href={`/post/${prev.slug}`}
-          className="flex flex-col items-start p-6 rounded-2xl bg-white/5 border border-border-theme hover:border-sage transition-all group"
+          className="flex flex-col items-start p-6 rounded-2xl bg-white/8 border border-border-theme hover:border-sage hover:bg-white/14 transition-all duration-200 group"
         >
           <span className="flex items-center gap-2 text-sm text-muted-theme mb-2">
             <ArrowRight className="w-4 h-4" />
@@ -30,7 +30,7 @@ export default function PostNavigation({
       {next ? (
         <Link 
           href={`/post/${next.slug}`}
-          className="flex flex-col items-end p-6 rounded-2xl bg-white/5 border border-border-theme hover:border-sage transition-all group text-left"
+          className="flex flex-col items-end p-6 rounded-2xl bg-white/8 border border-border-theme hover:border-sage hover:bg-white/14 transition-all duration-200 group text-left"
         >
           <span className="flex items-center gap-2 text-sm text-muted-theme mb-2">
             הסיפור הבא

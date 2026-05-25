@@ -142,7 +142,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         <div className="space-y-6 sm:space-y-12">
           {filteredPosts.map((post) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
-              <article className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-white/5 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/10 hover:border-coral/30 hover:shadow-md hover:scale-[1.01] hover:shadow-coral/10">
+              <article className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-white/8 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/14 hover:border-coral/30 hover:shadow-md hover:shadow-coral/10">
                 {/* Story Image Thumbnail */}
                 <div className="h-40 sm:h-48 overflow-hidden">
                   <StoryImage slug={post.slug} title="" className="h-full" />
@@ -175,7 +175,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                   {post.title}
                 </h3>
 
-                <p className="font-stories text-base sm:text-lg md:text-xl text-foreground/75 leading-relaxed line-clamp-3 mb-3 sm:mb-5">
+                <p className="font-stories text-base sm:text-lg md:text-xl text-foreground/85 leading-relaxed line-clamp-3 mb-3 sm:mb-5">
                   {post.content}
                 </p>
 

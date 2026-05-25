@@ -114,7 +114,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <FavoriteButton slug={slug} />
           </div>
 
-          <div className="font-stories text-lg sm:text-xl text-foreground/90 leading-relaxed whitespace-pre-wrap bg-white/5 p-5 sm:p-8 rounded-xl sm:rounded-2xl border border-border-theme shadow-sm">
+          <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.85] whitespace-pre-wrap py-2">
             {post.content}
           </div>
 

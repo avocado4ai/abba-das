@@ -27,6 +27,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: { scope: "openid profile email groups" },
       },
+      token: {
+        conform: async (response: Response) => response,
+      },
+      client: {
+        token_endpoint_auth_method: "client_secret_post",
+      },
     },
   ],
   callbacks: {

@@ -1,8 +1,11 @@
 'use client';
 
-import { MessageCircle, Music, Image, FileText, Share2, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { MessageCircle, Music, Image, FileText, Share2, Sparkles, Users, Camera, Brain, Star, Eye, Clock, ChevronDown } from 'lucide-react';
 
 export default function ContentTypeGuide() {
+  const [isOpen, setIsOpen] = useState(false);
+
   const contentTypes = [
     {
       icon: FileText,
@@ -18,8 +21,8 @@ export default function ContentTypeGuide() {
     },
     {
       icon: Share2,
-      title: 'וואטס יום ו׳ (WhatsApp Friday)',
-      description: 'הודעות משפחתיות מיוחדות שאבא שולח בכל יום שישי - סיפורים קצרים, מחשבות וברכות למשפחה',
+      title: 'וואטס יום ו׳',
+      description: 'הודעות משפחתיות מיוחדות שאבא שולח בכל יום שישי',
       color: 'bg-green-500/10 text-green-600',
     },
     {
@@ -44,96 +47,92 @@ export default function ContentTypeGuide() {
 
   const categories = [
     {
-      emoji: '👨‍👩‍👧‍👦',
+      icon: Users,
       title: 'משפחה',
       description: 'תוכנים הנוגעים למשפחה, יחסים וזמן משותף',
     },
     {
-      emoji: '📸',
+      icon: Camera,
       title: 'זכרונות',
       description: 'זכרונות של ילדות, בחורות וימי עבר',
     },
     {
-      emoji: '💭',
+      icon: Brain,
       title: 'מחשבות',
       description: 'הרהורים כלליים על החיים והעולם',
     },
     {
-      emoji: '✨',
+      icon: Star,
       title: 'השראה',
       description: 'ציטוטים והשראה מיום יום',
     },
     {
-      emoji: '🪞',
+      icon: Eye,
       title: 'הרהור',
       description: 'הרהורים עמוקים על עברית ותכניו',
     },
     {
-      emoji: '⏰',
+      icon: Clock,
       title: 'רגעים',
       description: 'רגעים קטנים ויפים מהחיים',
     },
   ];
 
   return (
-    <section className="py-12 sm:py-20 px-4 sm:px-6 bg-white/3 rounded-2xl border border-border-theme/50">
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 text-center">
-          סוגי התוכנים
-        </h2>
-        <p className="text-sm sm:text-base text-muted-theme text-center mb-8 sm:mb-12">
-          אבא משתף סוגים שונים של תוכנים - מסיפורים מלאים ועד הודעות קטנות שהן גם הן יקרות
-        </p>
+    <section className="rounded-2xl border border-border-theme overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-5 py-4 text-right hover:bg-white/5 transition-colors duration-200"
+        aria-expanded={isOpen}
+      >
+        <span className="text-base font-bold text-foreground">סוגי התוכנים והקטגוריות</span>
+        <ChevronDown
+          className={`w-5 h-5 text-muted-theme transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        />
+      </button>
 
-        {/* Content Types */}
-        <div className="mb-12 sm:mb-16">
-          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6">סוגי הפרסומים</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {contentTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <div key={type.title} className={`${type.color} p-4 rounded-lg border border-border-theme/30`}>
-                  <div className="flex items-start gap-3 mb-2">
-                    <Icon className="w-5 h-5 mt-1 flex-shrink-0" />
-                    <h4 className="font-bold text-sm sm:text-base">{type.title}</h4>
+      {isOpen && (
+        <div className="px-5 pb-6 pt-2 space-y-6 border-t border-border-theme bg-white/3">
+          {/* Content Types */}
+          <div>
+            <h3 className="text-sm font-bold text-muted-theme uppercase tracking-widest mb-3">סוגי הפרסומים</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {contentTypes.map((type) => {
+                const Icon = type.icon;
+                return (
+                  <div key={type.title} className={`${type.color} p-3 rounded-lg flex items-start gap-3`}>
+                    <Icon className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    <div>
+                      <p className="font-bold text-sm">{type.title}</p>
+                      <p className="text-xs opacity-80 mt-0.5 leading-snug">{type.description}</p>
+                    </div>
                   </div>
-                  <p className="text-xs sm:text-sm opacity-80">{type.description}</p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Categories */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6">קטגוריות</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {categories.map((cat) => (
-              <div key={cat.title} className="p-4 bg-white/5 rounded-lg border border-border-theme/30">
-                <div className="flex items-start gap-3 mb-2">
-                  <span className="text-2xl">{cat.emoji}</span>
-                  <h4 className="font-bold text-sm sm:text-base text-foreground">{cat.title}</h4>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-theme">{cat.description}</p>
-              </div>
-            ))}
+          {/* Categories */}
+          <div>
+            <h3 className="text-sm font-bold text-muted-theme uppercase tracking-widest mb-3">קטגוריות</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {categories.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <div key={cat.title} className="p-3 bg-white/5 rounded-lg flex items-start gap-3 border border-border-theme">
+                    <Icon className="w-4 h-4 mt-0.5 shrink-0 text-muted-theme" aria-hidden="true" />
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{cat.title}</p>
+                      <p className="text-xs text-muted-theme mt-0.5 leading-snug">{cat.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-
-        {/* WhatsApp Friday Special Section */}
-        <div className="mt-12 sm:mt-16 p-6 sm:p-8 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-xl border-2 border-green-500/30">
-          <div className="flex items-start gap-4 mb-4">
-            <Share2 className="w-8 h-8 text-green-600 flex-shrink-0 mt-1" />
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground">וואטס יום שישי</h3>
-          </div>
-          <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-4">
-            בכל יום שישי, אבא שולח הודעות משפחתיות מיוחדות דרך ווטסאפ. זו מסורת יפה של קשר משפחתי - סיפורים קצרים, מחשבות שכל יום, ברכות למשבוע הבא.
-          </p>
-          <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
-            הודעות אלו הן חלק מהסיפור המשפחתי שלנו ויש להן מקום מיוחד בקטגוריה <span className="font-bold text-green-600">משפחה 👨‍👩‍👧‍👦</span>
-          </p>
-        </div>
-      </div>
+      )}
     </section>
   );
 }

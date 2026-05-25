@@ -42,7 +42,7 @@ export default async function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-8 sm:py-16 md:py-32 px-4 sm:px-6 overflow-hidden">
+      <section className="relative py-12 sm:py-20 md:py-28 px-4 sm:px-6 overflow-hidden">
         {/* Gradient Background with Decorative Elements */}
         <div className="absolute inset-0 -z-10">
           {/* Main gradient */}
@@ -69,18 +69,14 @@ export default async function Home() {
             הסיפורים של אבא
           </h2>
 
-          {/* Decorative line with accent colors */}
-          <div className="flex justify-center gap-1 sm:gap-2 mb-6 sm:mb-8 px-4">
-            <div className="w-8 sm:w-12 h-1 bg-coral/40 rounded-full" />
-            <div className="w-8 sm:w-12 h-1 bg-warm-gold/40 rounded-full" />
-            <div className="w-8 sm:w-12 h-1 bg-teal/40 rounded-full" />
-            <Image src="/ornament.svg" alt="" width={200} height={40} className="h-6 sm:h-8 w-auto opacity-60 mx-1 sm:mx-2" priority />
-            <div className="w-8 sm:w-12 h-1 bg-teal/40 rounded-full" />
-            <div className="w-8 sm:w-12 h-1 bg-warm-gold/40 rounded-full" />
-            <div className="w-8 sm:w-12 h-1 bg-coral/40 rounded-full" />
+          {/* Decorative divider */}
+          <div className="flex justify-center items-center gap-2 mb-6 sm:mb-8">
+            <div className="w-16 sm:w-24 h-px bg-linear-to-r from-transparent to-coral/50" />
+            <Image src="/ornament.svg" alt="" width={160} height={32} className="h-5 sm:h-7 w-auto opacity-50" priority />
+            <div className="w-16 sm:w-24 h-px bg-linear-to-l from-transparent to-coral/50" />
           </div>
 
-          <p className="text-sm sm:text-base md:text-xl text-foreground/70 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-16 font-stories animate-fadeInUp px-2">
+          <p className="text-sm sm:text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-14 font-stories animate-fadeInUp px-2">
             זכרונות, מחשבות ורגעים קטנים מהחיים, כפי שתועדו בבוקר של יום חדש.
           </p>
 

@@ -11,8 +11,8 @@
   --teal: #A8C5BA;
   --terracotta: #B8634F;
   --soft-mauve: #9B8B7E;
-  --border: rgba(10, 38, 71, 0.1);
-  --muted: rgba(10, 38, 71, 0.4);
+  --border: rgba(10, 38, 71, 0.15);
+  --muted: rgba(10, 38, 71, 0.65);
 }
 
 [data-theme="dark"] {
@@ -26,8 +26,8 @@
   --teal: #B8D5CA;
   --terracotta: #D0826D;
   --soft-mauve: #AFA19A;
-  --border: rgba(245, 245, 241, 0.1);
-  --muted: rgba(245, 245, 241, 0.4);
+  --border: rgba(245, 245, 241, 0.15);
+  --muted: rgba(245, 245, 241, 0.65);
 }
 
 [data-theme="paper"] {
@@ -41,8 +41,8 @@
   --teal: #7A8D82;
   --terracotta: #A55243;
   --soft-mauve: #8B7B71;
-  --border: rgba(62, 39, 35, 0.1);
-  --muted: rgba(62, 39, 35, 0.4);
+  --border: rgba(62, 39, 35, 0.15);
+  --muted: rgba(62, 39, 35, 0.65);
 }
 
 @theme inline {
@@ -136,7 +136,7 @@ article pre {
 }
 
 article ul, article ol {
-  @apply ml-6 mb-6;
+  @apply mr-6 mb-6;
 }
 
 article li {
@@ -227,7 +227,6 @@ button {
 
 button:hover:not(:disabled) {
   @apply shadow-md;
-  transform: translateY(-2px);
 }
 
 button:active:not(:disabled) {
