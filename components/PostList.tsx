@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX } from 'lucide-react';
+import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import type { PostData } from '@/lib/posts';
 import ContentTypeBadge from './ContentTypeBadge';
@@ -68,8 +68,20 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
   return (
     <div className="space-y-8 sm:space-y-12" role="region" aria-label="סיפורים">
       {/* Search & Filter Bar */}
-      <div className="flex flex-col gap-3 sm:gap-4 items-stretch sm:items-center sm:flex-row mb-6 sm:mb-8" role="search">
-        <div className="relative flex-grow w-full order-2 sm:order-1">
+      <div className="flex items-center justify-between gap-3 mb-3 sm:mb-5">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">כל הסיפורים</h2>
+          <p className="text-xs sm:text-sm text-muted-theme">
+            {filteredPosts.length === initialPosts.length
+              ? `${initialPosts.length} סיפורים זמינים`
+              : `${filteredPosts.length} מתוך ${initialPosts.length} סיפורים`}
+          </p>
+        </div>
+        <SlidersHorizontal className="w-5 h-5 text-muted-theme" aria-hidden="true" />
+      </div>
+
+      <div className="flex flex-col gap-2.5 sm:gap-4 items-stretch sm:items-center sm:flex-row mb-4 sm:mb-8" role="search">
+        <div className="relative flex-grow w-full">
           <label htmlFor="search-posts" className="sr-only">חיפוש סיפורים</label>
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
             <Search className="w-4 sm:w-5 h-4 sm:h-5 text-muted-theme" aria-hidden="true" />
@@ -78,7 +90,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             id="search-posts"
             type="text"
             placeholder="חיפוש סיפורים..."
-            className="w-full py-2.5 sm:py-3 pr-10 sm:pr-12 pl-3 sm:pl-4 bg-white/5 border border-border-theme rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-sage/50 transition-all duration-250 text-foreground text-sm sm:text-base"
+            className="w-full min-h-11 py-2.5 sm:py-3 pr-10 sm:pr-12 pl-3 sm:pl-4 bg-white/5 border border-border-theme rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-sage/50 transition-all duration-250 text-foreground text-base"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="חיפוש סיפורים לפי כותרת או תוכן"
@@ -87,7 +99,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
         <button
           onClick={() => setShowFavorites(!showFavorites)}
-          className={`flex items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-250 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 order-1 sm:order-2 text-sm sm:text-base ${
+          className={`flex min-h-11 items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-250 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 text-sm sm:text-base ${
             showFavorites
               ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm'
               : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
@@ -103,14 +115,14 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       {/* Tags Cloud — horizontal scroll on mobile */}
       {allTags.length > 0 && (
         <div
-          className="flex gap-1.5 sm:gap-2 mb-8 sm:mb-12 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none"
+          className="flex gap-1.5 sm:gap-2 mb-5 sm:mb-12 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none"
           role="group"
           aria-label="סנן לפי תגיות"
           style={{ scrollbarWidth: 'none' }}
         >
           <button
             onClick={() => setSelectedTag(null)}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+            className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
               !selectedTag
                 ? 'bg-sage text-cream border-sage'
                 : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
@@ -124,7 +136,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             <button
               key={tag}
               onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
+              className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
                 tag === selectedTag
                   ? 'bg-sage text-cream border-sage shadow-sm'
                   : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
@@ -139,26 +151,26 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       )}
 
       {filteredPosts.length > 0 ? (
-        <div className="space-y-6 sm:space-y-12">
+        <div className="space-y-4 sm:space-y-12">
           {filteredPosts.map((post) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
               <article className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-white/8 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/14 hover:border-coral/30 hover:shadow-md hover:shadow-coral/10">
                 {/* Story Image Thumbnail */}
-                <div className="h-40 sm:h-48 overflow-hidden">
+                <div className="h-28 sm:h-48 overflow-hidden">
                   <StoryImage slug={post.slug} title="" className="h-full" />
                 </div>
 
                 <div className="p-4 sm:p-6 lg:p-8">
-                  <div className="flex flex-col gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-4">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
                     <span className="text-xs sm:text-sm md:text-base font-medium text-muted-theme">
                       {post.date
                         ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                         : 'תאריך לא ידוע'}
                     </span>
-                    <div className="w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
+                    <div className="hidden sm:block w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
                     <WeatherIcon weather={post.weather} />
-                    {post.tags?.map(tag => (
+                    {post.tags?.slice(0, 2).map(tag => (
                       <span key={tag} className="text-[10px] sm:text-xs md:text-sm font-bold text-coral opacity-80 bg-coral/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">#{tag}</span>
                     ))}
                     {favorites.includes(post.slug) && (
@@ -171,11 +183,11 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                   <ContentTypeBadge contentType={post.contentType} category={post.category} size="sm" />
                 </div>
 
-                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3 group-hover:text-coral transition-colors duration-250">
+                <h3 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1.5 sm:mb-3 leading-snug group-hover:text-coral transition-colors duration-250">
                   {post.title}
                 </h3>
 
-                <p className="font-stories text-base sm:text-lg md:text-xl text-foreground/85 leading-relaxed line-clamp-3 mb-3 sm:mb-5">
+                <p className="font-stories text-sm sm:text-lg md:text-xl text-foreground/85 leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-5">
                   {post.content}
                 </p>
 

@@ -28,14 +28,15 @@ export default function FavoriteButton({ slug }: { slug: string }) {
   return (
     <button
       onClick={toggleFavorite}
-      className={`p-3 rounded-full border transition-all ${
+      className={`min-h-11 min-w-11 p-2.5 sm:p-3 rounded-full border transition-all ${
         isFavorite 
           ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm' 
           : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
       }`}
       title={isFavorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
+      aria-label={isFavorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
     >
-      <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
+      <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isFavorite ? 'fill-current' : ''}`} />
     </button>
   );
 }

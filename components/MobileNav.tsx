@@ -70,7 +70,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
             />
             <motion.div
               role="menu"
-              className="absolute right-0 top-full mt-2 w-52 bg-background/95 backdrop-blur-md border border-border-theme rounded-2xl shadow-xl p-2 space-y-1 z-50 origin-top-right"
+              className="fixed inset-x-4 top-14 bg-background/98 backdrop-blur-md border border-border-theme rounded-2xl shadow-xl p-2 space-y-0.5 z-50 origin-top-right"
               initial={{ opacity: 0, scale: 0.92, y: -8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: -8 }}
@@ -79,7 +79,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
               <Link
                 href="/guestbook"
                 role="menuitem"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-coral/10 transition-colors duration-200 text-sm font-medium text-foreground cursor-pointer"
+                className="flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-coral/10 transition-colors duration-200 text-base font-medium text-foreground cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <BookOpen className="w-4 h-4 text-coral shrink-0" aria-hidden="true" />
@@ -89,7 +89,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
               <button
                 onClick={handleExport}
                 role="menuitem"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-warm-gold/10 transition-colors duration-200 text-sm font-medium text-foreground text-right cursor-pointer"
+                className="w-full flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-warm-gold/10 transition-colors duration-200 text-base font-medium text-foreground text-right cursor-pointer"
               >
                 <Download className="w-4 h-4 text-warm-gold shrink-0" aria-hidden="true" />
                 ייצא JSON
@@ -98,7 +98,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
               <Link
                 href="/print"
                 role="menuitem"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-teal/10 transition-colors duration-200 text-sm font-medium text-foreground cursor-pointer"
+                className="flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-teal/10 transition-colors duration-200 text-base font-medium text-foreground cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <Printer className="w-4 h-4 text-teal shrink-0" aria-hidden="true" />
@@ -110,7 +110,7 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
               <Link
                 href="/admin"
                 role="menuitem"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/5 transition-colors duration-200 text-sm font-medium text-foreground cursor-pointer"
+                className="flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/5 transition-colors duration-200 text-base font-medium text-foreground cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <BarChart3 className="w-4 h-4 shrink-0" aria-hidden="true" />

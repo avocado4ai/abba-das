@@ -73,51 +73,53 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <ReadingProgressBar />
       
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-md border-b border-border-theme py-3 sm:py-4 md:py-6 transition-colors duration-300">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 flex justify-between items-center">
-          <Link href="/" className="text-xl sm:text-2xl md:text-3xl font-bold text-navy tracking-tight hover:text-coral transition-colors duration-250">
+      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border-theme py-2.5 sm:py-4 md:py-6 transition-colors duration-300">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-row-reverse sm:flex-row justify-between items-center">
+          <Link href="/" className="text-lg sm:text-2xl md:text-3xl font-bold text-navy tracking-tight hover:text-coral transition-colors duration-250">
             אבא-דס
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
-            <ThemeSwitcher />
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250">
+            <Link href="/" className="flex min-h-10 items-center gap-1.5 sm:gap-2 rounded-full border border-border-theme bg-white/5 px-3 text-xs sm:text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250">
               חזרה לבלוג
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
             </Link>
+            <ThemeSwitcher />
           </div>
         </div>
       </header>
 
       {/* Story Image Hero */}
-      <div className="w-full h-56 sm:h-72 md:h-96 mb-8 sm:mb-12">
+      <div className="w-full h-40 sm:h-72 md:h-96 mb-5 sm:mb-12">
         <StoryImage slug={slug} title={post.title} className="h-full" />
       </div>
 
-      <main className="grow py-8 sm:py-12 md:py-20">
+      <main className="grow py-5 sm:py-12 md:py-20">
         <article className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="flex justify-between items-start mb-6 sm:mb-8 gap-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 gap-4">
             <div className="space-y-3 sm:space-y-4 min-w-0">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="text-xs sm:text-sm font-medium text-muted-theme">
                   {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
                 </span>
-                <div className="w-1 h-1 rounded-full bg-border-theme" />
+                <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
                 <WeatherIcon weather={post.weather} />
-                <div className="w-1 h-1 rounded-full bg-border-theme" />
+                <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
                 <div className="flex items-center gap-1 text-xs sm:text-sm font-medium text-muted-theme">
                   <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
                   <span>{readingTime} דק&apos; קריאה</span>
                 </div>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-navy leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-navy leading-snug sm:leading-tight">
                 {post.title}
               </h1>
               <AudioPlayer text={post.content} />
             </div>
-            <FavoriteButton slug={slug} />
+            <div className="self-end sm:self-auto">
+              <FavoriteButton slug={slug} />
+            </div>
           </div>
 
-          <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.85] whitespace-pre-wrap py-2">
+          <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.9] sm:leading-[1.85] whitespace-pre-wrap py-2">
             {post.content}
           </div>
 

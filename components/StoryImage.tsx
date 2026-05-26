@@ -136,10 +136,11 @@ export default function StoryImage({ slug, title, className = '' }: StoryImagePr
         )}
       </svg>
 
-      {/* Title overlay */}
-      <div className="absolute inset-0 flex items-end justify-start p-6 bg-gradient-to-t from-black/40 to-transparent z-20">
-        <h2 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">{title}</h2>
-      </div>
+      {title && (
+        <div className="absolute inset-0 flex items-end justify-start p-6 bg-gradient-to-t from-black/40 to-transparent z-20">
+          <h2 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">{title}</h2>
+        </div>
+      )}
     </div>
   );
 }
