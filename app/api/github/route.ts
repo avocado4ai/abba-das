@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { savePost } from '@/lib/posts';
 import { getHistoricalWeather } from '@/lib/weather';
+import { auth } from '@/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const postData = await req.json();
     
     if (!postData.title || !postData.content || !postData.slug) {

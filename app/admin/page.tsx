@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen, Image as ImageIcon, WandSparkles, Copy, Plus, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -12,6 +12,54 @@ const generateSlug = (dateStr: string) => {
   const randomSuffix = Math.random().toString(36).substring(2, 7);
   return `${dateStr}-${randomSuffix}`;
 };
+
+type PostDraft = {
+  title: string;
+  slug: string;
+  date: string;
+  content: string;
+  tagsText: string;
+  weather: string;
+  contentType: string;
+  category: string;
+  imageSrc: string;
+  imageAlt: string;
+  imageCaption: string;
+};
+
+const createEmptyDraft = (): PostDraft => ({
+  title: '',
+  slug: generateSlug(format(new Date(), 'yyyy-MM-dd')),
+  date: new Date().toISOString().slice(0, 10),
+  content: '',
+  tagsText: '',
+  weather: 'sunny',
+  contentType: 'story',
+  category: 'memories',
+  imageSrc: '',
+  imageAlt: '',
+  imageCaption: '',
+});
+
+const postToDraft = (post: PostData): PostDraft => ({
+  title: post.title,
+  slug: post.slug,
+  date: post.date ? new Date(post.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+  content: post.content,
+  tagsText: (post.tags || []).join(', '),
+  weather: post.weather || 'sunny',
+  contentType: post.contentType || 'story',
+  category: post.category || 'memories',
+  imageSrc: post.featuredImage?.src || '',
+  imageAlt: post.featuredImage?.alt || post.title,
+  imageCaption: post.featuredImage?.caption || '',
+});
+
+const splitTags = (tagsText: string) =>
+  tagsText
+    .split(',')
+    .map((tag) => tag.trim().replace(/^#/, ''))
+    .filter(Boolean);
 
 export default function AdminPage() {
   const [sender, setSender] = useState('');
@@ -25,6 +73,11 @@ export default function AdminPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [senderError, setSenderError] = useState<string | null>(null);
   const [messageMetadata, setMessageMetadata] = useState<Record<number, {contentType: string; category: string; weather: string}>>({});
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [postDraft, setPostDraft] = useState<PostDraft>(() => createEmptyDraft());
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isUploadingDraftImage, setIsUploadingDraftImage] = useState(false);
+  const [geminiPrompt, setGeminiPrompt] = useState('');
 
 
   useEffect(() => {
@@ -113,6 +166,140 @@ export default function AdminPage() {
     } catch (e) {
       console.error(e);
       return null;
+    }
+  };
+
+  const refreshPosts = async () => {
+    setIsLoadingPosts(true);
+    try {
+      const res = await fetch('/api/posts');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setPublishedPosts(data);
+      }
+    } catch {
+      console.error('Failed to fetch published posts');
+    } finally {
+      setIsLoadingPosts(false);
+    }
+  };
+
+  const updateDraft = (changes: Partial<PostDraft>) => {
+    setPostDraft((current) => ({ ...current, ...changes }));
+  };
+
+  const startEditingPost = (post: PostData) => {
+    setEditingSlug(post.slug);
+    setPostDraft(postToDraft(post));
+    setGeminiPrompt('');
+    setError(null);
+    setSuccess(null);
+  };
+
+  const startNewPost = () => {
+    setEditingSlug(null);
+    setPostDraft(createEmptyDraft());
+    setGeminiPrompt('');
+    setError(null);
+    setSuccess(null);
+  };
+
+  const buildPostFromDraft = (): PostData => ({
+    title: postDraft.title.trim(),
+    slug: postDraft.slug.trim(),
+    content: postDraft.content.trim(),
+    date: new Date(postDraft.date).toISOString(),
+    tags: splitTags(postDraft.tagsText),
+    weather: postDraft.weather,
+    contentType: postDraft.contentType as PostData['contentType'],
+    category: postDraft.category as PostData['category'],
+    featuredImage: postDraft.imageSrc.trim()
+      ? {
+          src: postDraft.imageSrc.trim(),
+          alt: postDraft.imageAlt.trim() || postDraft.title.trim(),
+          caption: postDraft.imageCaption.trim(),
+        }
+      : undefined,
+  });
+
+  const handleSaveDraft = async () => {
+    if (!postDraft.title.trim() || !postDraft.slug.trim() || !postDraft.content.trim()) {
+      setError('כותרת, מזהה ותוכן הם שדות חובה');
+      return;
+    }
+
+    setIsSavingDraft(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch('/api/github', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPostFromDraft()),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'נכשל בשמירת הפוסט');
+
+      setSuccess(editingSlug ? 'הפוסט עודכן בהצלחה' : 'הפוסט החדש נשמר בהצלחה');
+      setEditingSlug(postDraft.slug);
+      await refreshPosts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'אירעה שגיאה לא ידועה');
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleDraftImageUpload = async (file: File, mode: 'featured' | 'content') => {
+    setIsUploadingDraftImage(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const url = await uploadFile(file);
+      if (!url) throw new Error('העלאת התמונה נכשלה');
+
+      if (mode === 'featured') {
+        updateDraft({
+          imageSrc: url,
+          imageAlt: postDraft.imageAlt || postDraft.title || file.name,
+          imageCaption: postDraft.imageCaption,
+        });
+      } else {
+        const alt = postDraft.imageAlt || postDraft.title || file.name;
+        updateDraft({
+          content: `${postDraft.content.trim()}\n\n![${alt}](${url})\n`,
+        });
+      }
+
+      setSuccess('התמונה הועלתה בהצלחה');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'אירעה שגיאה בהעלאת התמונה');
+    } finally {
+      setIsUploadingDraftImage(false);
+    }
+  };
+
+  const buildGeminiPrompt = async () => {
+    const prompt = `צור תמונה ראשית לפוסט זיכרון משפחתי בעברית.
+
+כותרת הפוסט: ${postDraft.title || 'ללא כותרת'}
+תקציר התוכן: ${postDraft.content.slice(0, 700)}
+
+סגנון: איור/צילום רך, מכבד ואינטימי, צבעים תואמים לאתר אבא-דס: ירוק מרווה, קורל עדין, זהב חם, רקע בהיר ונקי. בלי טקסט בתוך התמונה. קומפוזיציה שמתאימה לכרטיס בלוג אופקי ולמסך מובייל.
+
+החזר גם:
+1. תיאור ALT קצר בעברית
+2. קפשן קצר לתמונה`;
+
+    setGeminiPrompt(prompt);
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setSuccess('הפרומפט הועתק. אפשר לפתוח את Gemini ולהדביק אותו שם.');
+    } catch {
+      setSuccess('הפרומפט מוכן להעתקה ידנית.');
     }
   };
 
@@ -306,6 +493,279 @@ export default function AdminPage() {
               <span>{error || success}</span>
             </div>
           )}
+        </section>
+
+        {/* Post Editor */}
+        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold">עריכת פוסטים</h2>
+              <p className="text-sm text-muted-theme">פוסטים, תמונות ראשיות ותוכן הבלוג מנוהלים מכאן</p>
+            </div>
+            <button
+              type="button"
+              onClick={startNewPost}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-sage px-4 text-sm font-bold text-white hover:bg-sage/90"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              פוסט חדש
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-5">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label htmlFor="post-title" className="block text-xs font-bold text-muted-theme mb-2">כותרת</label>
+                  <input
+                    id="post-title"
+                    value={postDraft.title}
+                    onChange={(e) => updateDraft({ title: e.target.value })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-base outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="post-slug" className="block text-xs font-bold text-muted-theme mb-2">מזהה URL</label>
+                  <input
+                    id="post-slug"
+                    value={postDraft.slug}
+                    onChange={(e) => updateDraft({ slug: e.target.value.trim() })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="post-date" className="block text-xs font-bold text-muted-theme mb-2">תאריך</label>
+                  <input
+                    id="post-date"
+                    type="date"
+                    value={postDraft.date}
+                    onChange={(e) => updateDraft({ date: e.target.value })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="post-content" className="block text-xs font-bold text-muted-theme mb-2">תוכן הפוסט</label>
+                <textarea
+                  id="post-content"
+                  value={postDraft.content}
+                  onChange={(e) => updateDraft({ content: e.target.value })}
+                  rows={10}
+                  className="w-full rounded-xl border border-border-theme bg-white/5 p-3 text-base leading-8 outline-none focus:ring-2 focus:ring-sage/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label htmlFor="edit-content-type" className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
+                  <select
+                    id="edit-content-type"
+                    value={postDraft.contentType}
+                    onChange={(e) => updateDraft({ contentType: e.target.value })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                  >
+                    <option value="story">סיפור</option>
+                    <option value="audio-story">סיפור אודיו</option>
+                    <option value="whatsapp-friday">וואטס יום ו׳</option>
+                    <option value="photo">תמונה</option>
+                    <option value="message">הודעה</option>
+                    <option value="memory">זיכרון</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="edit-category" className="block text-xs font-bold text-muted-theme mb-2">קטגוריה</label>
+                  <select
+                    id="edit-category"
+                    value={postDraft.category}
+                    onChange={(e) => updateDraft({ category: e.target.value })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                  >
+                    <option value="family">משפחה</option>
+                    <option value="memories">זכרונות</option>
+                    <option value="thoughts">מחשבות</option>
+                    <option value="inspiration">השראה</option>
+                    <option value="reflection">הרהור</option>
+                    <option value="moments">רגעים</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="edit-weather" className="block text-xs font-bold text-muted-theme mb-2">מזג אוויר</label>
+                  <select
+                    id="edit-weather"
+                    value={postDraft.weather}
+                    onChange={(e) => updateDraft({ weather: e.target.value })}
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                  >
+                    <option value="sunny">שמש</option>
+                    <option value="cloudy">עננים</option>
+                    <option value="rainy">גשום</option>
+                    <option value="windy">רוחות</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="post-tags" className="block text-xs font-bold text-muted-theme mb-2">תגיות</label>
+                <input
+                  id="post-tags"
+                  value={postDraft.tagsText}
+                  onChange={(e) => updateDraft({ tagsText: e.target.value })}
+                  placeholder="משפחה, זכרונות, חוף"
+                  className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                />
+              </div>
+
+              <div className="rounded-2xl border border-border-theme bg-navy/[0.02] p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <ImageIcon className="w-4 h-4 text-sage" aria-hidden="true" />
+                  <h3 className="text-sm font-bold">תמונה ראשית ותמונות בתוכן</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    value={postDraft.imageSrc}
+                    onChange={(e) => updateDraft({ imageSrc: e.target.value })}
+                    placeholder="URL לתמונה ראשית"
+                    className="min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    aria-label="כתובת תמונה ראשית"
+                  />
+                  <input
+                    value={postDraft.imageAlt}
+                    onChange={(e) => updateDraft({ imageAlt: e.target.value })}
+                    placeholder="ALT לתמונה"
+                    className="min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    aria-label="תיאור אלטרנטיבי לתמונה"
+                  />
+                  <input
+                    value={postDraft.imageCaption}
+                    onChange={(e) => updateDraft({ imageCaption: e.target.value })}
+                    placeholder="קפשן קצר"
+                    className="sm:col-span-2 min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    aria-label="קפשן לתמונה"
+                  />
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-bold hover:border-sage/40">
+                    <Upload className="w-4 h-4" aria-hidden="true" />
+                    העלה כתמונה ראשית
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingDraftImage}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleDraftImageUpload(file, 'featured');
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-bold hover:border-sage/40">
+                    <Plus className="w-4 h-4" aria-hidden="true" />
+                    הוסף תמונה לתוכן
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingDraftImage}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleDraftImageUpload(file, 'content');
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border-theme bg-warm-gold/10 p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold">
+                      <WandSparkles className="w-4 h-4 text-warm-gold" aria-hidden="true" />
+                      עזרת Gemini לתמונה
+                    </h3>
+                    <p className="text-xs text-muted-theme">יצירת פרומפט מותאם לצבעים ולסגנון האתר</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={buildGeminiPrompt}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-navy px-3 text-xs font-bold text-cream"
+                    >
+                      <Copy className="w-4 h-4" aria-hidden="true" />
+                      העתק פרומפט
+                    </button>
+                    <a
+                      href="https://gemini.google.com/app"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-xs font-bold"
+                    >
+                      Gemini
+                      <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                    </a>
+                  </div>
+                </div>
+                {geminiPrompt && (
+                  <textarea
+                    readOnly
+                    value={geminiPrompt}
+                    rows={5}
+                    className="mt-3 w-full rounded-xl border border-border-theme bg-white/5 p-3 text-xs leading-6 outline-none"
+                    aria-label="פרומפט Gemini"
+                  />
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSavingDraft}
+                className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-2xl bg-sage px-6 text-base font-bold text-white hover:bg-sage/90 disabled:opacity-60"
+              >
+                {isSavingDraft ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Save className="w-5 h-5" aria-hidden="true" />}
+                {editingSlug ? 'עדכן פוסט' : 'שמור פוסט חדש'}
+              </button>
+            </div>
+
+            <aside className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-muted-theme">פוסטים קיימים</h3>
+                <button
+                  type="button"
+                  onClick={refreshPosts}
+                  className="p-2 text-muted-theme hover:text-sage"
+                  aria-label="רענן פוסטים"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoadingPosts ? 'animate-spin' : ''}`} aria-hidden="true" />
+                </button>
+              </div>
+              <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
+                {publishedPosts.map((post) => (
+                  <button
+                    key={post.slug}
+                    type="button"
+                    onClick={() => startEditingPost(post)}
+                    className={`w-full rounded-xl border p-3 text-right transition-colors ${
+                      postDraft.slug === post.slug
+                        ? 'border-sage bg-sage/10'
+                        : 'border-border-theme bg-white/5 hover:border-sage/40'
+                    }`}
+                  >
+                    <span className="block truncate text-sm font-bold">{post.title}</span>
+                    <span className="mt-1 block text-xs text-muted-theme">
+                      {post.date ? format(new Date(post.date), 'dd/MM/yyyy') : 'ללא תאריך'}
+                    </span>
+                  </button>
+                ))}
+                {publishedPosts.length === 0 && !isLoadingPosts && (
+                  <p className="rounded-xl border border-dashed border-border-theme p-4 text-sm text-muted-theme">אין פוסטים להצגה.</p>
+                )}
+              </div>
+            </aside>
+          </div>
         </section>
 
         {/* Messages List */}

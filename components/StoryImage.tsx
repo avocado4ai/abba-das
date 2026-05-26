@@ -4,6 +4,9 @@ interface StoryImageProps {
   slug: string;
   title: string;
   className?: string;
+  src?: string;
+  alt?: string;
+  caption?: string;
 }
 
 const storyImages = {
@@ -29,8 +32,28 @@ const storyImages = {
   }
 };
 
-export default function StoryImage({ slug, title, className = '' }: StoryImageProps) {
+export default function StoryImage({ slug, title, className = '', src, alt, caption }: StoryImageProps) {
   const imageConfig = storyImages[slug as keyof typeof storyImages] || storyImages['the-long-path'];
+
+  if (src) {
+    return (
+      <figure className={`relative w-full overflow-hidden bg-navy/10 ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={alt || title}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        {(title || caption) && (
+          <figcaption className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/55 to-transparent p-4 sm:p-6 text-white">
+            {title && <h2 className="text-2xl md:text-3xl font-bold drop-shadow-lg">{title}</h2>}
+            {caption && <p className="mt-1 text-xs sm:text-sm text-white/85">{caption}</p>}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
 
   return (
     <div className={`relative w-full overflow-hidden ${className}`}>

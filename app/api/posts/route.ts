@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllPosts, savePost, type PostData } from '@/lib/posts';
+import { auth } from '@/auth';
 
 export async function GET() {
   try {
@@ -13,6 +14,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { action } = body;
 
@@ -98,7 +104,7 @@ export async function POST(request: Request) {
     }
 
     // Regular POST for creating a single post
-    const { title, slug, content, date, weather, tags } = body;
+    const { title, slug, content, date, weather, tags, featuredImage, contentType, category } = body;
     const post: PostData = {
       title,
       slug,
@@ -106,6 +112,9 @@ export async function POST(request: Request) {
       date: date || new Date().toISOString(),
       weather: weather || 'sunny',
       tags: tags || [],
+      featuredImage,
+      contentType,
+      category,
     };
 
     const result = await savePost(post);

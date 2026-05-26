@@ -10,6 +10,11 @@ export interface PostData {
   slug: string;
   weather?: string;
   tags?: string[];
+  featuredImage?: {
+    src: string;
+    alt?: string;
+    caption?: string;
+  };
   contentType?: "story" | "audio-story" | "whatsapp-friday" | "photo" | "message" | "memory";
   category?: "family" | "memories" | "thoughts" | "inspiration" | "reflection" | "moments";
 }
@@ -39,6 +44,17 @@ function getOctokit(token: string) {
 
 function postFromMarkdown(slug: string, markdown: string): PostData {
   const { data: frontmatter, content } = matter(markdown);
+  const rawFeaturedImage = frontmatter.featuredImage;
+  const featuredImage =
+    typeof rawFeaturedImage === "string"
+      ? { src: rawFeaturedImage, alt: frontmatter.imageAlt || frontmatter.title || slug }
+      : rawFeaturedImage && typeof rawFeaturedImage === "object" && typeof rawFeaturedImage.src === "string"
+        ? {
+            src: rawFeaturedImage.src,
+            alt: rawFeaturedImage.alt || rawFeaturedImage.title || frontmatter.title || slug,
+            caption: rawFeaturedImage.caption || rawFeaturedImage.description || "",
+          }
+        : undefined;
 
   return {
     title: frontmatter.title || slug,
@@ -47,6 +63,7 @@ function postFromMarkdown(slug: string, markdown: string): PostData {
     tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
     slug,
     content,
+    featuredImage,
     contentType: frontmatter.contentType || "story",
     category: frontmatter.category || "memories",
   };
@@ -183,14 +200,24 @@ export async function getAdjacentPosts(slug: string): Promise<{ next: PostData |
 }
 
 function postToMarkdown(post: PostData) {
-  return matter.stringify(post.content.trim() + "\n", {
+  const frontmatter: Record<string, unknown> = {
     title: post.title,
     date: post.date,
     weather: post.weather || "sunny",
     contentType: post.contentType || "story",
     category: post.category || "memories",
     tags: post.tags || [],
-  });
+  };
+
+  if (post.featuredImage?.src) {
+    frontmatter.featuredImage = {
+      src: post.featuredImage.src,
+      alt: post.featuredImage.alt || post.title,
+      caption: post.featuredImage.caption || "",
+    };
+  }
+
+  return matter.stringify(post.content.trim() + "\n", frontmatter);
 }
 
 async function savePostLocal(post: PostData) {

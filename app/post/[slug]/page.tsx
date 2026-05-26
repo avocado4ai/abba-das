@@ -13,6 +13,7 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
 import Comments from "@/components/Comments";
 import AudioPlayer from "@/components/AudioPlayer";
 import StoryImage from "@/components/StoryImage";
+import PostContent from "@/components/PostContent";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       publishedTime: post.date,
       url: `https://abba-das.vercel.app/post/${slug}`,
+      images: post.featuredImage?.src
+        ? [{ url: post.featuredImage.src, alt: post.featuredImage.alt || post.title }]
+        : undefined,
     },
   };
 }
@@ -90,7 +94,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       {/* Story Image Hero */}
       <div className="w-full h-40 sm:h-72 md:h-96 mb-5 sm:mb-12">
-        <StoryImage slug={slug} title={post.title} className="h-full" />
+        <StoryImage
+          slug={slug}
+          title={post.title}
+          src={post.featuredImage?.src}
+          alt={post.featuredImage?.alt || post.title}
+          caption={post.featuredImage?.caption}
+          className="h-full"
+        />
       </div>
 
       <main className="grow py-5 sm:py-12 md:py-20">
@@ -119,8 +130,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </div>
           </div>
 
-          <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.9] sm:leading-[1.85] whitespace-pre-wrap py-2">
-            {post.content}
+          <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.9] sm:leading-[1.85] py-2">
+            <PostContent content={post.content} />
           </div>
 
           <ShareButtons title={post.title} slug={slug} />
