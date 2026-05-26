@@ -151,12 +151,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       )}
 
       {filteredPosts.length > 0 ? (
-        <div className="space-y-4 sm:space-y-12">
+        <div className="space-y-7 sm:space-y-12 lg:space-y-14">
           {filteredPosts.map((post) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
-              <article className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-white/8 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/14 hover:border-coral/30 hover:shadow-md hover:shadow-coral/10">
+              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/8 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/14 hover:border-coral/30 hover:shadow-md hover:shadow-coral/10">
                 {/* Story Image Thumbnail */}
-                <div className="h-28 sm:h-48 overflow-hidden">
+                <div className="h-36 sm:h-52 lg:h-56 overflow-hidden">
                   <StoryImage
                     slug={post.slug}
                     title=""
@@ -166,36 +166,36 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                   />
                 </div>
 
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-4">
-                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
-                    <span className="text-xs sm:text-sm md:text-base font-medium text-muted-theme">
-                      {post.date
-                        ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
-                        : 'תאריך לא ידוע'}
-                    </span>
-                    <div className="hidden sm:block w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
-                    <WeatherIcon weather={post.weather} />
-                    {post.tags?.slice(0, 2).map(tag => (
-                      <span key={tag} className="text-[10px] sm:text-xs md:text-sm font-bold text-coral opacity-80 bg-coral/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">#{tag}</span>
-                    ))}
-                    {favorites.includes(post.slug) && (
-                      <>
-                        <div className="w-1 h-1 rounded-full bg-border-theme" />
-                        <Heart className="w-3 sm:w-4 h-3 sm:h-4 text-coral fill-current" />
-                      </>
-                    )}
+                <div className="p-5 sm:p-7 lg:p-9">
+                  <div className="flex flex-col gap-2.5 sm:gap-4 mb-3 sm:mb-5">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <span className="text-xs sm:text-sm md:text-base font-medium text-muted-theme">
+                        {post.date
+                          ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
+                          : 'תאריך לא ידוע'}
+                      </span>
+                      <div className="hidden sm:block w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
+                      <WeatherIcon weather={post.weather} />
+                      {post.tags?.slice(0, 2).map(tag => (
+                        <span key={tag} className="text-[10px] sm:text-xs md:text-sm font-bold text-coral opacity-80 bg-coral/10 px-2 sm:px-2.5 py-1 rounded-full">#{tag}</span>
+                      ))}
+                      {favorites.includes(post.slug) && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-border-theme" />
+                          <Heart className="w-3 sm:w-4 h-3 sm:h-4 text-coral fill-current" />
+                        </>
+                      )}
+                    </div>
+                    <ContentTypeBadge contentType={post.contentType} category={post.category} size="sm" />
                   </div>
-                  <ContentTypeBadge contentType={post.contentType} category={post.category} size="sm" />
-                </div>
 
-                <h3 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1.5 sm:mb-3 leading-snug group-hover:text-coral transition-colors duration-250">
-                  {post.title}
-                </h3>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2.5 sm:mb-4 leading-snug group-hover:text-coral transition-colors duration-250">
+                    {post.title}
+                  </h3>
 
-                <p className="font-stories text-sm sm:text-lg md:text-xl text-foreground/85 leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-5">
-                  {post.content}
-                </p>
+                  <p className="font-stories text-base sm:text-lg md:text-xl text-foreground/85 leading-8 sm:leading-relaxed line-clamp-3 mb-5 sm:mb-6">
+                    {post.content}
+                  </p>
 
                   <div className="inline-flex items-center text-sm sm:text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                     קרא עוד

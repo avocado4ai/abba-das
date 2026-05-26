@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen, Image as ImageIcon, WandSparkles, Copy, Plus, RefreshCw } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen, Image as ImageIcon, WandSparkles, Copy, Plus, RefreshCw, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import type { PostData } from '@/lib/posts';
+import type { CommentData } from '@/lib/github';
 
 const generateSlug = (dateStr: string) => {
   const randomSuffix = Math.random().toString(36).substring(2, 7);
@@ -25,6 +26,12 @@ type PostDraft = {
   imageSrc: string;
   imageAlt: string;
   imageCaption: string;
+};
+
+type AdminCommentGroup = {
+  slug: string;
+  title: string;
+  comments: CommentData[];
 };
 
 const createEmptyDraft = (): PostDraft => ({
@@ -65,10 +72,12 @@ export default function AdminPage() {
   const [sender, setSender] = useState('');
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
   const [publishedPosts, setPublishedPosts] = useState<PostData[]>([]);
+  const [commentGroups, setCommentGroups] = useState<AdminCommentGroup[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [isSaving, setIsSaving] = useState<number | null>(null);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [senderError, setSenderError] = useState<string | null>(null);
@@ -77,6 +86,7 @@ export default function AdminPage() {
   const [postDraft, setPostDraft] = useState<PostDraft>(() => createEmptyDraft());
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isUploadingDraftImage, setIsUploadingDraftImage] = useState(false);
+  const [isGeneratingGeminiImage, setIsGeneratingGeminiImage] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState('');
 
 
@@ -101,7 +111,27 @@ export default function AdminPage() {
       }
     };
 
+    const loadComments = async () => {
+      if (!isMounted) return;
+      setIsLoadingComments(true);
+      try {
+        const res = await fetch('/api/admin/comments');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isMounted && Array.isArray(data)) {
+          setCommentGroups(data);
+        }
+      } catch {
+        console.error('Failed to fetch comments');
+      } finally {
+        if (isMounted) {
+          setIsLoadingComments(false);
+        }
+      }
+    };
+
     loadPosts();
+    loadComments();
     return () => {
       isMounted = false;
     };
@@ -181,6 +211,22 @@ export default function AdminPage() {
       console.error('Failed to fetch published posts');
     } finally {
       setIsLoadingPosts(false);
+    }
+  };
+
+  const refreshComments = async () => {
+    setIsLoadingComments(true);
+    try {
+      const res = await fetch('/api/admin/comments');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCommentGroups(data);
+      }
+    } catch {
+      console.error('Failed to fetch comments');
+    } finally {
+      setIsLoadingComments(false);
     }
   };
 
@@ -303,6 +349,53 @@ export default function AdminPage() {
     }
   };
 
+  const createGeminiPrompt = () => `צור תמונה ראשית לפוסט זיכרון משפחתי בעברית.
+
+כותרת הפוסט: ${postDraft.title || 'ללא כותרת'}
+תקציר התוכן: ${postDraft.content.slice(0, 900)}
+
+סגנון: תמונה או איור רך, מכבד ואינטימי, צבעים תואמים לאתר אבא-דס: ירוק מרווה, קורל עדין, זהב חם, רקע בהיר ונקי. בלי טקסט בתוך התמונה. בלי לוגו. קומפוזיציה אופקית 16:9 שמתאימה לכרטיס בלוג ולמסך מובייל.`;
+
+  const handleGenerateGeminiImage = async () => {
+    if (!postDraft.title.trim() && !postDraft.content.trim()) {
+      setError('צריך כותרת או תוכן כדי ליצור תמונה');
+      return;
+    }
+
+    setIsGeneratingGeminiImage(true);
+    setError(null);
+    setSuccess(null);
+
+    const prompt = geminiPrompt.trim() || createGeminiPrompt();
+    setGeminiPrompt(prompt);
+
+    try {
+      const res = await fetch('/api/admin/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          title: postDraft.slug || postDraft.title || 'post-image',
+          aspectRatio: '16:9',
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'יצירת התמונה נכשלה');
+
+      updateDraft({
+        imageSrc: data.url,
+        imageAlt: postDraft.imageAlt || postDraft.title || 'תמונה ראשית לפוסט',
+        imageCaption: postDraft.imageCaption || 'תמונה שנוצרה בעזרת Gemini',
+      });
+      setSuccess('התמונה נוצרה ונשמרה כתמונה ראשית. יש לשמור את הפוסט כדי לעדכן את הבלוג.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'אירעה שגיאה ביצירת התמונה');
+    } finally {
+      setIsGeneratingGeminiImage(false);
+    }
+  };
+
   const handleSavePost = async (index: number, msg: WhatsAppMessage) => {
     setIsSaving(index);
     setError(null);
@@ -382,6 +475,8 @@ export default function AdminPage() {
     setMessages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const totalComments = commentGroups.reduce((total, group) => total + group.comments.length, 0);
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300 dir-rtl" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12 md:py-20">
@@ -399,7 +494,7 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-10">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
           <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
             <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
               <Inbox className="w-4 h-4" aria-hidden="true" />
@@ -413,6 +508,13 @@ export default function AdminPage() {
               פורסמו
             </div>
             <div className="text-2xl font-bold text-foreground">{publishedPosts.length}</div>
+          </div>
+          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
+            <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+              תגובות
+            </div>
+            <div className="text-2xl font-bold text-foreground">{totalComments}</div>
           </div>
         </div>
 
@@ -677,6 +779,20 @@ export default function AdminPage() {
                     />
                   </label>
                 </div>
+
+                {postDraft.imageSrc && (
+                  <div className="mt-4 overflow-hidden rounded-2xl border border-border-theme bg-white/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={postDraft.imageSrc}
+                      alt={postDraft.imageAlt || postDraft.title}
+                      className="h-44 w-full object-cover"
+                    />
+                    <div className="p-3 text-xs text-muted-theme">
+                      {postDraft.imageCaption || postDraft.imageAlt || 'תמונה ראשית לפוסט'}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-2xl border border-border-theme bg-warm-gold/10 p-3 sm:p-4">
@@ -688,7 +804,16 @@ export default function AdminPage() {
                     </h3>
                     <p className="text-xs text-muted-theme">יצירת פרומפט מותאם לצבעים ולסגנון האתר</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleGenerateGeminiImage}
+                      disabled={isGeneratingGeminiImage}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-sage px-3 text-xs font-bold text-white disabled:opacity-60"
+                    >
+                      {isGeneratingGeminiImage ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <WandSparkles className="w-4 h-4" aria-hidden="true" />}
+                      צור תמונה
+                    </button>
                     <button
                       type="button"
                       onClick={buildGeminiPrompt}
@@ -766,6 +891,70 @@ export default function AdminPage() {
               </div>
             </aside>
           </div>
+        </section>
+
+        {/* Comments Overview */}
+        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold">תגובות אחרונות</h2>
+              <p className="text-sm text-muted-theme">תגובות לפי פוסט וספר אורחים</p>
+            </div>
+            <button
+              type="button"
+              onClick={refreshComments}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-xs font-bold hover:border-sage/40"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingComments ? 'animate-spin' : ''}`} aria-hidden="true" />
+              רענן
+            </button>
+          </div>
+
+          {commentGroups.length > 0 ? (
+            <div className="space-y-3">
+              {commentGroups.map((group) => (
+                <details key={group.slug} className="rounded-2xl border border-border-theme bg-navy/[0.02] p-3 sm:p-4">
+                  <summary className="cursor-pointer list-none">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm sm:text-base font-bold text-navy">{group.title}</h3>
+                        <p className="text-xs text-muted-theme">{group.comments.length} תגובות</p>
+                      </div>
+                      <MessageCircle className="w-5 h-5 shrink-0 text-sage" aria-hidden="true" />
+                    </div>
+                  </summary>
+                  <div className="mt-4 space-y-3">
+                    {group.comments.slice(0, 5).map((comment) => (
+                      <article key={comment.id} className="rounded-xl border border-border-theme bg-white/5 p-3">
+                        <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-theme">
+                          <span className="font-bold text-foreground">{comment.name}</span>
+                          <span aria-hidden="true">•</span>
+                          <time dateTime={new Date(comment.date).toISOString()}>
+                            {format(new Date(comment.date), 'dd/MM/yyyy HH:mm')}
+                          </time>
+                        </div>
+                        <p className="text-sm leading-7 text-foreground/90">{comment.message}</p>
+                      </article>
+                    ))}
+                    {group.comments.length > 5 && (
+                      <p className="text-xs font-medium text-muted-theme">מוצגות 5 התגובות האחרונות מתוך {group.comments.length}</p>
+                    )}
+                  </div>
+                </details>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border-2 border-dashed border-border-theme py-10 text-center">
+              {isLoadingComments ? (
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-sage" aria-hidden="true" />
+              ) : (
+                <>
+                  <MessageCircle className="mx-auto mb-3 h-9 w-9 text-muted-theme/30" aria-hidden="true" />
+                  <p className="text-sm font-medium text-muted-theme">עדיין אין תגובות להצגה.</p>
+                </>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Messages List */}

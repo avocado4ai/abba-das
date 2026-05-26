@@ -1,31 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@/auth";
+import { uploadBufferToMediaStorage } from "@/lib/media-storage";
 
-const initializeS3Client = () => {
-  const accessKeyId = process.env.MINIO_ACCESS_KEY;
-  const secretAccessKey = process.env.MINIO_SECRET_KEY;
-
-  if (!accessKeyId || !secretAccessKey) {
-    throw new Error(
-      "MinIO credentials not configured. Set MINIO_ACCESS_KEY and MINIO_SECRET_KEY environment variables."
-    );
-  }
-
-  return new S3Client({
-    region: "us-east-1",
-    endpoint: process.env.MINIO_ENDPOINT || "http://localhost:9000",
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-    forcePathStyle: true,
-  });
-};
-
-let s3Client: S3Client;
-
-const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || "abba-das-images";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
@@ -43,10 +19,6 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!s3Client) {
-      s3Client = initializeS3Client();
     }
 
     const formData = await req.formData();
@@ -71,20 +43,13 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const uniqueFilename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: uniqueFilename,
-      Body: buffer,
-      ContentType: file.type,
+    const uploaded = await uploadBufferToMediaStorage({
+      buffer,
+      filename: file.name,
+      contentType: file.type,
     });
 
-    await s3Client.send(command);
-
-    const publicUrl = `${process.env.NEXT_PUBLIC_MINIO_URL || "http://localhost:9000"}/${BUCKET_NAME}/${uniqueFilename}`;
-
-    return NextResponse.json({ url: publicUrl, filename: file.name });
+    return NextResponse.json({ url: uploaded.url, filename: file.name });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
