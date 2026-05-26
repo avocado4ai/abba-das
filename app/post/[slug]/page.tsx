@@ -14,6 +14,7 @@ import Comments from "@/components/Comments";
 import AudioPlayer from "@/components/AudioPlayer";
 import StoryImage from "@/components/StoryImage";
 import PostContent from "@/components/PostContent";
+import WhatsAppDisplay from "@/components/WhatsAppDisplay";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -131,7 +132,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </div>
 
           <div className="font-stories text-lg sm:text-xl text-foreground leading-[1.9] sm:leading-[1.85] py-2">
-            <PostContent content={post.content} />
+            {post.contentType === "whatsapp-friday" ? (
+              <WhatsAppDisplay content={post.content} date={post.date} />
+            ) : (
+              <PostContent content={post.content} />
+            )}
           </div>
 
           <ShareButtons title={post.title} slug={slug} />

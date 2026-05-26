@@ -68,13 +68,14 @@ export default async function Home() {
           </div>
 
           <figure className="mx-auto mb-4 sm:mb-8 max-w-[160px] sm:max-w-sm overflow-hidden rounded-lg border border-border-theme bg-background shadow-lg sm:shadow-xl animate-fadeInUp">
-            <Image
-              src="/images/abba-ima-gemini-portrait.svg"
-              alt="אבא ואימא ליד הים"
-              width={512}
-              height={512}
+            <img
+              src="/images/abba-ima-beach.webp"
+              alt="אבא ואימא ליד הים - צילום ראליסטי"
               className="h-auto w-full object-cover"
-              priority
+              onError={(e) => {
+                e.currentTarget.src = "/images/abba-ima-gemini-portrait.svg";
+                e.currentTarget.alt = "אבא ואימא ליד הים - איור";
+              }}
             />
           </figure>
 
