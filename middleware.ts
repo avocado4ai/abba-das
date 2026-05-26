@@ -10,9 +10,9 @@ export default auth((req) => {
       return Response.redirect(signInUrl);
     }
 
-    // Check if user is in admin group
+    // Check if user is in the abba-das admins group (as defined in LLDAP/Authelia)
     const groups = (req.auth.user as any)?.groups || [];
-    if (!groups.includes('admin')) {
+    if (!groups.includes('abba-das_admins')) {
       const deniedUrl = new URL('/unauthorized', req.nextUrl.origin);
       return Response.redirect(deniedUrl);
     }
