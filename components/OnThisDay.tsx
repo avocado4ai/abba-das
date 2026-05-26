@@ -27,7 +27,7 @@ export default function OnThisDay({ posts }: { posts: PostData[] }) {
   const yearsAgo = new Date().getFullYear() - new Date(matchingPost.date).getFullYear();
 
   return (
-    <div className="mb-16 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+    <div className="mb-10 sm:mb-14 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
       <div className="bg-sage/5 border border-sage/20 rounded-2xl p-8 relative overflow-hidden group">
         <div className="absolute top-0 left-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <CalendarDays className="w-16 h-16 text-sage" />

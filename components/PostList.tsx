@@ -66,7 +66,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
   }, [initialPosts, search, showFavorites, favorites, selectedTag]);
 
   return (
-    <div className="space-y-8 sm:space-y-12" role="region" aria-label="סיפורים">
+    <div className="space-y-6 sm:space-y-10" role="region" aria-label="סיפורים">
       {/* Search & Filter Bar */}
       <div className="flex items-center justify-between gap-3 mb-3 sm:mb-5">
         <div>
@@ -151,12 +151,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       )}
 
       {filteredPosts.length > 0 ? (
-        <div className="space-y-7 sm:space-y-12 lg:space-y-14">
+        <div className="space-y-6 sm:space-y-10 lg:space-y-12">
           {filteredPosts.map((post) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
-              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/8 border border-border-theme shadow-sm transition-all duration-250 hover:bg-white/14 hover:border-coral/30 hover:shadow-md hover:shadow-coral/10">
+              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 border border-border-theme shadow-sm transition-all duration-300 hover:bg-white/15 dark:hover:bg-white/10 hover:border-coral/40 hover:shadow-lg hover:shadow-coral/5">
                 {/* Story Image Thumbnail */}
-                <div className="h-36 sm:h-52 lg:h-56 overflow-hidden">
+                <div className="h-32 sm:h-48 lg:h-52 overflow-hidden">
                   <StoryImage
                     slug={post.slug}
                     title=""
@@ -166,10 +166,10 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                   />
                 </div>
 
-                <div className="p-5 sm:p-7 lg:p-9">
-                  <div className="flex flex-col gap-2.5 sm:gap-4 mb-3 sm:mb-5">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-2 sm:gap-3 mb-2 sm:mb-4">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span className="text-xs sm:text-sm md:text-base font-medium text-muted-theme">
+                      <span className="text-xs sm:text-sm font-medium text-muted-theme">
                         {post.date
                           ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                           : 'תאריך לא ידוע'}
@@ -177,7 +177,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                       <div className="hidden sm:block w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
                       <WeatherIcon weather={post.weather} />
                       {post.tags?.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[10px] sm:text-xs md:text-sm font-bold text-coral opacity-80 bg-coral/10 px-2 sm:px-2.5 py-1 rounded-full">#{tag}</span>
+                        <span key={tag} className="text-[10px] sm:text-xs font-bold text-coral opacity-80 bg-coral/10 px-2 sm:px-2.5 py-0.5 rounded-full">#{tag}</span>
                       ))}
                       {favorites.includes(post.slug) && (
                         <>
@@ -189,11 +189,11 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                     <ContentTypeBadge contentType={post.contentType} category={post.category} size="sm" />
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2.5 sm:mb-4 leading-snug group-hover:text-coral transition-colors duration-250">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3 leading-snug group-hover:text-coral transition-colors duration-250">
                     {post.title}
                   </h3>
 
-                  <p className="font-stories text-base sm:text-lg md:text-xl text-foreground/85 leading-8 sm:leading-relaxed line-clamp-3 mb-5 sm:mb-6">
+                  <p className="font-stories text-base sm:text-lg text-foreground/85 leading-7 sm:leading-relaxed line-clamp-3 mb-4 sm:mb-5">
                     {post.content}
                   </p>
 
