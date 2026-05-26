@@ -2,12 +2,18 @@
 
 export async function handleSignInAction(callbackUrl: string) {
   const { signIn } = await import("@/auth");
-  try {
-    await signIn("authelia", {
-      redirectTo: callbackUrl
-    });
-  } catch (err) {
-    console.error('Server sign in error:', err);
-    throw err;
-  }
+  await signIn("authelia", { redirectTo: callbackUrl });
+}
+
+export async function handleCredentialsSignIn(
+  username: string,
+  password: string,
+  callbackUrl: string,
+) {
+  const { signIn } = await import("@/auth");
+  await signIn("credentials", {
+    username,
+    password,
+    redirectTo: callbackUrl,
+  });
 }
