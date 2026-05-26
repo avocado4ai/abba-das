@@ -2,11 +2,22 @@ import NextAuth, { type DefaultSession } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 
+interface UserWithGroups {
+  groups?: string[];
+}
+
+interface TokenWithGroups {
+  groups?: string[];
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
       groups?: string[];
     } & DefaultSession["user"]
+  }
+  interface User {
+    groups?: string[];
   }
   interface Profile {
     groups?: string[];
@@ -65,17 +76,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, profile, user }) {
       if (profile?.groups) {
-        token.groups = profile.groups
+        ;(token as TokenWithGroups).groups = profile.groups
       }
       // Credentials provider returns groups on the user object
-      if ((user as any)?.groups) {
-        token.groups = (user as any).groups
+      const userGroups = (user as UserWithGroups | undefined)?.groups
+      if (userGroups) {
+        ;(token as TokenWithGroups).groups = userGroups
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.groups = token.groups as string[] | undefined
+        session.user.groups = (token as TokenWithGroups).groups
       }
       return session
     },

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2 } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -197,25 +197,42 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300 dir-rtl" dir="rtl">
-      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
-        <header className="mb-12 border-b border-border-theme pb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12 md:py-20">
+        <header className="mb-6 sm:mb-10 border-b border-border-theme pb-5 sm:pb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4 sm:gap-6">
           <div>
-            <h1 className="text-4xl font-bold mb-3 tracking-tight">ניהול הבלוג</h1>
-            <p className="text-sage font-medium">ייבוא הודעות וואטסאפ והפיכתן לסיפורים</p>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3 tracking-tight">ניהול הבלוג</h1>
+            <p className="text-sm sm:text-base text-sage font-medium">ייבוא הודעות וואטסאפ והפיכתן לסיפורים</p>
           </div>
-          <div className="flex items-center gap-6 self-start md:self-auto">
-            <ThemeSwitcher />
-            <Link href="/" className="flex items-center gap-2 text-sm font-bold text-muted-theme hover:text-navy transition-colors duration-250 group">
+          <div className="flex items-center justify-between gap-3 self-stretch md:self-auto">
+            <Link href="/" className="flex min-h-10 items-center gap-2 rounded-full border border-border-theme bg-white/5 px-4 text-sm font-bold text-muted-theme hover:text-navy transition-colors duration-250 group">
               חזרה לבלוג
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-250" />
             </Link>
+            <ThemeSwitcher />
           </div>
         </header>
 
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-10">
+          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
+            <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
+              <Inbox className="w-4 h-4" aria-hidden="true" />
+              ממתינות
+            </div>
+            <div className="text-2xl font-bold text-foreground">{messages.length}</div>
+          </div>
+          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
+            <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
+              <BookOpen className="w-4 h-4" aria-hidden="true" />
+              פורסמו
+            </div>
+            <div className="text-2xl font-bold text-foreground">{publishedPosts.length}</div>
+          </div>
+        </div>
+
         {/* Upload Section */}
-        <section className="bg-white/5 rounded-3xl shadow-sm p-8 mb-12 border border-border-theme">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
-            <div className="space-y-3">
+        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 items-end">
+            <div className="space-y-2 sm:space-y-3">
               <label htmlFor="sender-input" className="block text-sm font-bold text-muted-theme">זיהוי השולח (שם כפי שמופיע בוואטסאפ)</label>
               <input
                 id="sender-input"
@@ -234,7 +251,7 @@ export default function AdminPage() {
                 aria-required="true"
                 aria-invalid={!!senderError}
                 aria-describedby={senderError ? "sender-error" : undefined}
-                className={`w-full p-4 rounded-2xl border-2 bg-white/5 outline-none transition-all text-lg focus:ring-2 focus:ring-sage/50 ${
+                className={`w-full min-h-12 p-3 sm:p-4 rounded-2xl border-2 bg-white/5 outline-none transition-all text-base sm:text-lg focus:ring-2 focus:ring-sage/50 ${
                   senderError
                     ? 'border-red-500/50 focus:ring-red-500/30'
                     : 'border-border-theme'
@@ -259,7 +276,7 @@ export default function AdminPage() {
               />
               <label
                 htmlFor="file-upload"
-                className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl cursor-pointer text-lg font-bold ${
+                className={`flex min-h-14 flex-col items-center justify-center gap-1.5 sm:gap-2 p-4 rounded-2xl cursor-pointer text-base sm:text-lg font-bold ${
                   !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90'
                 } transition-all duration-250`}
               >
@@ -278,7 +295,7 @@ export default function AdminPage() {
 
           {(error || success) && (
             <div
-              className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-medium animate-in fade-in slide-in-from-top-2 ${
+              className={`mt-5 sm:mt-6 p-3 sm:p-4 rounded-2xl flex items-center gap-3 text-sm sm:text-base font-medium animate-in fade-in slide-in-from-top-2 ${
                 error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
               }`}
               role="alert"
@@ -292,9 +309,9 @@ export default function AdminPage() {
         </section>
 
         {/* Messages List */}
-        <section className="space-y-8">
-          <div className="flex justify-between items-center border-b border-border-theme pb-4">
-            <h2 className="text-2xl font-bold">הודעות חדשות ({messages.length})</h2>
+        <section className="space-y-5 sm:space-y-8">
+          <div className="flex justify-between items-center border-b border-border-theme pb-3 sm:pb-4">
+            <h2 className="text-xl sm:text-2xl font-bold">הודעות חדשות ({messages.length})</h2>
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
@@ -305,10 +322,10 @@ export default function AdminPage() {
             )}
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {messages.map((msg, index) => (
-              <div key={index} className="bg-white/5 rounded-3xl shadow-sm border border-border-theme overflow-hidden group hover:border-sage/30 transition-all hover:shadow-md animate-in fade-in zoom-in-95 duration-300">
-                <div className="bg-navy/[0.02] px-6 py-3 border-b border-border-theme flex justify-between items-center text-xs font-bold text-muted-theme">
+              <div key={index} className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm border border-border-theme overflow-hidden group hover:border-sage/30 transition-all hover:shadow-md animate-in fade-in zoom-in-95 duration-300">
+                <div className="bg-navy/[0.02] px-4 sm:px-6 py-3 border-b border-border-theme flex justify-between items-center text-xs font-bold text-muted-theme">
                   <span className="font-mono">{format(msg.date, 'dd/MM/yyyy HH:mm')}</span>
                   <div className="flex items-center gap-4">
                     <span>{msg.sender}</span>
@@ -321,11 +338,11 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
-                <div className="p-8">
-                  <p className="whitespace-pre-wrap text-xl leading-relaxed text-foreground/90 mb-6 font-stories">{msg.content}</p>
+                <div className="p-4 sm:p-8">
+                  <p className="whitespace-pre-wrap text-base sm:text-xl leading-relaxed text-foreground/90 mb-5 sm:mb-6 font-stories">{msg.content}</p>
                   
                   {/* Tags Editor */}
-                  <div className="flex flex-wrap gap-2 mb-8 items-center bg-navy/[0.02] p-4 rounded-2xl border border-border-theme">
+                  <div className="flex flex-wrap gap-2 mb-5 sm:mb-8 items-center bg-navy/[0.02] p-3 sm:p-4 rounded-2xl border border-border-theme">
                     <span className="text-xs font-bold text-muted-theme ml-2">תגיות:</span>
                     {msg.tags?.map((tag, tIndex) => (
                       <span key={tIndex} className="bg-sage/10 text-sage text-xs font-bold px-3 py-1 rounded-full flex items-center gap-2 group/tag">
@@ -364,7 +381,7 @@ export default function AdminPage() {
                   </div>
 
                   {/* Content Metadata Editor */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-navy/[0.02] p-4 rounded-2xl border border-border-theme">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-8 bg-navy/[0.02] p-3 sm:p-4 rounded-2xl border border-border-theme">
                     <div>
                       <label htmlFor={`type-${index}`} className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
                       <select
@@ -376,7 +393,7 @@ export default function AdminPage() {
                             [index]: { ...prev[index], contentType: e.target.value }
                           }));
                         }}
-                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
                       >
                         <option value="story">סיפור</option>
                         <option value="audio-story">סיפור אודיו</option>
@@ -398,7 +415,7 @@ export default function AdminPage() {
                             [index]: { ...prev[index], category: e.target.value }
                           }));
                         }}
-                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
                       >
                         <option value="family">משפחה</option>
                         <option value="memories">זכרונות</option>
@@ -420,7 +437,7 @@ export default function AdminPage() {
                             [index]: { ...prev[index], weather: e.target.value }
                           }));
                         }}
-                        className="w-full p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
+                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
                       >
                         <option value="sunny">שמש</option>
                         <option value="cloudy">עננים</option>
@@ -436,7 +453,7 @@ export default function AdminPage() {
                       disabled={isSaving !== null}
                       aria-busy={isSaving === index}
                       aria-label={isSaving === index ? 'ממתין לשמירת הסיפור' : 'שמור סיפור זה'}
-                      className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
+                      className="flex min-h-12 w-full sm:w-auto items-center justify-center gap-3 bg-sage text-white px-6 sm:px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
                     >
                       {isSaving === index ? <Loader2 className="animate-spin" size={20} aria-hidden="true" /> : <Save size={20} aria-hidden="true" />}
                       <span>{isSaving === index ? 'שומר...' : 'שמור כסיפור'}</span>
@@ -447,24 +464,24 @@ export default function AdminPage() {
             ))}
 
             {messages.length === 0 && !isParsing && (
-              <div className="text-center py-24 bg-white/[0.02] rounded-3xl border-2 border-dashed border-border-theme">
-                <FileText className="mx-auto text-muted-theme/20 mb-6" size={64} />
-                <p className="text-muted-theme text-lg font-medium">העלה קובץ שיחה כדי לראות הודעות כאן</p>
+              <div className="text-center py-14 sm:py-24 bg-white/[0.02] rounded-2xl sm:rounded-3xl border-2 border-dashed border-border-theme">
+                <FileText className="mx-auto text-muted-theme/20 mb-4 sm:mb-6" size={56} />
+                <p className="text-muted-theme text-base sm:text-lg font-medium">העלה קובץ שיחה כדי לראות הודעות כאן</p>
               </div>
             )}
           </div>
         </section>
 
         {/* Published Posts List */}
-        <section className="mt-32 pt-16 border-t border-border-theme">
-          <div className="flex items-center gap-4 mb-8">
-            <h2 className="text-3xl font-bold">סיפורים שכבר פורסמו</h2>
+        <section className="mt-16 sm:mt-32 pt-8 sm:pt-16 border-t border-border-theme">
+          <div className="flex items-center gap-4 mb-5 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold">סיפורים שכבר פורסמו</h2>
             {isLoadingPosts && <Loader2 className="w-5 h-5 animate-spin text-sage" />}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {publishedPosts.map((post) => (
-              <div key={post.slug} className="bg-white/5 p-5 rounded-2xl border border-border-theme flex justify-between items-center group hover:bg-white/10 hover:shadow-sm transition-all">
+              <div key={post.slug} className="bg-white/5 p-4 sm:p-5 rounded-2xl border border-border-theme flex justify-between items-center group hover:bg-white/10 hover:shadow-sm transition-all">
                 <div className="overflow-hidden">
                   <h4 className="font-bold text-navy truncate mb-1 group-hover:text-sage transition-colors">{post.title}</h4>
                   <p className="text-xs font-bold text-muted-theme">{format(new Date(post.date), 'dd/MM/yyyy')}</p>

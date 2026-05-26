@@ -4,20 +4,28 @@ import { useState, Suspense } from "react";
 import { Loader2, LogIn, AlertCircle, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { handleCredentialsSignIn, handleSignInAction } from "@/app/auth/actions";
+import { handleCredentialsSignIn } from "@/app/auth/actions";
+
+const AUTH_UNAVAILABLE_MESSAGE = 'לא ניתן להיכנס כרגע לשרת הניהול. נסו שוב במועד מאוחר יותר.';
 
 const ERROR_MESSAGES: Record<string, string> = {
-  OAuthCallbackError: 'שגיאה בהתחברות דרך Authelia. נסה שם משתמש וסיסמה.',
+  OAuthCallbackError: AUTH_UNAVAILABLE_MESSAGE,
+  OAuthSignin: AUTH_UNAVAILABLE_MESSAGE,
+  OAuthAccountNotLinked: AUTH_UNAVAILABLE_MESSAGE,
+  Configuration: AUTH_UNAVAILABLE_MESSAGE,
   AccessDenied: 'גישה נדחתה. אין לך הרשאות לדף זה.',
   CredentialsSignin: 'שם משתמש או סיסמה שגויים.',
 };
+
+function isRedirectError(error: unknown) {
+  return error instanceof Error && error.message.includes('NEXT_REDIRECT');
+}
 
 function SignInContent() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSSOLoading, setIsSSOLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
@@ -32,41 +40,29 @@ function SignInContent() {
     setError(null);
     try {
       await handleCredentialsSignIn(username.trim(), password, callbackUrl);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Next redirects throw — anything else is a real error
-      if (err?.message?.includes('NEXT_REDIRECT')) throw err;
-      setError(ERROR_MESSAGES.CredentialsSignin);
+      if (isRedirectError(err)) throw err;
+      setError(AUTH_UNAVAILABLE_MESSAGE);
       setIsLoading(false);
     }
   };
 
-  const handleSSO = async () => {
-    setIsSSOLoading(true);
-    setError(null);
-    try {
-      await handleSignInAction(callbackUrl);
-    } catch (err: any) {
-      if (err?.message?.includes('NEXT_REDIRECT')) throw err;
-      setError('שגיאה בהפניה ל-Authelia.');
-      setIsSSOLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-sage/5 via-background to-background px-6">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-sage/5 via-background to-background px-4 py-10">
+      <div className="w-full max-w-sm space-y-6">
 
         {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="flex justify-center mb-4">
-            <Image src="/ornament.svg" alt="" width={100} height={40} className="h-10 w-auto opacity-80" priority />
+        <div className="text-center space-y-2">
+          <div className="flex justify-center mb-3">
+            <Image src="/ornament.svg" alt="" width={100} height={40} className="h-9 w-auto opacity-80" priority />
           </div>
-          <h1 className="text-4xl font-bold text-foreground tracking-tight">אבא-דס</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">אבא-דס</h1>
           <p className="text-muted-theme text-base">כניסה לניהול</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/8 rounded-3xl border border-border-theme p-8 shadow-sm space-y-5">
+        <div className="bg-white/8 rounded-3xl border border-border-theme p-5 sm:p-8 shadow-sm space-y-5">
 
           {/* Error */}
           {displayError && (
@@ -89,7 +85,7 @@ function SignInContent() {
                 required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                disabled={isLoading || isSSOLoading}
+                disabled={isLoading}
                 className="w-full px-4 py-3 rounded-xl bg-white/5 border border-border-theme text-foreground placeholder:text-muted-theme focus:outline-none focus:ring-2 focus:ring-sage/50 disabled:opacity-50 text-base"
                 placeholder="hadas-abba"
                 dir="ltr"
@@ -108,7 +104,7 @@ function SignInContent() {
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  disabled={isLoading || isSSOLoading}
+                  disabled={isLoading}
                   className="w-full px-4 py-3 pl-11 rounded-xl bg-white/5 border border-border-theme text-foreground placeholder:text-muted-theme focus:outline-none focus:ring-2 focus:ring-sage/50 disabled:opacity-50 text-base"
                   placeholder="••••••••••"
                   dir="ltr"
@@ -129,7 +125,7 @@ function SignInContent() {
 
             <button
               type="submit"
-              disabled={isLoading || isSSOLoading || !username.trim() || !password}
+              disabled={isLoading || !username.trim() || !password}
               aria-busy={isLoading}
               className="w-full flex items-center justify-center gap-2 bg-linear-to-r from-coral to-warm-gold hover:from-coral/90 hover:to-warm-gold/90 text-cream px-6 py-3.5 rounded-2xl font-bold focus:outline-none focus:ring-2 focus:ring-coral/50 focus:ring-offset-2 transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -138,26 +134,6 @@ function SignInContent() {
                 : <><LogIn className="w-4 h-4" aria-hidden="true" /><span>כניסה</span></>}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-border-theme" />
-            <span className="text-xs text-muted-theme">או</span>
-            <div className="flex-1 h-px bg-border-theme" />
-          </div>
-
-          {/* SSO fallback */}
-          <button
-            onClick={handleSSO}
-            disabled={isLoading || isSSOLoading}
-            aria-busy={isSSOLoading}
-            className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-border-theme text-foreground px-6 py-3 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sage/50 transition-colors duration-200 disabled:opacity-50"
-          >
-            {isSSOLoading
-              ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-              : null}
-            כניסה דרך Authelia
-          </button>
         </div>
 
         <p className="text-center text-xs text-muted-theme">
