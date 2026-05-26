@@ -1,4 +1,4 @@
-import { getAllPosts } from "@/lib/github";
+import { getAllPosts } from "@/lib/posts";
 import PostList from "@/components/PostList";
 import ExportButton from "@/components/ExportButton";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -8,6 +8,8 @@ import ContentTypeGuide from "@/components/ContentTypeGuide";
 import Image from "next/image";
 import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const posts = await getAllPosts();
@@ -42,24 +44,13 @@ export default async function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-20 md:py-28 px-4 sm:px-6 overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-18 px-4 sm:px-6 overflow-hidden">
         {/* Gradient Background with Decorative Elements */}
         <div className="absolute inset-0 -z-10">
-          {/* Main gradient */}
           <div className="absolute inset-0 bg-linear-to-b from-sage/5 via-transparent to-transparent" />
-
-          {/* Decorative glowing elements */}
-          <div className="absolute top-10 sm:top-20 right-5 sm:right-10 w-40 sm:w-64 h-40 sm:h-64 bg-coral/10 rounded-full blur-3xl animate-glow" />
-          <div className="absolute -bottom-10 sm:bottom-20 left-5 sm:left-10 w-48 sm:w-80 h-48 sm:h-80 bg-warm-gold/5 rounded-full blur-3xl animate-glow" style={{ animationDelay: '1s' }} />
-          <div className="hidden sm:block absolute top-1/2 left-1/2 w-96 h-96 bg-teal/5 rounded-full blur-3xl animate-glow" style={{ animationDelay: '2s' }} />
-
-          {/* Hero illustration */}
-          <div className="absolute inset-0 z-0 opacity-15 sm:opacity-25 pointer-events-none flex justify-center items-center">
-            <Image src="/hero-illustration.svg" alt="" width={800} height={400} className="w-full max-w-4xl object-cover blur-sm" priority />
-          </div>
         </div>
 
-        <div className="max-w-2xl mx-auto text-center relative z-10">
+        <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Badge with new color */}
           <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-linear-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-3 sm:mb-6 animate-fadeInUp">
             <span className="text-xs sm:text-sm font-bold bg-linear-to-r from-coral to-warm-gold bg-clip-text text-transparent">סיפורים שלנו</span>
@@ -76,7 +67,18 @@ export default async function Home() {
             <div className="w-16 sm:w-24 h-px bg-linear-to-l from-transparent to-coral/50" />
           </div>
 
-          <p className="text-sm sm:text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-14 font-stories animate-fadeInUp px-2">
+          <figure className="mx-auto mb-6 sm:mb-8 max-w-xs sm:max-w-sm overflow-hidden rounded-lg border border-border-theme bg-background shadow-xl animate-fadeInUp">
+            <Image
+              src="/images/abba-ima-gemini-portrait.svg"
+              alt="אבא ואימא ליד הים"
+              width={512}
+              height={512}
+              className="h-auto w-full object-cover"
+              priority
+            />
+          </figure>
+
+          <p className="text-sm sm:text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-10 font-stories animate-fadeInUp px-2">
             זכרונות, מחשבות ורגעים קטנים מהחיים, כפי שתועדו בבוקר של יום חדש.
           </p>
 

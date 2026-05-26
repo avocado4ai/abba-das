@@ -1,4 +1,5 @@
-import { getPostBySlug, getAdjacentPosts, getCommentsForPost } from "@/lib/github";
+import { getCommentsForPost } from "@/lib/github";
+import { getPostBySlug, getAdjacentPosts } from "@/lib/posts";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { Sun, Cloud, CloudRain, Wind, ArrowRight, Clock } from "lucide-react";
@@ -13,6 +14,8 @@ import Comments from "@/components/Comments";
 import AudioPlayer from "@/components/AudioPlayer";
 import StoryImage from "@/components/StoryImage";
 import { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

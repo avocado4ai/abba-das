@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" width="900" height="900">
+  <!-- Background: Abstract Clean Shapes -->
+  <rect width="900" height="900" fill="#F5F5F1" />
+  
+  <!-- Abstract Blobs -->
+  <path d="M-100,200 Q150,50 400,200 T800,100 L900,0 L0,0 Z" fill="#A8C5BA" opacity="0.3" />
+  <circle cx="800" cy="700" r="250" fill="#7E9983" opacity="0.15" />
+  <path d="M600,900 Q750,750 900,850 L900,900 Z" fill="#C4A572" opacity="0.2" />
+  <path d="M0,600 Q100,500 250,650 T500,600 L500,900 L0,900 Z" fill="#D97760" opacity="0.1" />
+
+  <!-- Center Group -->
+  <g transform="translate(450, 450)">
+    
+    <!-- Father (Left) -->
+    <g transform="translate(-160, -250)">
+      <!-- Arm around mother (under her jacket/shoulder) -->
+      <path d="M180,350 Q280,330 320,380" fill="none" stroke="#F5F5F1" stroke-width="45" stroke-linecap="round" />
+      <path d="M180,350 Q280,330 320,380" fill="none" stroke="#0077CC" stroke-width="40" stroke-linecap="round" />
+      
+      <!-- Body: Bright Blue Shirt -->
+      <path d="M50,650 L50,380 Q50,320 120,320 L200,320 Q270,320 270,380 L270,650" fill="#0077CC" />
+      
+      <!-- Legs: Beige Shorts -->
+      <path d="M60,650 L260,650 L260,780 Q260,800 240,800 L170,800 L170,650 L150,650 L150,800 L80,800 Q60,800 60,780 Z" fill="#E5D3B3" />
+      
+      <!-- Head and Neck -->
+      <rect x="135" y="290" width="50" height="40" fill="#FAD7B5" />
+      <path d="M85,150 Q85,80 160,80 Q235,80 235,150 L235,260 Q235,310 160,310 Q85,310 85,260 Z" fill="#FAD7B5" />
+      
+      <!-- Hair: Gray/White -->
+      <path d="M85,160 Q85,70 160,70 Q235,70 235,160" fill="none" stroke="#E0E0E0" stroke-width="15" stroke-linecap="round" />
+      <path d="M95,140 Q110,90 160,90 Q210,90 225,140" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+      
+      <!-- Sunglasses: Navy -->
+      <g transform="translate(105, 175)">
+        <rect x="0" y="0" width="45" height="25" rx="5" fill="#0A2647" />
+        <rect x="65" y="0" width="45" height="25" rx="5" fill="#0A2647" />
+        <line x1="45" y1="10" x2="65" y2="10" stroke="#0A2647" stroke-width="3" />
+      </g>
+      
+      <!-- Smile -->
+      <path d="M140,265 Q160,280 180,265" fill="none" stroke="#0A2647" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+    </g>
+
+    <!-- Mother (Right) -->
+    <g transform="translate(50, -220)">
+      <!-- Body: Coral Shirt -->
+      <path d="M60,620 L60,350 Q60,300 130,300 L200,300 Q270,300 270,350 L270,620" fill="#D97760" />
+      
+      <!-- Light Cream/White Jacket -->
+      <path d="M50,340 Q50,290 130,290 L200,290 Q280,290 280,340 L280,620 L220,620 L210,360 L120,360 L110,620 L50,620 Z" fill="#F5F5F1" />
+      <path d="M50,340 Q50,290 130,290 L200,290 Q280,290 280,340" fill="none" stroke="#A8C5BA" stroke-width="1" />
+
+      <!-- Upper Legs (indicated by jacket/skirt line) -->
+      <path d="M60,620 L270,620 L270,750 Q270,770 250,770 L80,770 Q60,770 60,750 Z" fill="#F5F5F1" />
+
+      <!-- Head and Neck -->
+      <rect x="140" y="270" width="50" height="40" fill="#FAD7B5" />
+      <path d="M95,140 Q95,80 165,80 Q235,80 235,140 L235,240 Q235,290 165,290 Q95,290 95,240 Z" fill="#FAD7B5" />
+      
+      <!-- Hair: Brown Bob -->
+      <path d="M85,140 Q85,60 165,60 Q245,60 245,140 L245,220 Q245,240 225,240 L105,240 Q85,240 85,220 Z" fill="#6B4423" />
+      <path d="M165,60 L165,100" fill="none" stroke="#8D6E63" stroke-width="2" />
+      
+      <!-- Sunglasses: Navy -->
+      <g transform="translate(115, 165)">
+        <rect x="0" y="0" width="40" height="28" rx="14" fill="#0A2647" />
+        <rect x="60" y="0" width="40" height="28" rx="14" fill="#0A2647" />
+        <line x1="40" y1="12" x2="60" y2="12" stroke="#0A2647" stroke-width="3" />
+      </g>
+      
+      <!-- Smile -->
+      <path d="M145,255 Q165,270 185,255" fill="none" stroke="#0A2647" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+    </g>
+
+    <!-- Floor Shadow (Subtle) -->
+    <ellipse cx="0" cy="400" rx="400" ry="40" fill="#0A2647" opacity="0.05" />
+  </g>
+</svg>

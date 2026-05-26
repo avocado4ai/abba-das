@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, Download, BarChart3, BookOpen, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 
 export default function MobileNav({ posts }: { posts: PostData[] }) {
   const [isOpen, setIsOpen] = useState(false);

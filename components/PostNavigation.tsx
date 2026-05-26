@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 
 export default function PostNavigation({ 
   next, 

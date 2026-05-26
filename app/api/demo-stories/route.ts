@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PostData } from '@/lib/github';
+import { type PostData } from '@/lib/posts';
 
 export async function GET() {
   const demoStories: PostData[] = [

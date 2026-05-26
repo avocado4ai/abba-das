@@ -1,8 +1,10 @@
-import { getAllPosts } from "@/lib/github";
+import { getAllPosts } from "@/lib/posts";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import PrintButton from "@/components/PrintButton";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function PrintPage() {
   const posts = await getAllPosts();

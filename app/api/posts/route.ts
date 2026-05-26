@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllPosts, savePostToGitHub, PostData } from '@/lib/github';
+import { getAllPosts, savePost, type PostData } from '@/lib/posts';
 
 export async function GET() {
   try {
@@ -83,18 +83,17 @@ export async function POST(request: Request) {
       const results = [];
       for (const story of exampleStories) {
         try {
-          const result = await savePostToGitHub(story);
+          const result = await savePost(story);
           results.push({ slug: story.slug, status: 'success', result });
         } catch (error) {
-          console.error(`Error saving ${story.slug}:`, error);
+          console.error(`Error saving ${story.slug} locally:`, error);
           results.push({ slug: story.slug, status: 'error', error: String(error) });
         }
       }
 
       return NextResponse.json({
-        message: 'Example stories creation attempted',
+        message: 'Example stories creation attempted locally',
         results,
-        note: 'If all failed with "Bad credentials", provide a valid GITHUB_TOKEN in .env.local',
       });
     }
 
@@ -109,7 +108,7 @@ export async function POST(request: Request) {
       tags: tags || [],
     };
 
-    const result = await savePostToGitHub(post);
+    const result = await savePost(post);
     return NextResponse.json({ message: 'Post created successfully', result });
   } catch (error) {
     console.error('API Error:', error);

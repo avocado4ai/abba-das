@@ -6,7 +6,7 @@ import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink,
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 
 const generateSlug = (dateStr: string) => {
   const randomSuffix = Math.random().toString(36).substring(2, 7);
@@ -167,10 +167,10 @@ export default function AdminPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('נכשל בשמירה ל-GitHub');
+      if (!res.ok) throw new Error('נכשל בשמירת הסיפור');
 
       setMessages(prev => prev.filter((_, i) => i !== index));
-      setSuccess('הסיפור פורסם בהצלחה!');
+      setSuccess('הסיפור נשמר בהצלחה!');
 
       setIsLoadingPosts(true);
       try {
@@ -435,11 +435,11 @@ export default function AdminPage() {
                       onClick={() => handleSavePost(index, msg)}
                       disabled={isSaving !== null}
                       aria-busy={isSaving === index}
-                      aria-label={isSaving === index ? 'ממתין לפרסום הסיפור' : 'פרסם סיפור זה ל-GitHub'}
+                      aria-label={isSaving === index ? 'ממתין לשמירת הסיפור' : 'שמור סיפור זה'}
                       className="flex items-center gap-3 bg-sage text-white px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
                     >
                       {isSaving === index ? <Loader2 className="animate-spin" size={20} aria-hidden="true" /> : <Save size={20} aria-hidden="true" />}
-                      <span>{isSaving === index ? 'מפרסם...' : 'פרסם כסיפור'}</span>
+                      <span>{isSaving === index ? 'שומר...' : 'שמור כסיפור'}</span>
                     </button>
                   </div>
                 </div>

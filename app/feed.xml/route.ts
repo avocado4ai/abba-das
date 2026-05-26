@@ -1,5 +1,7 @@
-import { getAllPosts } from "@/lib/github";
+import { getAllPosts } from "@/lib/posts";
 import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const posts = await getAllPosts();

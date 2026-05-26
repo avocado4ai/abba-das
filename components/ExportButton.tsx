@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Download, Printer } from 'lucide-react';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 import Link from 'next/link';
 
 export default function ExportButton({ posts }: { posts: PostData[] }) {

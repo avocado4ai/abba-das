@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { savePostToGitHub } from '@/lib/github';
+import { savePost } from '@/lib/posts';
 import { getHistoricalWeather } from '@/lib/weather';
 
 export async function POST(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const result = await savePostToGitHub(postData);
+    const result = await savePost(postData);
     return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error('API Error:', error);

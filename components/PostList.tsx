@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX } from 'lucide-react';
 import Link from 'next/link';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 import ContentTypeBadge from './ContentTypeBadge';
 import StoryImage from './StoryImage';
 

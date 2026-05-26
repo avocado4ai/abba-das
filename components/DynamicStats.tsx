@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 
 export default function DynamicStats({ posts }: { posts: PostData[] }) {
   const stats = useMemo(() => {

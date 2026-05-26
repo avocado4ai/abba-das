@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { PostData } from '@/lib/github';
+import type { PostData } from '@/lib/posts';
 import Link from 'next/link';
 import { CalendarDays, ArrowLeft } from 'lucide-react';
 
