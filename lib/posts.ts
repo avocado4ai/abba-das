@@ -1,7 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { Octokit } from "octokit";
+import { cache } from "react";
+import { getOctokit, getGitHubConfig } from "./github-client";
 
 export interface PostData {
   title: string;
@@ -21,26 +22,6 @@ export interface PostData {
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const BRANCH = "main";
-
-let octokit: Octokit | null = null;
-
-function getGitHubConfig() {
-  const token = process.env.GITHUB_TOKEN;
-  const owner = process.env.GITHUB_OWNER;
-  const repo = process.env.GITHUB_REPO;
-
-  if (!token || !owner || !repo) return null;
-
-  return { token, owner, repo };
-}
-
-function getOctokit(token: string) {
-  if (!octokit) {
-    octokit = new Octokit({ auth: token });
-  }
-
-  return octokit;
-}
 
 function postFromMarkdown(slug: string, markdown: string): PostData {
   const { data: frontmatter, content } = matter(markdown);
@@ -99,9 +80,9 @@ async function getAllPostsLocal(): Promise<PostData[]> {
 
 async function getAllPostsFromGitHub(): Promise<PostData[]> {
   const config = getGitHubConfig();
-  if (!config) return [];
+  const client = getOctokit();
+  if (!config || !client) return [];
 
-  const client = getOctokit(config.token);
   const { data } = await client.rest.repos.getContent({
     owner: config.owner,
     repo: config.repo,
@@ -114,17 +95,22 @@ async function getAllPostsFromGitHub(): Promise<PostData[]> {
   const postFiles = data.filter((file) => file.name.endsWith(".md"));
   const posts = await Promise.all(
     postFiles.map(async (file) => {
-      const { data: fileData } = await client.rest.repos.getContent({
-        owner: config.owner,
-        repo: config.repo,
-        path: file.path,
-        ref: BRANCH,
-      });
+      try {
+        const { data: fileData } = await client.rest.repos.getContent({
+          owner: config.owner,
+          repo: config.repo,
+          path: file.path,
+          ref: BRANCH,
+        });
 
-      if (!("content" in fileData)) return null;
+        if (!("content" in fileData)) return null;
 
-      const markdown = Buffer.from(fileData.content, "base64").toString("utf8");
-      return postFromMarkdown(file.name.replace(/\.md$/, ""), markdown);
+        const markdown = Buffer.from(fileData.content, "base64").toString("utf8");
+        return postFromMarkdown(file.name.replace(/\.md$/, ""), markdown);
+      } catch (e: any) {
+        console.error(`Error fetching GitHub post ${file.name}:`, e.message);
+        return null;
+      }
     })
   );
 
@@ -133,7 +119,7 @@ async function getAllPostsFromGitHub(): Promise<PostData[]> {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export async function getAllPosts(): Promise<PostData[]> {
+export const getAllPosts = cache(async (): Promise<PostData[]> => {
   if (getGitHubConfig()) {
     try {
       return await getAllPostsFromGitHub();
@@ -143,7 +129,7 @@ export async function getAllPosts(): Promise<PostData[]> {
   }
 
   return getAllPostsLocal();
-}
+});
 
 async function getPostBySlugLocal(slug: string): Promise<PostData | null> {
   try {
@@ -158,24 +144,32 @@ async function getPostBySlugLocal(slug: string): Promise<PostData | null> {
 
 async function getPostBySlugFromGitHub(slug: string): Promise<PostData | null> {
   const config = getGitHubConfig();
-  if (!config) return null;
+  const client = getOctokit();
+  if (!config || !client) return null;
 
   assertSafeSlug(slug);
 
-  const { data } = await getOctokit(config.token).rest.repos.getContent({
-    owner: config.owner,
-    repo: config.repo,
-    path: `content/posts/${slug}.md`,
-    ref: BRANCH,
-  });
+  try {
+    const { data } = await client.rest.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: `content/posts/${slug}.md`,
+      ref: BRANCH,
+    });
 
-  if (!("content" in data)) return null;
+    if (!("content" in data)) return null;
 
-  const markdown = Buffer.from(data.content, "base64").toString("utf8");
-  return postFromMarkdown(slug, markdown);
+    const markdown = Buffer.from(data.content, "base64").toString("utf8");
+    return postFromMarkdown(slug, markdown);
+  } catch (e: any) {
+    if (e.status !== 404) {
+      console.error(`Error fetching GitHub post ${slug}:`, e.message);
+    }
+    return null;
+  }
 }
 
-export async function getPostBySlug(slug: string): Promise<PostData | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<PostData | null> => {
   if (getGitHubConfig()) {
     try {
       return await getPostBySlugFromGitHub(slug);
@@ -185,7 +179,7 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
   }
 
   return getPostBySlugLocal(slug);
-}
+});
 
 export async function getAdjacentPosts(slug: string): Promise<{ next: PostData | null; prev: PostData | null }> {
   const allPosts = await getAllPosts();
@@ -236,13 +230,13 @@ async function savePostLocal(post: PostData) {
 
 async function savePostToGitHub(post: PostData) {
   const config = getGitHubConfig();
-  if (!config) {
+  const client = getOctokit();
+  if (!config || !client) {
     throw new Error("Missing GitHub configuration for runtime post persistence");
   }
 
   assertSafeSlug(post.slug);
 
-  const client = getOctokit(config.token);
   const path = `content/posts/${post.slug}.md`;
   const content = Buffer.from(postToMarkdown(post)).toString("base64");
   let sha: string | undefined;

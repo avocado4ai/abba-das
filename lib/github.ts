@@ -1,12 +1,7 @@
-import { Octokit } from "octokit";
+import { getOctokit, getGitHubConfig } from "./github-client";
 import matter from "gray-matter";
+import { cache } from "react";
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
-
-const OWNER = process.env.GITHUB_OWNER || "";
-const REPO = process.env.GITHUB_REPO || "";
 const BRANCH = "main";
 
 export interface PostData {
@@ -31,6 +26,14 @@ export interface CommentData {
  * Saves a comment to the GitHub repository.
  */
 export async function saveCommentToGitHub(slug: string, comment: CommentData) {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  
+  if (!config || !octokit) {
+    console.warn("GitHub configuration missing. Comment not saved to remote.");
+    return null;
+  }
+
   const path = `content/comments/${slug}.json`;
   const message = `Add comment to post: ${slug}`;
   
@@ -41,8 +44,8 @@ export async function saveCommentToGitHub(slug: string, comment: CommentData) {
     // Try to fetch existing comments
     try {
       const { data } = await octokit.rest.repos.getContent({
-        owner: OWNER,
-        repo: REPO,
+        owner: config.owner,
+        repo: config.repo,
         path,
         ref: BRANCH,
       });
@@ -51,8 +54,11 @@ export async function saveCommentToGitHub(slug: string, comment: CommentData) {
         sha = data.sha;
         currentComments = JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
       }
-    } catch {
-      // File doesn't exist yet, which is fine
+    } catch (e: any) {
+      if (e.status !== 404) {
+        console.error(`Error fetching comments for ${slug}:`, e);
+      }
+      // 404 means file doesn't exist yet, which is fine
     }
 
     // Add new comment to the list
@@ -60,8 +66,8 @@ export async function saveCommentToGitHub(slug: string, comment: CommentData) {
     const contentBase64 = Buffer.from(JSON.stringify(updatedComments, null, 2)).toString("base64");
 
     const response = await octokit.rest.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
+      owner: config.owner,
+      repo: config.repo,
       path,
       content: contentBase64,
       message,
@@ -79,12 +85,17 @@ export async function saveCommentToGitHub(slug: string, comment: CommentData) {
 /**
  * Fetches all comments for a specific post slug.
  */
-export async function getCommentsForPost(slug: string): Promise<CommentData[]> {
+export const getCommentsForPost = cache(async (slug: string): Promise<CommentData[]> => {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  
+  if (!config || !octokit) return [];
+
   try {
     const path = `content/comments/${slug}.json`;
     const { data } = await octokit.rest.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
+      owner: config.owner,
+      repo: config.repo,
       path,
       ref: BRANCH,
     });
@@ -93,16 +104,25 @@ export async function getCommentsForPost(slug: string): Promise<CommentData[]> {
       return JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
     }
     return [];
-  } catch {
-    // If file doesn't exist, return empty array
+  } catch (e: any) {
+    if (e.status !== 404) {
+      console.error(`Error fetching comments for ${slug}:`, e);
+    }
     return [];
   }
-}
+});
 
 /**
  * Saves a blog post as a Markdown file to the GitHub repository.
  */
 export async function savePostToGitHub(post: PostData) {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  
+  if (!config || !octokit) {
+    throw new Error("GitHub configuration missing");
+  }
+
   const path = `content/posts/${post.slug}.md`;
   const message = `Add new post: ${post.title}`;
   
@@ -125,21 +145,23 @@ ${post.content}
     let sha: string | undefined;
     try {
       const { data } = await octokit.rest.repos.getContent({
-        owner: OWNER,
-        repo: REPO,
+        owner: config.owner,
+        repo: config.repo,
         path,
         ref: BRANCH,
       });
       if (!Array.isArray(data)) {
         sha = data.sha;
       }
-    } catch {
-      // File doesn't exist, which is fine for new posts
+    } catch (e: any) {
+      if (e.status !== 404) {
+        console.error(`Error checking post existence for ${post.slug}:`, e);
+      }
     }
 
     const response = await octokit.rest.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
+      owner: config.owner,
+      repo: config.repo,
       path,
       content: contentBase64,
       message,
@@ -157,12 +179,17 @@ ${post.content}
 /**
  * Fetches a single post by its slug.
  */
-export async function getPostBySlug(slug: string): Promise<PostData | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<PostData | null> => {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  
+  if (!config || !octokit) return null;
+
   try {
     const path = `content/posts/${slug}.md`;
     const { data: fileData } = await octokit.rest.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
+      owner: config.owner,
+      repo: config.repo,
       path,
       ref: BRANCH,
     });
@@ -183,11 +210,13 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
       };
     }
     return null;
-  } catch (error) {
-    console.error(`Error fetching post ${slug}:`, error);
+  } catch (e: any) {
+    if (e.status !== 404) {
+      console.error(`Error fetching post ${slug}:`, e);
+    }
     return null;
   }
-}
+});
 
 /**
  * Fetches adjacent posts (next and previous) for a given slug.
@@ -198,9 +227,6 @@ export async function getAdjacentPosts(slug: string): Promise<{ next: PostData |
 
   if (currentIndex === -1) return { next: null, prev: null };
 
-  // Posts are sorted newest first, so:
-  // prev (older) is at index + 1
-  // next (newer) is at index - 1
   return {
     next: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
     prev: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null,
@@ -210,11 +236,16 @@ export async function getAdjacentPosts(slug: string): Promise<{ next: PostData |
 /**
  * Fetches all posts from the content/posts directory with their content parsed.
  */
-export async function getAllPosts(): Promise<PostData[]> {
+export const getAllPosts = cache(async (): Promise<PostData[]> => {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  
+  if (!config || !octokit) return [];
+
   try {
     const { data } = await octokit.rest.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
+      owner: config.owner,
+      repo: config.repo,
       path: "content/posts",
       ref: BRANCH,
     });
@@ -225,28 +256,32 @@ export async function getAllPosts(): Promise<PostData[]> {
 
     const posts = (await Promise.all(
       postFiles.map(async (file) => {
-        const { data: fileData } = await octokit.rest.repos.getContent({
-          owner: OWNER,
-          repo: REPO,
-          path: file.path,
-          ref: BRANCH,
-        });
+        try {
+          const { data: fileData } = await octokit.rest.repos.getContent({
+            owner: config.owner,
+            repo: config.repo,
+            path: file.path,
+            ref: BRANCH,
+          });
 
-        if ("content" in fileData) {
-          const content = Buffer.from(fileData.content, "base64").toString("utf-8");
-          const { data: frontmatter, content: body } = matter(content);
+          if ("content" in fileData) {
+            const content = Buffer.from(fileData.content, "base64").toString("utf-8");
+            const { data: frontmatter, content: body } = matter(content);
 
-          const post: PostData = {
-            title: frontmatter.title || file.name.replace(".md", ""),
-            date: frontmatter.date || "",
-            weather: frontmatter.weather || "sunny",
-            tags: frontmatter.tags || [],
-            slug: file.name.replace(".md", ""),
-            content: body,
-            contentType: frontmatter.contentType || "story",
-            category: frontmatter.category || "memories",
-          };
-          return post;
+            const post: PostData = {
+              title: frontmatter.title || file.name.replace(".md", ""),
+              date: frontmatter.date || "",
+              weather: frontmatter.weather || "sunny",
+              tags: frontmatter.tags || [],
+              slug: file.name.replace(".md", ""),
+              content: body,
+              contentType: frontmatter.contentType || "story",
+              category: frontmatter.category || "memories",
+            };
+            return post;
+          }
+        } catch (e: any) {
+          console.error(`Error fetching post content for ${file.name}:`, e.message);
         }
         return null;
       })
@@ -257,4 +292,4 @@ export async function getAllPosts(): Promise<PostData[]> {
     console.error("Error fetching posts:", error);
     return [];
   }
-}
+});
