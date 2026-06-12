@@ -136,7 +136,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="border-t border-border-theme pt-5 text-center">
-            <p className="text-xs text-muted-theme/60">
+            <p className="text-xs text-muted-theme/60" suppressHydrationWarning>
               © {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.
             </p>
           </div>
