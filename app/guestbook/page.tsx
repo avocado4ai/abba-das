@@ -36,10 +36,18 @@ export default async function GuestbookPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sage/10 text-sage mb-6">
               <MessageSquareText className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl font-bold text-navy mb-4">ספר אורחים</h1>
-            <p className="text-xl text-muted-theme leading-relaxed">
+            <div className="inline-block px-3 py-1 bg-sage/10 border border-sage/20 rounded-full mb-4">
+              <span className="text-xs font-bold text-sage">ספר האורחים של אבא-דס</span>
+            </div>
+            <h1 className="text-4xl font-bold text-foreground mb-4">ספר אורחים</h1>
+            <p className="text-xl text-muted-theme leading-relaxed max-w-md mx-auto">
               מקום לברכות, זיכרונות ומילים חמות לאבא.
             </p>
+            <div className="flex justify-center items-center gap-3 mt-6">
+              <div className="h-px w-16 bg-border-theme" />
+              <span className="text-xs text-muted-theme/50">רוני נאמן</span>
+              <div className="h-px w-16 bg-border-theme" />
+            </div>
           </div>
 
           <Comments slug="guestbook" initialComments={initialComments} />
@@ -47,9 +55,9 @@ export default async function GuestbookPage() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-border-theme bg-navy/5">
-        <div className="max-w-2xl mx-auto px-6 text-center text-muted-theme text-sm">
-          <p>© {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.</p>
+      <footer className="py-8 border-t border-border-theme">
+        <div className="max-w-2xl mx-auto px-6 text-center text-muted-theme text-xs">
+          <p>© {new Date().getFullYear()} אבא-דס · כתוב ע&quot;י רוני נאמן</p>
         </div>
       </footer>
     </div>

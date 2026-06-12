@@ -14,8 +14,9 @@ const assistant = Assistant({
 });
 
 export const metadata: Metadata = {
-  title: "Abba-Das | אבא-דס",
-  description: "בלוג הסיפורים של אבא",
+  title: "אבא-דס | סיפורים של רוני נאמן",
+  description: "בלוג הסיפורים של רוני נאמן — זכרונות, מחשבות ורגעים קטנים מהחיים.",
+  authors: [{ name: "רוני נאמן" }],
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX, SlidersHorizontal } from 'lucide-react';
+import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX, SlidersHorizontal, Clock, User } from 'lucide-react';
 import Link from 'next/link';
 import type { PostData } from '@/lib/posts';
 import ContentTypeBadge from './ContentTypeBadge';
@@ -22,6 +22,11 @@ const WeatherIcon = ({ weather }: { weather?: string }) => {
     default:
       return <Sun className="w-5 h-5 text-yellow-500" />;
   }
+};
+
+const getReadingTime = (content: string) => {
+  const words = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 200));
 };
 
 export default function PostList({ initialPosts }: { initialPosts: PostData[] }) {
@@ -154,16 +159,18 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         <div className="space-y-6 sm:space-y-10 lg:space-y-12">
           {filteredPosts.map((post) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
-              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 border border-border-theme shadow-sm transition-all duration-300 hover:bg-white/15 dark:hover:bg-white/10 hover:border-coral/40 hover:shadow-lg hover:shadow-coral/5">
+              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 border border-border-theme shadow-sm transition-all duration-300 hover:bg-white/15 dark:hover:bg-white/10 hover:border-sage/30 hover:shadow-xl hover:-translate-y-1">
                 {/* Story Image Thumbnail */}
                 <div className="h-32 sm:h-48 lg:h-52 overflow-hidden">
-                  <StoryImage
-                    slug={post.slug}
-                    title=""
-                    src={post.featuredImage?.src}
-                    alt={post.featuredImage?.alt || post.title}
-                    className="h-full"
-                  />
+                  <div className="h-full w-full transition-transform duration-700 group-hover:scale-105">
+                    <StoryImage
+                      slug={post.slug}
+                      title=""
+                      src={post.featuredImage?.src}
+                      alt={post.featuredImage?.alt || post.title}
+                      className="h-full w-full"
+                    />
+                  </div>
                 </div>
 
                 <div className="p-4 sm:p-6 lg:p-8">
@@ -174,11 +181,13 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                           ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                           : 'תאריך לא ידוע'}
                       </span>
-                      <div className="hidden sm:block w-1 h-1 rounded-full bg-gradient-to-r from-coral to-warm-gold" />
+                      <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
                       <WeatherIcon weather={post.weather} />
-                      {post.tags?.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[10px] sm:text-xs font-bold text-coral opacity-80 bg-coral/10 px-2 sm:px-2.5 py-0.5 rounded-full">#{tag}</span>
-                      ))}
+                      <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
+                      <div className="flex items-center gap-1 text-xs text-muted-theme">
+                        <Clock className="w-3 h-3" aria-hidden="true" />
+                        <span>{getReadingTime(post.content)} דק&apos;</span>
+                      </div>
                       {favorites.includes(post.slug) && (
                         <>
                           <div className="w-1 h-1 rounded-full bg-border-theme" />
@@ -186,6 +195,14 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                         </>
                       )}
                     </div>
+                    {/* Tags */}
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {post.tags.slice(0, 3).map(tag => (
+                          <span key={tag} className="text-[10px] sm:text-xs font-bold text-sage opacity-80 bg-sage/10 px-2 sm:px-2.5 py-0.5 rounded-full">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
                     <ContentTypeBadge contentType={post.contentType} category={post.category} size="sm" />
                   </div>
 
@@ -197,6 +214,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                     {post.content}
                   </p>
 
+                  <div className="flex items-center gap-1.5 mb-3 sm:mb-4">
+                    <div className="w-5 h-5 rounded-full bg-sage/20 flex items-center justify-center">
+                      <User className="w-3 h-3 text-sage" aria-hidden="true" />
+                    </div>
+                    <span className="text-xs text-muted-theme">רוני נאמן</span>
+                  </div>
                   <div className="inline-flex items-center text-sm sm:text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                     קרא עוד
                     <span className="transition-transform duration-250 group-hover:-translate-x-1" aria-hidden="true">←</span>
