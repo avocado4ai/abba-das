@@ -170,23 +170,29 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
           <ol className="list-none space-y-6 sm:space-y-12">
             {comments.map((comment, index) => (
               <li key={comment.id} className="group">
-                <article className="focus-within:ring-2 focus-within:ring-sage/50 rounded px-2 py-1">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-navy font-heebo">
-                      {comment.name}
-                    </span>
-                    <div className="w-1 h-1 rounded-full bg-border-theme" aria-hidden="true" />
-                    <time className="text-xs text-muted-theme" dateTime={new Date(comment.date).toISOString()}>
-                      {format(new Date(comment.date), 'dd/MM/yyyy HH:mm', { locale: he })}
-                    </time>
-                  </div>
-                  <div className="font-stories text-base sm:text-lg text-foreground/90 leading-relaxed">
-                    {comment.message}
+                <article className="focus-within:ring-2 focus-within:ring-sage/50 rounded-xl px-3 py-3 hover:bg-white/5 transition-colors duration-200">
+                  <div className="flex items-start gap-3 mb-2">
+                    <div
+                      className="w-8 h-8 rounded-full bg-gradient-to-br from-sage/30 to-coral/20 flex items-center justify-center text-sm font-bold text-sage shrink-0"
+                      aria-hidden="true"
+                    >
+                      {comment.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-foreground font-heebo">
+                          {comment.name}
+                        </span>
+                        <time className="text-xs text-muted-theme" dateTime={new Date(comment.date).toISOString()}>
+                          {format(new Date(comment.date), 'dd/MM/yyyy HH:mm', { locale: he })}
+                        </time>
+                      </div>
+                      <div className="font-stories text-base sm:text-lg text-foreground/90 leading-relaxed">
+                        {comment.message}
+                      </div>
+                    </div>
                   </div>
                 </article>
-                {index < comments.length - 1 && (
-                  <div className="mt-4 sm:mt-8 h-px bg-border-theme w-1/4 opacity-20" aria-hidden="true" />
-                )}
               </li>
             ))}
           </ol>

@@ -46,8 +46,12 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="relative py-6 sm:py-14 md:py-18 px-4 sm:px-6 overflow-hidden">
         {/* Gradient Background with Decorative Elements */}
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute inset-0 bg-linear-to-b from-sage/5 via-transparent to-transparent" />
+          {/* Decorative blobs */}
+          <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full bg-sage/8 blur-3xl animate-blob opacity-70" />
+          <div className="absolute top-10 right-1/4 w-64 h-64 rounded-full bg-coral/6 blur-3xl animate-blob animation-delay-2000 opacity-60" />
+          <div className="absolute bottom-0 left-1/2 w-56 h-56 rounded-full bg-warm-gold/5 blur-3xl animate-blob animation-delay-4000 opacity-50" />
         </div>
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
@@ -67,15 +71,18 @@ export default async function Home() {
             <div className="w-24 h-px bg-linear-to-l from-transparent to-coral/50" />
           </div>
 
-          <figure className="mx-auto mb-4 sm:mb-8 max-w-[160px] sm:max-w-sm overflow-hidden rounded-lg border border-border-theme bg-background shadow-lg sm:shadow-xl animate-fadeInUp">
-            <Image
-              src="/images/abba-ima-beach.webp"
-              alt="אבא ואימא ליד הים - צילום ראליסטי"
-              width={512}
-              height={512}
-              className="h-auto w-full object-cover"
-              priority
-            />
+          <figure className="relative mx-auto mb-4 sm:mb-8 max-w-[160px] sm:max-w-sm animate-fadeInUp">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-sage/20 via-coral/10 to-warm-gold/20 blur-sm" />
+            <div className="relative overflow-hidden rounded-xl border border-border-theme bg-background shadow-xl transition-transform duration-500 hover:-rotate-1">
+              <Image
+                src="/images/abba-ima-beach.webp"
+                alt="אבא ואימא ליד הים - צילום ראליסטי"
+                width={512}
+                height={512}
+                className="h-auto w-full object-cover"
+                priority
+              />
+            </div>
           </figure>
 
           <p className="hidden sm:block text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-10 font-stories animate-fadeInUp px-2">
@@ -104,14 +111,33 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 sm:py-12 border-t border-border-theme">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <div className="space-y-1.5">
-            <p className="text-xs sm:text-sm font-medium text-muted-theme">
+      <footer className="py-10 sm:py-14 border-t border-border-theme bg-foreground/[0.02]">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 mb-8">
+            {/* Brand */}
+            <div className="text-center sm:text-right">
+              <p className="font-bold text-foreground text-lg mb-1">אבא-דס</p>
+              <p className="text-xs text-muted-theme leading-relaxed">סיפורים, זכרונות ורגעים<br/>מחיי הכותב</p>
+            </div>
+            {/* Links */}
+            <div className="text-center">
+              <p className="font-bold text-foreground text-sm mb-3">קישורים</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/guestbook" className="text-xs text-muted-theme hover:text-coral transition-colors no-underline">ספר אורחים</Link>
+                <Link href="/print" className="text-xs text-muted-theme hover:text-coral transition-colors no-underline">הדפסת סיפורים</Link>
+                <Link href="/feed.xml" className="text-xs text-muted-theme hover:text-coral transition-colors no-underline">פיד RSS</Link>
+              </div>
+            </div>
+            {/* Author */}
+            <div className="text-center sm:text-left">
+              <p className="font-bold text-foreground text-sm mb-1">הכותב</p>
+              <p className="text-sm text-foreground font-medium">רוני נאמן</p>
+              <p className="text-xs text-muted-theme mt-1">עשויה באהבה עבור המשפחה</p>
+            </div>
+          </div>
+          <div className="border-t border-border-theme pt-5 text-center">
+            <p className="text-xs text-muted-theme/60">
               © {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.
-            </p>
-            <p className="text-xs text-muted-theme/50">
-              עשויה באהבה עבור משפחתנו
             </p>
           </div>
         </div>
