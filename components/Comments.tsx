@@ -100,7 +100,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
           )}
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <label htmlFor="comment-name" className="block text-xs sm:text-sm font-bold text-muted-theme mb-1.5 sm:mb-2">
+              <label htmlFor="comment-name" className="block text-sm font-bold text-muted-theme mb-1.5 sm:mb-2">
                 השם שלכם *
               </label>
               <input
@@ -119,7 +119,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
               />
             </div>
             <div>
-              <label htmlFor="comment-message" className="block text-xs sm:text-sm font-bold text-muted-theme mb-1.5 sm:mb-2">
+              <label htmlFor="comment-message" className="block text-sm font-bold text-muted-theme mb-1.5 sm:mb-2">
                 ההודעה שלכם ({message.length}/1000) *
               </label>
               <textarea
@@ -136,7 +136,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                 aria-describedby={error ? 'comment-error' : 'comment-counter'}
                 maxLength={1000}
               />
-              <div id="comment-counter" className="text-xs text-muted-theme/60 mt-1">
+              <div id="comment-counter" className="text-sm text-muted-theme/60 mt-1">
                 {message.length === 1000 && '(הגעת לגבול התווים)'}
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                   setError(null);
                   setSuccess(null);
                 }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-theme hover:text-navy transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-sage/50 rounded"
+                className="px-3 sm:px-4 py-2 text-sm text-muted-theme hover:text-navy transition-colors duration-250 focus:outline-none focus:ring-2 focus:ring-sage/50 rounded"
               >
                 ביטול
               </button>
@@ -156,7 +156,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                 type="submit"
                 disabled={isSubmitting || !name.trim() || !message.trim()}
                 aria-busy={isSubmitting}
-                className="bg-navy text-cream px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-bold hover:bg-sage focus:outline-none focus:ring-2 focus:ring-navy/50"
+                className="bg-navy text-cream px-4 sm:px-6 py-2 rounded-full text-sm font-bold hover:bg-sage focus:outline-none focus:ring-2 focus:ring-navy/50"
               >
                 {isSubmitting ? 'שולח...' : 'פרסום תגובה'}
               </button>
@@ -180,10 +180,10 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-foreground font-heebo">
+                        <span className="text-sm font-bold text-foreground font-heebo">
                           {comment.name}
                         </span>
-                        <time className="text-xs text-muted-theme" dateTime={new Date(comment.date).toISOString()}>
+                        <time className="text-sm text-muted-theme" dateTime={new Date(comment.date).toISOString()}>
                           {format(new Date(comment.date), 'dd/MM/yyyy HH:mm', { locale: he })}
                         </time>
                       </div>

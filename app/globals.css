@@ -45,6 +45,20 @@
   --muted: rgba(62, 39, 35, 0.65);
 }
 
+[data-text="large"] body {
+  font-size: 20px;
+  line-height: 2.0;
+  letter-spacing: 0.5px;
+}
+
+[data-text="large"] h1 {
+  @apply text-4xl md:text-5xl;
+}
+
+[data-text="large"] p {
+  @apply text-xl md:text-2xl;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -367,7 +381,7 @@ select:focus-visible {
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   body {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   h1 {

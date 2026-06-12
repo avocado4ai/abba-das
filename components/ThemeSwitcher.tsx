@@ -5,6 +5,47 @@ import { Sun, Moon, Scroll, Palette } from 'lucide-react';
 
 type Theme = 'classic' | 'dark' | 'paper';
 
+function LargeTextToggle() {
+  const [isLarge, setIsLarge] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('abba_text_size');
+    if (saved === 'large') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLarge(true);
+      document.documentElement.setAttribute('data-text', 'large');
+    }
+  }, []);
+
+  const toggle = () => {
+    const next = !isLarge;
+    setIsLarge(next);
+    if (next) {
+      document.documentElement.setAttribute('data-text', 'large');
+      localStorage.setItem('abba_text_size', 'large');
+    } else {
+      document.documentElement.removeAttribute('data-text');
+      localStorage.removeItem('abba_text_size');
+    }
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className={`p-2 rounded-full transition-all duration-250 border ${
+        isLarge
+          ? 'bg-sage/20 text-sage border-sage/30'
+          : 'text-foreground/60 hover:text-sage border-transparent hover:border-sage/20 hover:bg-sage/10'
+      }`}
+      title={isLarge ? 'חזור לגופן רגיל' : 'הגדל גופן'}
+      aria-label={isLarge ? 'מצב גופן גדול — לחץ לביטול' : 'הגדל גופן לנוחות קריאה'}
+      aria-pressed={isLarge}
+    >
+      <span className="font-bold text-sm select-none" aria-hidden="true">א</span>
+    </button>
+  );
+}
+
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState<Theme>('classic');
   const [isOpen, setIsOpen] = useState(false);
@@ -32,45 +73,48 @@ export default function ThemeSwitcher() {
   ];
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full hover:bg-coral/10 transition-all duration-250 text-foreground/60 hover:text-coral border border-transparent hover:border-coral/20"
-        title="החלף ערכת נושא"
-        aria-label={isOpen ? 'סגור בחירת נושא' : 'פתח בחירת נושא'}
-        aria-expanded={isOpen}
-      >
-        <Palette className="w-5 h-5" />
-      </button>
+    <div className="flex items-center gap-1">
+      <LargeTextToggle />
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 rounded-full hover:bg-coral/10 transition-all duration-250 text-foreground/60 hover:text-coral border border-transparent hover:border-coral/20"
+          title="החלף ערכת נושא"
+          aria-label={isOpen ? 'סגור בחירת נושא' : 'פתח בחירת נושא'}
+          aria-expanded={isOpen}
+        >
+          <Palette className="w-5 h-5" />
+        </button>
 
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute right-0 mt-2 w-44 bg-background border border-border-theme rounded-2xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-            <div className="p-2 space-y-1">
-              {themes.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => changeTheme(t.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-250 ${
-                    theme === t.id
-                      ? 'bg-coral/20 text-coral border border-coral/30'
-                      : 'text-foreground/70 hover:bg-warm-gold/10 hover:text-warm-gold border border-transparent'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${t.color} ${theme === t.id ? 'ring-2 ring-coral ring-offset-1' : 'border-border-theme/30'}`}>
-                    {t.icon}
-                  </div>
-                  <span>{t.label}</span>
-                </button>
-              ))}
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+            <div className="absolute right-0 mt-2 w-44 bg-background border border-border-theme rounded-2xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="p-2 space-y-1">
+                {themes.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => changeTheme(t.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-250 ${
+                      theme === t.id
+                        ? 'bg-coral/20 text-coral border border-coral/30'
+                        : 'text-foreground/70 hover:bg-warm-gold/10 hover:text-warm-gold border border-transparent'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${t.color} ${theme === t.id ? 'ring-2 ring-coral ring-offset-1' : 'border-border-theme/30'}`}>
+                      {t.icon}
+                    </div>
+                    <span>{t.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

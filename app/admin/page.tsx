@@ -14,6 +14,10 @@ const generateSlug = (dateStr: string) => {
   return `${dateStr}-${randomSuffix}`;
 };
 
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 type PostDraft = {
   title: string;
   slug: string;
@@ -405,20 +409,30 @@ export default function AdminPage() {
 
     // Process attachments
     if (msg.attachments && msg.attachments.length > 0) {
+      const failedUploads: string[] = [];
       for (const attachmentName of msg.attachments) {
         const fileToUpload = attachedFiles.find(f => f.name === attachmentName);
         if (fileToUpload) {
-          const url = await uploadFile(fileToUpload);
-          if (url) {
-            // Replace the attachment placeholder with markdown
-            const isVideo = fileToUpload.type.startsWith('video/');
-            const markdownMedia = isVideo ? `\n\n<video controls src="${url}"></video>\n\n` : `\n\n![${attachmentName}](${url})\n\n`;
-            
-            // Regex to replace either "filename.jpg (file attached)" or "<attached: filename.jpg>"
-            const regex = new RegExp(`${attachmentName}\\s*\\(file attached\\)|<attached:\\s*${attachmentName}>`, 'gi');
-            finalContent = finalContent.replace(regex, markdownMedia);
+          try {
+            const url = await uploadFile(fileToUpload);
+            if (url) {
+              // Replace the attachment placeholder with markdown
+              const isVideo = fileToUpload.type.startsWith('video/');
+              const markdownMedia = isVideo ? `\n\n<video controls src="${url}"></video>\n\n` : `\n\n![${attachmentName}](${url})\n\n`;
+
+              // Regex to replace either "filename.jpg (file attached)" or "<attached: filename.jpg>"
+              const escaped = escapeRegExp(attachmentName);
+              const regex = new RegExp(`${escaped}\\s*\\(file attached\\)|<attached:\\s*${escaped}>`, 'gi');
+              finalContent = finalContent.replace(regex, markdownMedia);
+            }
+          } catch {
+            failedUploads.push(attachmentName);
+            finalContent += `\n\n<!-- קובץ לא הועלה: ${attachmentName} -->\n\n`;
           }
         }
+      }
+      if (failedUploads.length > 0) {
+        setError(`חלק מהקבצים לא הועלו: ${failedUploads.join(', ')}`);
       }
     }
 

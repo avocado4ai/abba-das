@@ -110,13 +110,13 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 gap-4">
             <div className="space-y-3 sm:space-y-4 min-w-0">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <span className="text-xs sm:text-sm font-medium text-muted-theme">
+                <span className="text-sm sm:text-base font-medium text-muted-theme">
                   {post.date ? format(new Date(post.date), "dd MMMM yyyy", { locale: he }) : "תאריך לא ידוע"}
                 </span>
                 <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
                 <WeatherIcon weather={post.weather} />
                 <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
-                <div className="flex items-center gap-1 text-xs sm:text-sm font-medium text-muted-theme">
+                <div className="flex items-center gap-1 text-sm sm:text-base font-medium text-muted-theme">
                   <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
                   <span>{readingTime} דק&apos; קריאה</span>
                 </div>
