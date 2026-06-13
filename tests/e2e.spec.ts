@@ -68,7 +68,7 @@ test.describe('Navigation', () => {
   test('guestbook page loads', async ({ page }) => {
     await page.goto(`${BASE}/guestbook`);
     await expect(page.locator('h1')).toContainText('ספר אורחים');
-    await expect(page.locator('text=רוני נאמן')).toBeVisible();
+    await expect(page.locator('text=רוני נאמן').first()).toBeVisible();
   });
 
   test('admin redirect sends unauthenticated users to sign-in', async ({ page }) => {
