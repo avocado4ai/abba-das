@@ -24,7 +24,6 @@ export default function AudioPlayer({ text }: { text: string }) {
     return () => {
       synth.cancel();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, rate]);
 
   const togglePlay = () => {

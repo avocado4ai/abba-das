@@ -107,8 +107,8 @@ async function getAllPostsFromGitHub(): Promise<PostData[]> {
 
         const markdown = Buffer.from(fileData.content, "base64").toString("utf8");
         return postFromMarkdown(file.name.replace(/\.md$/, ""), markdown);
-      } catch (e: any) {
-        console.error(`Error fetching GitHub post ${file.name}:`, e.message);
+      } catch (e: unknown) {
+        console.error(`Error fetching GitHub post ${file.name}:`, e instanceof Error ? e.message : String(e));
         return null;
       }
     })
@@ -161,9 +161,10 @@ async function getPostBySlugFromGitHub(slug: string): Promise<PostData | null> {
 
     const markdown = Buffer.from(data.content, "base64").toString("utf8");
     return postFromMarkdown(slug, markdown);
-  } catch (e: any) {
-    if (e.status !== 404) {
-      console.error(`Error fetching GitHub post ${slug}:`, e.message);
+  } catch (e: unknown) {
+    const status = typeof e === "object" && e !== null && "status" in e ? (e as { status: number }).status : undefined;
+    if (status !== 404) {
+      console.error(`Error fetching GitHub post ${slug}:`, e instanceof Error ? e.message : String(e));
     }
     return null;
   }

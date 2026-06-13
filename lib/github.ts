@@ -4,6 +4,16 @@ import { cache } from "react";
 
 const BRANCH = "main";
 
+function httpStatus(e: unknown): number | undefined {
+  return typeof e === "object" && e !== null && "status" in e
+    ? (e as { status: number }).status
+    : undefined;
+}
+
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
 export interface PostData {
   title: string;
   content: string;
@@ -54,8 +64,8 @@ export async function saveCommentToGitHub(slug: string, comment: CommentData) {
         sha = data.sha;
         currentComments = JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
       }
-    } catch (e: any) {
-      if (e.status !== 404) {
+    } catch (e: unknown) {
+      if (httpStatus(e) !== 404) {
         console.error(`Error fetching comments for ${slug}:`, e);
       }
       // 404 means file doesn't exist yet, which is fine
@@ -104,8 +114,8 @@ export const getCommentsForPost = cache(async (slug: string): Promise<CommentDat
       return JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
     }
     return [];
-  } catch (e: any) {
-    if (e.status !== 404) {
+  } catch (e: unknown) {
+    if (httpStatus(e) !== 404) {
       console.error(`Error fetching comments for ${slug}:`, e);
     }
     return [];
@@ -153,8 +163,8 @@ ${post.content}
       if (!Array.isArray(data)) {
         sha = data.sha;
       }
-    } catch (e: any) {
-      if (e.status !== 404) {
+    } catch (e: unknown) {
+      if (httpStatus(e) !== 404) {
         console.error(`Error checking post existence for ${post.slug}:`, e);
       }
     }
@@ -210,8 +220,8 @@ export const getPostBySlug = cache(async (slug: string): Promise<PostData | null
       };
     }
     return null;
-  } catch (e: any) {
-    if (e.status !== 404) {
+  } catch (e: unknown) {
+    if (httpStatus(e) !== 404) {
       console.error(`Error fetching post ${slug}:`, e);
     }
     return null;
@@ -280,8 +290,8 @@ export const getAllPosts = cache(async (): Promise<PostData[]> => {
             };
             return post;
           }
-        } catch (e: any) {
-          console.error(`Error fetching post content for ${file.name}:`, e.message);
+        } catch (e: unknown) {
+          console.error(`Error fetching post content for ${file.name}:`, errorMessage(e));
         }
         return null;
       })

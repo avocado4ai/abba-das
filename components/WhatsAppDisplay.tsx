@@ -39,7 +39,7 @@ export default function WhatsAppDisplay({ content, date }: WhatsAppDisplayProps)
           <div className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em] text-sage mb-6 flex justify-between items-center border-b border-navy/10 pb-3">
             <span className="opacity-80">מהדורה מיוחדת</span>
             <span className="text-navy">{date ? format(new Date(date), "dd MMMM yyyy", { locale: he }) : "מיוחד לבלוג"}</span>
-            <span className="opacity-80">גיליון מס' 42</span>
+            <span className="opacity-80">גיליון מס&apos; 42</span>
           </div>
           <h2 className="text-5xl sm:text-7xl font-serif font-black text-navy mb-4 tracking-tighter leading-none">
             וואטס יום ו׳
