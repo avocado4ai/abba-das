@@ -76,7 +76,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       <div className="flex items-center justify-between gap-3 mb-3 sm:mb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-foreground">כל הסיפורים</h2>
-          <p className="text-xs sm:text-sm text-muted-theme">
+          <p className="text-sm sm:text-base text-muted-theme">
             {filteredPosts.length === initialPosts.length
               ? `${initialPosts.length} סיפורים זמינים`
               : `${filteredPosts.length} מתוך ${initialPosts.length} סיפורים`}
@@ -176,7 +176,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 <div className="p-4 sm:p-6 lg:p-8">
                   <div className="flex flex-col gap-2 sm:gap-3 mb-2 sm:mb-4">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span className="text-xs sm:text-sm font-medium text-muted-theme">
+                      <span className="text-sm sm:text-base font-medium text-muted-theme">
                         {post.date
                           ? format(new Date(post.date), 'dd MMMM yyyy', { locale: he })
                           : 'תאריך לא ידוע'}
@@ -184,7 +184,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                       <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
                       <WeatherIcon weather={post.weather} />
                       <div className="hidden sm:block w-1 h-1 rounded-full bg-border-theme" />
-                      <div className="flex items-center gap-1 text-xs text-muted-theme">
+                      <div className="flex items-center gap-1 text-sm text-muted-theme">
                         <Clock className="w-3 h-3" aria-hidden="true" />
                         <span>{getReadingTime(post.content)} דק&apos;</span>
                       </div>
@@ -199,7 +199,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                     {post.tags && post.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {post.tags.slice(0, 3).map(tag => (
-                          <span key={tag} className="text-[10px] sm:text-xs font-bold text-sage opacity-80 bg-sage/10 px-2 sm:px-2.5 py-0.5 rounded-full">#{tag}</span>
+                          <span key={tag} className="text-xs font-bold text-sage opacity-80 bg-sage/10 px-2 sm:px-2.5 py-0.5 rounded-full">#{tag}</span>
                         ))}
                       </div>
                     )}
@@ -218,7 +218,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                     <div className="w-5 h-5 rounded-full bg-sage/20 flex items-center justify-center">
                       <User className="w-3 h-3 text-sage" aria-hidden="true" />
                     </div>
-                    <span className="text-xs text-muted-theme">רוני נאמן</span>
+                    <span className="text-sm text-muted-theme">רוני נאמן</span>
                   </div>
                   <div className="inline-flex items-center text-sm sm:text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                     קרא עוד
@@ -241,12 +241,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             {showFavorites ? 'אין עדיין סיפורים במועדפים' : 'לא נמצאו סיפורים התואמים לחיפוש'}
           </p>
           {showFavorites && (
-            <p className="text-muted-theme/60 text-xs sm:text-sm mt-2 sm:mt-3">
+            <p className="text-muted-theme/60 text-sm sm:text-base mt-2 sm:mt-3">
               לחץ על הלב בסיפור כדי להוסיפו למועדפים
             </p>
           )}
           {!showFavorites && search && (
-            <p className="text-muted-theme/60 text-xs sm:text-sm mt-2 sm:mt-3">
+            <p className="text-muted-theme/60 text-sm sm:text-base mt-2 sm:mt-3">
               נסה לחפש בטקסט שונה או בחר תגית שונה
             </p>
           )}
