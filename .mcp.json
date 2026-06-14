@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "napkin": {
+      "command": "node",
+      "args": ["/Users/yaronel/.claude/napkin-mcp/index.js"],
+      "env": {
+        "NAPKIN_VAULT": "/Users/yaronel/apps/abba-das"
+      }
+    }
+  }
+}

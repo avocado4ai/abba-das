@@ -1,3 +1,7 @@
+# abba-das — Family Blog
+
+A personal family blog built with Next.js. Content includes family updates, stories, photos, and shared memories. Designed for easy reading on all devices with a warm, personal feel.
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
