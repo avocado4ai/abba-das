@@ -18,7 +18,7 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border-theme py-2.5 sm:py-4 md:py-6 transition-colors duration-300 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-row-reverse md:flex-row justify-between items-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-row-reverse md:flex-row justify-between items-center">
           <Link href="/" className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight hover:text-coral transition-colors duration-250">
             אבא-דס
           </Link>
@@ -97,7 +97,7 @@ export default async function Home() {
 
       {/* Posts Feed */}
       <main id="stories" className="grow pb-12 sm:pb-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <OnThisDay posts={posts} />
           <PostList initialPosts={posts} />
         </div>
@@ -105,14 +105,14 @@ export default async function Home() {
 
       {/* Content Type Guide */}
       <section className="pb-16 sm:pb-24 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <ContentTypeGuide />
         </div>
       </section>
 
       {/* Footer */}
       <footer className="py-10 sm:py-14 border-t border-border-theme bg-foreground/[0.02]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 mb-8">
             {/* Brand */}
             <div className="text-center sm:text-right">

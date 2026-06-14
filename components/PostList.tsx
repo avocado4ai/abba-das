@@ -155,7 +155,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
       )}
 
       {filteredPosts.length > 0 ? (
-        <div className="space-y-6 sm:space-y-10 lg:space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-8">
           {filteredPosts.map((post, index) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
               <article
@@ -163,7 +163,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                 style={{ animationDelay: `${index * 0.08}s` }}
               >
                 {/* Story Image Thumbnail */}
-                <div className="h-32 sm:h-48 lg:h-52 overflow-hidden">
+                <div className="h-40 sm:h-52 lg:h-56 overflow-hidden">
                   <div className="h-full w-full transition-transform duration-700 group-hover:scale-105">
                     <StoryImage
                       slug={post.slug}
