@@ -4,99 +4,152 @@ import React from 'react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-interface WhatsAppMessage {
-  date: Date;
-  sender: string;
-  content: string;
-}
-
 interface WhatsAppDisplayProps {
   content: string;
   date?: string;
 }
 
+// WhatsApp's exact colors (from official brand/app inspection)
+// Background: #E5DDD5 — the iconic warm beige
+// Sent bubble: #DCF8C6 — pale green
+// Header: #075E54 — deep teal green
+// Input bar: #F0F2F5
+
 export default function WhatsAppDisplay({ content, date }: WhatsAppDisplayProps) {
-  // Simple parser for the editorial display
-  const messages = content.split('\n\n').filter(p => p.trim().length > 0).map((p, i) => {
-    return {
-      id: i,
-      content: p.trim()
-    };
-  });
+  const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0);
+  const msgTime = date ? format(new Date(date), 'HH:mm') : '08:00';
+  const msgDate = date ? format(new Date(date), 'EEEE, dd MMMM yyyy', { locale: he }) : null;
 
   return (
-    <div className="whatsapp-newspaper-view py-8 px-0 sm:px-4">
-      <div className="max-w-4xl mx-auto bg-[#FDFCF8] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-[#E5E0D0] p-6 sm:p-16 relative overflow-hidden rounded-sm">
-        {/* Newspaper Texture Overlay */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
-
-        {/* Side margins/lines often found in old papers */}
-        <div className="absolute left-4 top-0 bottom-0 w-px bg-[#0A2647]/5 hidden sm:block" />
-        <div className="absolute right-4 top-0 bottom-0 w-px bg-[#0A2647]/5 hidden sm:block" />
-
-        {/* Masthead/Header Area */}
-        <div className="text-center border-b-4 border-double border-[#0A2647]/30 pb-10 mb-12 relative z-10">
-          <div className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em] text-sage mb-6 flex justify-between items-center border-b border-[#0A2647]/10 pb-3">
-            <span className="opacity-80 text-[#0A2647]">מהדורה מיוחדת</span>
-            <span className="text-[#0A2647]">{date ? format(new Date(date), "dd MMMM yyyy", { locale: he }) : "מיוחד לבלוג"}</span>
-            <span className="opacity-80 text-[#0A2647]">גיליון מס&apos; 42</span>
+    <div className="py-6 -mx-4 sm:mx-0 sm:px-4">
+      {/* Phone-frame card */}
+      <div
+        className="max-w-lg mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.18)]"
+        style={{ fontFamily: "'Heebo', 'SF Pro Text', 'Roboto', sans-serif" }}
+      >
+        {/* ── Header ── */}
+        <div className="bg-[#075E54] px-3 py-2 flex items-center gap-3">
+          {/* Back arrow */}
+          <span className="text-white text-lg leading-none select-none">‹</span>
+          {/* Avatar */}
+          <div className="w-9 h-9 rounded-full bg-[#25D366] flex items-center justify-center text-white text-lg shrink-0 select-none">
+            👨‍👩‍👧
           </div>
-          <h2 className="text-5xl sm:text-7xl font-serif font-black text-[#0A2647] mb-4 tracking-tighter leading-none">
-            וואטס יום ו׳
-          </h2>
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="h-px grow bg-[#0A2647]/20" />
-            <p className="text-base italic text-[#0A2647]/65 font-serif">
-              יומן שבועי של מילים ורגשות
-            </p>
-            <div className="h-px grow bg-[#0A2647]/20" />
+          {/* Group info */}
+          <div className="flex-1 min-w-0 text-white" dir="rtl">
+            <p className="font-semibold text-sm leading-tight truncate">המשפחה שלנו</p>
+            <p className="text-[11px] text-white/70 leading-tight">רוני, מיקי ועוד 3</p>
+          </div>
+          {/* Action icons */}
+          <div className="flex items-center gap-3.5 text-white/80 text-lg select-none">
+            <span>📞</span>
+            <span>⋮</span>
           </div>
         </div>
 
-        {/* Newspaper Column Layout */}
-        <div className="columns-1 md:columns-2 gap-12 space-y-10 relative z-10 text-justify">
-          {messages.map((msg, idx) => (
-            <div key={msg.id} className="break-inside-avoid-column mb-10 group">
-              {idx === 0 ? (
-                <div className="mb-6">
-                  <p className="font-stories text-2xl leading-[1.6] text-[#0A2647] font-bold mb-4 border-b border-sage/30 pb-4 italic">
-                    טור המערכת:
-                  </p>
-                  <p className="font-stories text-xl leading-[1.8] text-[#0A2647] first-letter:text-7xl first-letter:font-serif first-letter:font-bold first-letter:text-[#0A2647] first-letter:float-right first-letter:ml-4 first-letter:mt-3 first-letter:leading-[0.8]">
-                    {msg.content}
-                  </p>
+        {/* ── Chat background ── */}
+        {/*
+          WhatsApp's background is #E5DDD5 with a subtle repeating leaf/tile pattern.
+          We approximate the pattern using a tiny SVG data-URI.
+        */}
+        <div
+          className="overflow-y-auto"
+          style={{
+            backgroundColor: '#E5DDD5',
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='%23c8bdb4' fill-opacity='0.25'%3E%3Cellipse cx='10' cy='10' rx='4' ry='2' transform='rotate(30 10 10)'/%3E%3Cellipse cx='40' cy='10' rx='4' ry='2' transform='rotate(-30 40 10)'/%3E%3Cellipse cx='25' cy='35' rx='4' ry='2' transform='rotate(30 25 35)'/%3E%3Ccircle cx='10' cy='50' r='1.5'/%3E%3Ccircle cx='50' cy='50' r='1.5'/%3E%3Ccircle cx='30' cy='20' r='1'/%3E%3C/g%3E%3C/svg%3E\")",
+            minHeight: '320px',
+            maxHeight: '70vh',
+            padding: '12px 10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
+          {/* Date chip */}
+          {msgDate && (
+            <div className="flex justify-center my-3">
+              <span
+                className="text-[11px] font-medium px-3 py-1 rounded-full"
+                style={{ backgroundColor: 'rgba(11,20,26,0.6)', color: '#fff' }}
+              >
+                {msgDate}
+              </span>
+            </div>
+          )}
+
+          {/* Message bubbles */}
+          {paragraphs.map((text, idx) => (
+            <div key={idx} className="flex justify-end mb-1">
+              <div
+                className="relative max-w-[85%] rounded-lg rounded-tr-none px-3 pt-2 pb-1.5"
+                style={{
+                  backgroundColor: '#DCF8C6',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.13)',
+                }}
+              >
+                {/* Bubble tail (top-right) */}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: -8,
+                    width: 0,
+                    height: 0,
+                    borderLeft: '8px solid #DCF8C6',
+                    borderBottom: '8px solid transparent',
+                  }}
+                />
+                {/* Text */}
+                <p
+                  className="text-[15px] leading-[1.65] whitespace-pre-wrap"
+                  style={{ color: '#111B21', direction: 'rtl' }}
+                >
+                  {text.trim()}
+                </p>
+                {/* Timestamp + checkmarks */}
+                <div className="flex items-center justify-end gap-1 mt-0.5">
+                  <span style={{ color: '#8696A0', fontSize: '11px' }}>{msgTime}</span>
+                  {/* Blue double-tick (read receipt) */}
+                  <svg
+                    width="16"
+                    height="11"
+                    viewBox="0 0 16 11"
+                    fill="#53BDEB"
+                    aria-hidden="true"
+                  >
+                    <path d="M15.01.47a.5.5 0 0 0-.7.07L8.6 7.7 6.87 5.85a.5.5 0 1 0-.74.67l2.05 2.27a.5.5 0 0 0 .36.16h.05a.5.5 0 0 0 .36-.17L15.08 1.2a.5.5 0 0 0-.07-.73z"/>
+                    <path d="M11.01.47a.5.5 0 0 0-.7.07L4.6 7.7 2.87 5.85a.5.5 0 1 0-.74.67l2.05 2.27a.5.5 0 0 0 .74-.04L11.08 1.2a.5.5 0 0 0-.07-.73z"/>
+                  </svg>
                 </div>
-              ) : (
-                <div className="relative pt-6 border-t border-[#0A2647]/10">
-                  <div className="absolute -top-3 right-0 bg-[#FDFCF8] px-3 text-[10px] font-bold text-coral uppercase tracking-widest">
-                    עדכון #{idx}
-                  </div>
-                  <p className="font-stories text-lg leading-[1.8] text-[#0A2647]/90">
-                    {msg.content}
-                  </p>
-                  <div className="mt-6 flex justify-center">
-                    <div className="w-8 h-px bg-sage/30" />
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Footer/Editorial Note */}
-        <div className="mt-16 pt-8 border-t-4 border-double border-[#0A2647]/20 text-center italic text-xs text-[#0A2647]/50 relative z-10">
-          נערך והופק באהבה עבור משפחתנו • {new Date().getFullYear()}
+        {/* ── Input bar ── */}
+        <div
+          className="flex items-center gap-2 px-3 py-2"
+          style={{ backgroundColor: '#F0F2F5' }}
+        >
+          <span className="text-2xl select-none" aria-hidden="true">😊</span>
+          <div
+            className="flex-1 rounded-full px-4 py-2 text-sm"
+            style={{ backgroundColor: '#fff', color: '#8696A0', direction: 'rtl' }}
+          >
+            הקלד הודעה...
+          </div>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#00A884' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .font-serif {
-          font-family: 'Playfair Display', 'Heebo', serif;
-        }
-        .font-stories {
-          font-family: 'Assistant', sans-serif;
-        }
-      `}</style>
     </div>
   );
 }
