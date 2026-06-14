@@ -26,7 +26,8 @@ const WeatherIcon = ({ weather }: { weather?: string }) => {
 };
 
 const getReadingTime = (content: string) => {
-  const words = content.trim().split(/\s+/).length;
+  const clean = content.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/<[^>]+>/g, '');
+  const words = clean.trim().split(/\s+/).length;
   return Math.max(1, Math.ceil(words / 200));
 };
 
@@ -215,7 +216,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                   </h3>
 
                   <p className="font-stories text-base sm:text-lg text-foreground/85 leading-7 sm:leading-relaxed line-clamp-3 mb-4 sm:mb-5">
-                    {post.content}
+                    {post.content
+                      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                      .replace(/\[[^\]]*\]\([^)]*\)/g, '')
+                      .replace(/<[^>]+>/g, '')
+                      .replace(/\s+/g, ' ')
+                      .trim()}
                   </p>
 
                   <div className="flex items-center gap-1.5 mb-3 sm:mb-4">
