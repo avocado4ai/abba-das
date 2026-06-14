@@ -26,8 +26,11 @@ function selfUrl(req: NextRequest): string {
 }
 
 function popupHtml(message: string): NextResponse {
-  // Safely embed the message string into a JS literal.
   const safeMsg = JSON.stringify(message);
+  // Decap CMS OAuth handshake protocol:
+  // 1. Popup sends "authorizing:github" to opener (signals it's ready)
+  // 2. CMS replies with its own origin
+  // 3. Popup sends the token message back using that origin (not *)
   const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -35,18 +38,13 @@ function popupHtml(message: string): NextResponse {
 <script>
   (function () {
     var msg = ${safeMsg};
-    function send() {
-      if (window.opener) {
-        window.opener.postMessage(msg, '*');
-        window.close();
-      }
-    }
-    // Try immediately, then wait for a message from the CMS to get the correct origin.
-    send();
-    window.addEventListener('message', function (e) {
+    function receiveMessage(e) {
+      window.removeEventListener('message', receiveMessage, false);
       window.opener.postMessage(msg, e.origin);
       window.close();
-    }, false);
+    }
+    window.addEventListener('message', receiveMessage, false);
+    window.opener.postMessage('authorizing:github', '*');
   })();
 </script>
 </body>
