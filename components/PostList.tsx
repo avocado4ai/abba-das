@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Sun, Cloud, CloudRain, Wind, Search, Heart, BookmarkX, SearchX, SlidersHorizontal, Clock, User } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { PostData } from '@/lib/posts';
 import ContentTypeBadge from './ContentTypeBadge';
 import StoryImage from './StoryImage';
@@ -157,9 +158,12 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
       {filteredPosts.length > 0 ? (
         <div className="space-y-6 sm:space-y-10 lg:space-y-12">
-          {filteredPosts.map((post) => (
+          {filteredPosts.map((post, index) => (
             <Link href={`/post/${post.slug}`} key={post.slug}>
-              <article className="group cursor-pointer overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 border border-border-theme shadow-sm transition-all duration-300 hover:bg-white/15 dark:hover:bg-white/10 hover:border-sage/30 hover:shadow-xl hover:-translate-y-1">
+              <article
+                className="group cursor-pointer overflow-hidden rounded-2xl bg-white/10 dark:bg-white/5 border border-border-theme shadow-sm transition-all duration-300 hover:bg-white/15 dark:hover:bg-white/10 hover:border-sage/30 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.01] animate-cardEnter"
+                style={{ animationDelay: `${index * 0.08}s` }}
+              >
                 {/* Story Image Thumbnail */}
                 <div className="h-32 sm:h-48 lg:h-52 overflow-hidden">
                   <div className="h-full w-full transition-transform duration-700 group-hover:scale-105">
@@ -230,12 +234,22 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 sm:py-20 bg-white/5 rounded-2xl sm:rounded-3xl border-2 border-dashed border-border-theme" role="status" aria-label="אין סיפורים">
-          <div className="flex justify-center mb-3">
-            {showFavorites
-              ? <BookmarkX className="w-10 h-10 text-muted-theme/40" aria-hidden="true" />
-              : <SearchX className="w-10 h-10 text-muted-theme/40" aria-hidden="true" />
-            }
+        <div className="text-center py-12 sm:py-20 bg-white/5 rounded-2xl sm:rounded-3xl border-2 border-dashed border-border-theme animate-fadeInUp" role="status" aria-label="אין סיפורים">
+          <div className="flex justify-center mb-4">
+            {showFavorites ? (
+              <BookmarkX className="w-12 h-12 text-muted-theme/40" aria-hidden="true" />
+            ) : search ? (
+              <SearchX className="w-12 h-12 text-muted-theme/40" aria-hidden="true" />
+            ) : (
+              <Image
+                src="/images/ui/empty-stories.webp"
+                alt="פנקס פתוח ריק על שולחן עץ חם — עוד אין סיפורים כאן"
+                width={200}
+                height={150}
+                className="rounded-xl opacity-70 mx-auto object-cover"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            )}
           </div>
           <p className="text-muted-theme italic text-base sm:text-lg" aria-live="polite">
             {showFavorites ? 'אין עדיין סיפורים במועדפים' : 'לא נמצאו סיפורים התואמים לחיפוש'}
