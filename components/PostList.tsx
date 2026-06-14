@@ -36,6 +36,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('abba_favorites') || '[]');
@@ -118,39 +119,54 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         </button>
       </div>
 
-      {/* Tags Cloud — horizontal scroll on mobile */}
+      {/* Tags Cloud — one row on mobile, collapsible on desktop */}
       {allTags.length > 0 && (
-        <div
-          className="flex gap-1.5 sm:gap-2 mb-5 sm:mb-12 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none"
-          role="group"
-          aria-label="סנן לפי תגיות"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          <button
-            onClick={() => setSelectedTag(null)}
-            className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${!selectedTag
-                ? 'bg-sage text-cream border-sage'
-                : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
-              }`}
-            aria-pressed={!selectedTag}
-            aria-label="הצג את כל התגיות"
+        <div className="mb-5 sm:mb-12" role="group" aria-label="סנן לפי תגיות">
+          {/* Mobile: horizontal scroll, single row */}
+          <div
+            className="flex sm:hidden gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none"
+            style={{ scrollbarWidth: 'none' }}
           >
-            הכל
-          </button>
-          {allTags.map(tag => (
             <button
-              key={tag}
-              onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${tag === selectedTag
-                  ? 'bg-sage text-cream border-sage shadow-sm'
-                  : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
-                }`}
-              aria-pressed={tag === selectedTag}
-              aria-label={`${tag === selectedTag ? 'הסר' : 'סנן'} לפי תגית ${tag}`}
+              onClick={() => setSelectedTag(null)}
+              className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 ${!selectedTag ? 'bg-sage text-cream border-sage' : 'bg-white/5 text-muted-theme border-border-theme'}`}
+              aria-pressed={!selectedTag}
+            >הכל</button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 ${tag === selectedTag ? 'bg-sage text-cream border-sage' : 'bg-white/5 text-muted-theme border-border-theme'}`}
+                aria-pressed={tag === selectedTag}
+              >#{tag}</button>
+            ))}
+          </div>
+
+          {/* Desktop: first row always visible, rest collapsible */}
+          <div className="hidden sm:block">
+            <div className={`flex flex-wrap gap-2 overflow-hidden transition-all duration-300 ${tagsExpanded ? '' : 'max-h-10'}`}>
+              <button
+                onClick={() => setSelectedTag(null)}
+                className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${!selectedTag ? 'bg-sage text-cream border-sage' : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'}`}
+                aria-pressed={!selectedTag}
+              >הכל</button>
+              {allTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                  className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${tag === selectedTag ? 'bg-sage text-cream border-sage shadow-sm' : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'}`}
+                  aria-pressed={tag === selectedTag}
+                >#{tag}</button>
+              ))}
+            </div>
+            <button
+              onClick={() => setTagsExpanded(!tagsExpanded)}
+              className="mt-2 text-xs text-muted-theme hover:text-sage transition-colors duration-200 flex items-center gap-1"
+              aria-expanded={tagsExpanded}
             >
-              #{tag}
+              <span>{tagsExpanded ? '▲ הסתר' : '▼ הצג עוד תגיות'}</span>
             </button>
-          ))}
+          </div>
         </div>
       )}
 
