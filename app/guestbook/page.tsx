@@ -45,7 +45,7 @@ export default async function GuestbookPage() {
             </p>
             <div className="flex justify-center items-center gap-3 mt-6">
               <div className="h-px w-16 bg-border-theme" />
-              <span className="text-xs text-muted-theme/50">רוני נאמן</span>
+              <span className="text-xs text-muted-theme/50">רוני נעמן</span>
               <div className="h-px w-16 bg-border-theme" />
             </div>
           </div>
@@ -57,7 +57,7 @@ export default async function GuestbookPage() {
       {/* Footer */}
       <footer className="py-8 border-t border-border-theme">
         <div className="max-w-2xl mx-auto px-6 text-center text-muted-theme text-xs">
-          <p>© {new Date().getFullYear()} אבא-דס · כתוב ע&quot;י רוני נאמן</p>
+          <p>© {new Date().getFullYear()} אבא-דס · כתוב ע&quot;י רוני נעמן</p>
         </div>
       </footer>
     </div>

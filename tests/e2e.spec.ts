@@ -42,7 +42,7 @@ test.describe('Homepage', () => {
 
   test('footer shows Roni Neaman attribution', async ({ page }) => {
     await page.goto(BASE);
-    await expect(page.locator('footer').last()).toContainText('רוני נאמן');
+    await expect(page.locator('footer').last()).toContainText('רוני נעמן');
   });
 
   test('theme switcher changes data-theme attribute', async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe('Navigation', () => {
   test('guestbook page loads', async ({ page }) => {
     await page.goto(`${BASE}/guestbook`);
     await expect(page.locator('h1')).toContainText('ספר אורחים');
-    await expect(page.locator('text=רוני נאמן').first()).toBeVisible();
+    await expect(page.locator('text=רוני נעמן').first()).toBeVisible();
   });
 
   test('admin redirect sends unauthenticated users to sign-in', async ({ page }) => {

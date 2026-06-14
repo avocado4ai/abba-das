@@ -53,7 +53,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
   const filteredPosts = useMemo(() => {
     let posts = initialPosts;
-    
+
     if (showFavorites) {
       posts = posts.filter(post => favorites.includes(post.slug));
     }
@@ -63,7 +63,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
     }
 
     if (!search) return posts;
-    
+
     const s = search.toLowerCase();
     return posts.filter(
       (post) =>
@@ -106,11 +106,10 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
 
         <button
           onClick={() => setShowFavorites(!showFavorites)}
-          className={`flex min-h-11 items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-250 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 text-sm sm:text-base ${
-            showFavorites
+          className={`flex min-h-11 items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-250 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-sage/50 text-sm sm:text-base ${showFavorites
               ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-sm'
               : 'bg-white/5 border-border-theme text-muted-theme hover:text-red-400 hover:border-red-500/20'
-          }`}
+            }`}
           aria-pressed={showFavorites}
           aria-label={showFavorites ? 'הצג את כל הסיפורים' : 'הצג רק סיפורים מועדפים'}
         >
@@ -129,11 +128,10 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
         >
           <button
             onClick={() => setSelectedTag(null)}
-            className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
-              !selectedTag
+            className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${!selectedTag
                 ? 'bg-sage text-cream border-sage'
                 : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30'
-            }`}
+              }`}
             aria-pressed={!selectedTag}
             aria-label="הצג את כל התגיות"
           >
@@ -143,11 +141,10 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
             <button
               key={tag}
               onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-              className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${
-                tag === selectedTag
+              className={`min-h-9 px-3 py-1 rounded-full text-xs font-bold transition-all duration-250 border whitespace-nowrap shrink-0 focus:outline-none focus:ring-2 focus:ring-sage/50 ${tag === selectedTag
                   ? 'bg-sage text-cream border-sage shadow-sm'
                   : 'bg-white/5 text-muted-theme border-border-theme hover:border-sage/30 hover:text-sage'
-              }`}
+                }`}
               aria-pressed={tag === selectedTag}
               aria-label={`${tag === selectedTag ? 'הסר' : 'סנן'} לפי תגית ${tag}`}
             >
@@ -228,7 +225,7 @@ export default function PostList({ initialPosts }: { initialPosts: PostData[] })
                     <div className="w-5 h-5 rounded-full bg-sage/20 flex items-center justify-center">
                       <User className="w-3 h-3 text-sage" aria-hidden="true" />
                     </div>
-                    <span className="text-sm text-muted-theme">רוני נאמן</span>
+                    <span className="text-sm text-muted-theme">רוני נעמן</span>
                   </div>
                   <div className="inline-flex items-center text-sm sm:text-base font-bold text-coral group-hover:text-warm-gold transition-colors duration-250 gap-2">
                     קרא עוד

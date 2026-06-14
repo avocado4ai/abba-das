@@ -117,7 +117,7 @@ export default async function Home() {
             {/* Brand */}
             <div className="text-center sm:text-right">
               <p className="font-bold text-foreground text-lg mb-1">אבא-דס</p>
-              <p className="text-xs text-muted-theme leading-relaxed">סיפורים, זכרונות ורגעים<br/>מחיי הכותב</p>
+              <p className="text-xs text-muted-theme leading-relaxed">סיפורים, זכרונות ורגעים<br />מחיי הכותב</p>
             </div>
             {/* Links */}
             <div className="text-center">
@@ -131,7 +131,7 @@ export default async function Home() {
             {/* Author */}
             <div className="text-center sm:text-left">
               <p className="font-bold text-foreground text-sm mb-1">הכותב</p>
-              <p className="text-sm text-foreground font-medium">רוני נאמן</p>
+              <p className="text-sm text-foreground font-medium">רוני נעמן</p>
               <p className="text-xs text-muted-theme mt-1">עשויה באהבה עבור המשפחה</p>
             </div>
           </div>

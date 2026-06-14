@@ -14,9 +14,9 @@ const assistant = Assistant({
 });
 
 export const metadata: Metadata = {
-  title: "אבא-דס | סיפורים של רוני נאמן",
-  description: "בלוג הסיפורים של רוני נאמן — זכרונות, מחשבות ורגעים קטנים מהחיים.",
-  authors: [{ name: "רוני נאמן" }],
+  title: "אבא-דס | סיפורים של רוני נעמן",
+  description: "בלוג הסיפורים של רוני נעמן — זכרונות, מחשבות ורגעים קטנים מהחיים.",
+  authors: [{ name: "רוני נעמן" }],
 };
 
 export default function RootLayout({
