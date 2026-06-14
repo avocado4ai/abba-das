@@ -1,0 +1,149 @@
+# Decap CMS configuration for אבא-דס
+# GitHub backend — OAuth handled by /api/decap-oauth
+
+backend:
+  name: github
+  repo: avocado4ai/abba-das
+  branch: main
+  base_url: https://abba-das.vercel.app
+  auth_endpoint: api/decap-oauth
+  commit_messages:
+    create: 'Add: post "{{slug}}"'
+    update: 'Update: post "{{slug}}"'
+    delete: 'Delete: post "{{slug}}"'
+    uploadMedia: 'Upload: "{{path}}"'
+    deleteMedia: 'Delete: "{{path}}"'
+
+# Media — uploaded images land in public/images/posts/ and are referenced as /images/posts/
+media_folder: public/images/posts
+public_folder: /images/posts
+
+site_url: https://abba-das.vercel.app
+display_url: https://abba-das.vercel.app
+
+# Show editorial workflow (draft → review → published)
+publish_mode: editorial_workflow
+
+collections:
+  - name: posts
+    label: "סיפורים"
+    label_singular: "סיפור"
+    description: "כל הסיפורים של אבא — ניהול, עריכה ופרסום"
+    folder: content/posts
+    create: true
+    format: frontmatter
+    extension: md
+    # Slug: use the post title, transliterated/slugified
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{title}} — {{date | date('DD/MM/YYYY')}}"
+    sortable_fields: [date, title]
+    view_filters:
+      - label: "סיפורים"
+        field: contentType
+        pattern: story
+      - label: "זיכרונות"
+        field: contentType
+        pattern: memory
+      - label: "וואטסאפ שישי"
+        field: contentType
+        pattern: whatsapp-friday
+      - label: "תמונות"
+        field: contentType
+        pattern: photo
+    view_groups:
+      - label: "לפי שנה"
+        field: date
+        pattern: \d{4}
+      - label: "לפי קטגוריה"
+        field: category
+
+    fields:
+      - label: "כותרת"
+        name: title
+        widget: string
+        required: true
+        hint: "כותרת הסיפור"
+
+      - label: "תאריך"
+        name: date
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "DD/MM/YYYY"
+        time_format: false
+        required: true
+
+      - label: "מזג אוויר"
+        name: weather
+        widget: select
+        required: false
+        hint: "מזג האוויר באותו יום"
+        options:
+          - { label: "שמשי ☀️", value: sunny }
+          - { label: "מעונן ☁️", value: cloudy }
+          - { label: "גשום 🌧️", value: rainy }
+          - { label: "רוחות 🌬️", value: windy }
+
+      - label: "סוג תוכן"
+        name: contentType
+        widget: select
+        required: false
+        default: story
+        options:
+          - { label: "סיפור", value: story }
+          - { label: "סיפור אודיו", value: audio-story }
+          - { label: "וואטסאפ שישי", value: whatsapp-friday }
+          - { label: "תמונה", value: photo }
+          - { label: "הודעה", value: message }
+          - { label: "זיכרון", value: memory }
+
+      - label: "קטגוריה"
+        name: category
+        widget: select
+        required: false
+        options:
+          - { label: "משפחה", value: family }
+          - { label: "זיכרונות", value: memories }
+          - { label: "מחשבות", value: thoughts }
+          - { label: "השראה", value: inspiration }
+          - { label: "רפלקציה", value: reflection }
+          - { label: "רגעים", value: moments }
+
+      - label: "תגיות"
+        name: tags
+        widget: list
+        required: false
+        hint: "הוסף תגיות — לחץ Enter אחרי כל תגית"
+
+      - label: "תמונה ראשית"
+        name: featuredImage
+        widget: object
+        required: false
+        collapsed: true
+        summary: "{{fields.alt}}"
+        fields:
+          - label: "תמונה"
+            name: src
+            widget: image
+            required: false
+            hint: "העלה תמונה לריפוסיטורי"
+          - label: "טקסט חלופי (a11y)"
+            name: alt
+            widget: string
+            required: false
+            hint: "תיאור התמונה — חשוב לנגישות"
+          - label: "כיתוב"
+            name: caption
+            widget: string
+            required: false
+          - label: "פרומפט Gemini"
+            name: prompt
+            widget: text
+            required: false
+            hint: "פרומפט לייצור תמונה אוטומטי עם nano-banana-gen"
+
+      - label: "תוכן הסיפור"
+        name: body
+        widget: markdown
+        required: true
+        hint: "הסיפור המלא"
