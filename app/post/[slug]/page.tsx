@@ -79,8 +79,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       
       {/* Header */}
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border-theme py-2.5 sm:py-4 md:py-6 transition-colors duration-300">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-row-reverse sm:flex-row justify-between items-center">
-          <Link href="/" className="text-lg sm:text-2xl md:text-3xl font-bold text-navy tracking-tight hover:text-coral transition-colors duration-250">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-row-reverse sm:flex-row justify-between items-center">
+          <Link href="/" className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight hover:text-coral transition-colors duration-250">
             אבא-דס
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -106,7 +106,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       </div>
 
       <main className="grow py-5 sm:py-12 md:py-20">
-        <article className="max-w-2xl mx-auto px-4 sm:px-6">
+        <article className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 gap-4">
             <div className="space-y-3 sm:space-y-4 min-w-0">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -121,7 +121,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   <span>{readingTime} דק&apos; קריאה</span>
                 </div>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-navy leading-snug sm:leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-snug sm:leading-tight">
                 {post.title}
               </h1>
               <AudioPlayer text={post.content} />
@@ -149,7 +149,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       {/* Footer */}
       <footer className="py-8 sm:py-12 border-t border-border-theme">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center text-muted-theme text-xs sm:text-sm">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center text-muted-theme text-xs sm:text-sm">
           <p>© {new Date().getFullYear()} אבא-דס. כל הזכויות שמורות.</p>
         </div>
       </footer>
