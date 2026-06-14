@@ -56,11 +56,11 @@ export default async function Home() {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Badge with new color */}
-          <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-linear-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-2 sm:mb-6 animate-fadeInUp">
+          <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-linear-to-r from-coral/10 to-warm-gold/10 border border-coral/30 rounded-full mb-2 sm:mb-6 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
             <span className="text-xs sm:text-sm font-bold bg-linear-to-r from-coral to-warm-gold bg-clip-text text-transparent">סיפורים שלנו</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-2 sm:mb-6 leading-tight tracking-tight animate-fadeInUp">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-foreground mb-2 sm:mb-6 leading-tight tracking-tight animate-fadeInUp" style={{ animationDelay: '0.25s' }}>
             הסיפורים של אבא
           </h2>
 
@@ -71,7 +71,7 @@ export default async function Home() {
             <div className="w-24 h-px bg-linear-to-l from-transparent to-coral/50" />
           </div>
 
-          <figure className="relative mx-auto mb-4 sm:mb-8 max-w-[160px] sm:max-w-sm animate-fadeInUp">
+          <figure className="relative mx-auto mb-4 sm:mb-8 max-w-[160px] sm:max-w-sm animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-sage/20 via-coral/10 to-warm-gold/20 blur-sm" />
             <div className="relative overflow-hidden rounded-xl border border-border-theme bg-background shadow-xl transition-transform duration-500 hover:-rotate-1">
               <Image
@@ -85,11 +85,11 @@ export default async function Home() {
             </div>
           </figure>
 
-          <p className="hidden sm:block text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-10 font-stories animate-fadeInUp px-2">
+          <p className="hidden sm:block text-base md:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed mb-10 font-stories animate-fadeInUp px-2" style={{ animationDelay: '0.55s' }}>
             זכרונות, מחשבות ורגעים קטנים מהחיים, כפי שתועדו בבוקר של יום חדש.
           </p>
 
-          <div className="flex justify-center animate-fadeInUp mt-2 sm:mt-0">
+          <div className="flex justify-center animate-fadeInUp mt-2 sm:mt-0" style={{ animationDelay: '0.7s' }}>
             <DynamicStats posts={posts} />
           </div>
         </div>

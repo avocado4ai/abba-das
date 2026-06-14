@@ -156,7 +156,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                 type="submit"
                 disabled={isSubmitting || !name.trim() || !message.trim()}
                 aria-busy={isSubmitting}
-                className="bg-navy text-cream px-4 sm:px-6 py-2 rounded-full text-sm font-bold hover:bg-sage focus:outline-none focus:ring-2 focus:ring-navy/50"
+                className="bg-navy text-cream px-4 sm:px-6 py-2 rounded-full text-sm font-bold hover:bg-sage hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-navy/50 transition-all duration-250"
               >
                 {isSubmitting ? 'שולח...' : 'פרסום תגובה'}
               </button>
@@ -170,7 +170,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
           <ol className="list-none space-y-6 sm:space-y-12">
             {comments.map((comment, index) => (
               <li key={comment.id} className="group">
-                <article className="focus-within:ring-2 focus-within:ring-sage/50 rounded-xl px-3 py-3 hover:bg-white/5 transition-colors duration-200">
+                <article className="focus-within:ring-2 focus-within:ring-sage/50 rounded-2xl px-4 py-4 border border-border-theme shadow-sm hover:shadow-md hover:bg-white/8 transition-all duration-250">
                   <div className="flex items-start gap-3 mb-2">
                     <div
                       className="w-8 h-8 rounded-full bg-gradient-to-br from-sage/30 to-coral/20 flex items-center justify-center text-sm font-bold text-sage shrink-0"

@@ -4,9 +4,9 @@ date: "2026-05-01T21:33:15.878Z"
 weather: "cloudy"
 tags: ["משפחה","ילדים","ערב"]
 featuredImage:
-  src: "/images/posts/stories-with-grandchildren.webp"
-  alt: "סבא מקריא ספר לנכדים סביב שולחן בסלון חמים"
-  prompt: "A realistic, high-quality photograph of an elderly man with short white hair reading a book to young grandchildren gathered around a wooden table in a dimly lit, warm living room. Intimate atmosphere, soft focus background, realistic textures, photorealistic."
+  src: "/images/posts/00000038-PHOTO-2026-06-10-09-42-10.jpg"
+  alt: "ארוחה משפחתית — מיקי ביחד עם ילדים ונכדים"
+  caption: "הכי חשוב — להיות ביחד"
 ---
 
 הילדים התאספו סביב השולחן, וביקשו ממני להספר סיפורים. התחלתי בסיפור על המימד הרחוק של ילדותי.
