@@ -231,12 +231,13 @@ function postToMarkdown(post: PostData) {
     title: post.title,
     date: post.date,
     author: post.author || "",
-    archived: post.archived === true ? true : undefined,
     weather: post.weather || "sunny",
     contentType: post.contentType || "story",
     category: post.category || "memories",
     tags: post.tags || [],
   };
+
+  if (post.archived === true) frontmatter.archived = true;
 
   if (post.featuredImage?.src) {
     const fi: Record<string, unknown> = {
