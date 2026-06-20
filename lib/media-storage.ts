@@ -1,55 +1,51 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getOctokit, getGitHubConfig } from "./github-client";
 import { promises as fs } from "fs";
 import path from "path";
 
-const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || "abba-das-images";
-
-let s3Client: S3Client | null = null;
-
-function hasMinioConfig() {
-  return !!(process.env.MINIO_ACCESS_KEY && process.env.MINIO_SECRET_KEY);
-}
-
-function initializeS3Client() {
-  const accessKeyId = process.env.MINIO_ACCESS_KEY;
-  const secretAccessKey = process.env.MINIO_SECRET_KEY;
-
-  return new S3Client({
-    region: "us-east-1",
-    endpoint: process.env.MINIO_ENDPOINT || "http://localhost:9000",
-    credentials: {
-      accessKeyId: accessKeyId!,
-      secretAccessKey: secretAccessKey!,
-    },
-    forcePathStyle: true,
-  });
-}
-
-function getS3Client() {
-  if (!s3Client) {
-    s3Client = initializeS3Client();
-  }
-  return s3Client;
-}
+const UPLOADS_PATH = "public/images/uploads";
+const BRANCH = "main";
 
 function sanitizeFilename(filename: string) {
-  return filename.replace(/[^a-zA-Z0-9.-]/g, "_");
+  return filename.replace(/[^a-zA-Z0-9.\-_]/g, "_");
 }
 
-async function uploadToS3(buffer: Buffer, filename: string, contentType: string) {
-  const key = `${Date.now()}-${sanitizeFilename(filename)}`;
+async function uploadToGitHub(buffer: Buffer, filename: string) {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
 
-  await getS3Client().send(
-    new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-    })
-  );
+  if (!config || !octokit) {
+    throw new Error("GitHub configuration missing. Set GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO.");
+  }
+
+  const key = `${Date.now()}-${sanitizeFilename(filename)}`;
+  const filePath = `${UPLOADS_PATH}/${key}`;
+  const contentBase64 = buffer.toString("base64");
+
+  let sha: string | undefined;
+  try {
+    const { data } = await octokit.rest.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: filePath,
+      ref: BRANCH,
+    });
+    if (!Array.isArray(data)) sha = data.sha;
+  } catch {
+    // 404 expected — file doesn't exist yet
+  }
+
+  await octokit.rest.repos.createOrUpdateFileContents({
+    owner: config.owner,
+    repo: config.repo,
+    path: filePath,
+    message: `Upload image: ${key}`,
+    content: contentBase64,
+    sha,
+    branch: BRANCH,
+  });
 
   return {
-    url: `${process.env.NEXT_PUBLIC_MINIO_URL || "http://localhost:9000"}/${BUCKET_NAME}/${key}`,
+    url: `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${BRANCH}/${filePath}`,
     filename: key,
   };
 }
@@ -59,8 +55,7 @@ async function uploadToLocal(buffer: Buffer, filename: string) {
   await fs.mkdir(uploadsDir, { recursive: true });
 
   const key = `${Date.now()}-${sanitizeFilename(filename)}`;
-  const filePath = path.join(uploadsDir, key);
-  await fs.writeFile(filePath, buffer);
+  await fs.writeFile(path.join(uploadsDir, key), buffer);
 
   return {
     url: `/uploads/${key}`,
@@ -71,14 +66,14 @@ async function uploadToLocal(buffer: Buffer, filename: string) {
 export async function uploadBufferToMediaStorage({
   buffer,
   filename,
-  contentType,
 }: {
   buffer: Buffer;
   filename: string;
   contentType: string;
 }) {
-  if (hasMinioConfig()) {
-    return uploadToS3(buffer, filename, contentType);
+  const config = getGitHubConfig();
+  if (config) {
+    return uploadToGitHub(buffer, filename);
   }
   return uploadToLocal(buffer, filename);
 }
