@@ -1,8 +1,7 @@
 import type React from "react";
 
-const mediaPattern = /(!\[([^\]]*)\]\(([^)]+)\)|<video\s+controls\s+src="([^"]+)"><\/video>)/gi;
-
 export default function PostContent({ content }: { content: string }) {
+  const mediaPattern = /(!\[([^\]]*)\]\(([^)]+)\)|<video\s+controls\s+src="([^"]+)"><\/video>)/gi;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
