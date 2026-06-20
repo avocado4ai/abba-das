@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Share2, Link as LinkIcon, MessageCircle, Check } from 'lucide-react';
+import React from 'react';
+import { Share2, MessageCircle } from 'lucide-react';
 
 export default function ShareButtons({ title, slug }: { title: string, slug: string }) {
-  const [copied, setCopied] = useState(false);
   const url = typeof window !== 'undefined' ? `${window.location.origin}/post/${slug}` : '';
 
   const shareToWhatsApp = () => {
@@ -12,14 +11,8 @@ export default function ShareButtons({ title, slug }: { title: string, slug: str
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 mt-10 sm:mt-12 mb-8">
+    <div className="flex sm:flex-row sm:items-center gap-2.5 sm:gap-3 mt-10 sm:mt-12 mb-8">
       <span className="text-sm font-medium text-navy/50 flex items-center gap-2">
         <Share2 className="w-4 h-4" />
         שיתוף:
@@ -31,14 +24,6 @@ export default function ShareButtons({ title, slug }: { title: string, slug: str
       >
         <MessageCircle className="w-4 h-4" />
         וואטסאפ
-      </button>
-
-      <button
-        onClick={copyToClipboard}
-        className="flex min-h-11 items-center justify-center gap-2 px-4 py-2 bg-white border border-navy/10 text-navy rounded-full text-sm font-medium hover:bg-navy/5 transition-all shadow-sm"
-      >
-        {copied ? <Check className="w-4 h-4 text-green-500" /> : <LinkIcon className="w-4 h-4" />}
-        {copied ? 'הועתק!' : 'העתקת קישור'}
       </button>
     </div>
   );
