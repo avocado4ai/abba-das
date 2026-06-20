@@ -77,7 +77,9 @@ export default async function GalleryPage() {
         </div>
 
         {allImages.length > 0 ? (
-          <PhotoAlbum images={allImages} showHeader={false} />
+          <div className="rounded-2xl bg-navy/[0.02] p-4 sm:p-6">
+            <PhotoAlbum images={allImages} showHeader={false} />
+          </div>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-border-theme py-20 text-center">
             <Camera className="mx-auto mb-4 w-12 h-12 text-muted-theme/30" aria-hidden="true" />

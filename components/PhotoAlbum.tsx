@@ -117,7 +117,7 @@ export default function PhotoAlbum({ images, title = 'אלבום תמונות', 
               key={i}
               onClick={() => openLightbox(i)}
               className={[
-                'group relative overflow-hidden rounded-xl bg-warm-gold/10 cursor-pointer',
+                'group relative overflow-hidden rounded-xl bg-navy/5 cursor-pointer',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2',
                 'touch-manipulation',
                 isHero ? 'col-span-2 aspect-[16/9]' : 'aspect-square',
