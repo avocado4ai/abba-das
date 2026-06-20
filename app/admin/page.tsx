@@ -177,15 +177,24 @@ export default function AdminPage() {
     const formData = new FormData();
     formData.append("file", file);
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
-      if (!res.ok) throw new Error('Upload failed');
+      clearTimeout(timeout);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Upload failed (${res.status})`);
+      }
       const data = await res.json();
       return data.url;
     } catch (e) {
-      console.error(e);
+      const msg = e instanceof Error ? e.message : 'תקלה בהעלאה';
+      setError(msg);
+      console.error('Upload error:', e);
       return null;
     }
   };
