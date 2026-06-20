@@ -1,16 +1,21 @@
 ---
-title: "אגדת גשר"
-date: "2026-05-21T16:25:01.000Z"
-weather: "sunny"
-tags: ["סיפור","גשרים","חברות","סליחה","יום כיפור"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: אגדת גשר
+date: '2026-05-21T16:25:01.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - גשרים
+  - חברות
+  - סליחה
+  - יום כיפור
 featuredImage:
-  src: "/images/posts/the-bridge.jpg"
-  alt: "הולך על גשר עץ ביער ירוק — גשר שמחבר בין שני עולמות"
-  caption: "לבנות גשרים, לא חומות"
+  src: /images/posts/the-bridge.jpg
+  alt: הולך על גשר עץ ביער ירוק — גשר שמחבר בין שני עולמות
+  caption: 'לבנות גשרים, לא חומות'
+  showInGallery: false
 ---
-
 סיפור לשבת ויום הכיפורים,
 
 אגדת גשר

@@ -15,7 +15,10 @@ import AudioPlayer from "@/components/AudioPlayer";
 import StoryImage from "@/components/StoryImage";
 import PostContent from "@/components/PostContent";
 import WhatsAppDisplay from "@/components/WhatsAppDisplay";
+import DeletePostButton from "@/components/DeletePostButton";
+import PhotoAlbum from "@/components/PhotoAlbum";
 import { Metadata } from "next";
+import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +68,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) {
     notFound();
   }
+
+  const session = await auth();
+  const isAdmin = !!session;
 
   const { next, prev } = await getAdjacentPosts(slug);
   const initialComments = await getCommentsForPost(slug);
@@ -126,7 +132,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               </h1>
               <AudioPlayer text={post.content} />
             </div>
-            <div className="self-end sm:self-auto">
+            <div className="self-end sm:self-auto flex items-center gap-2">
+              {isAdmin && <DeletePostButton slug={slug} />}
               <FavoriteButton slug={slug} />
             </div>
           </div>
@@ -139,9 +146,13 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             )}
           </div>
 
+          {post.gallery && post.gallery.length > 0 && (
+            <PhotoAlbum images={post.gallery} />
+          )}
+
           <ShareButtons title={post.title} slug={slug} />
-          
-          <Comments slug={slug} initialComments={initialComments} />
+
+          <Comments slug={slug} initialComments={initialComments} isAdmin={isAdmin} />
           
           <PostNavigation next={next} prev={prev} />
         </article>

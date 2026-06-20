@@ -1,16 +1,21 @@
 ---
-title: "משא החיים"
-date: "2026-05-21T16:25:04.000Z"
-weather: "sunny"
-tags: ["סיפור","נזירים","משא","שחרור","עבר"]
-contentType: "whatsapp-friday"
-category: "reflection"
+title: משא החיים
+date: '2026-05-21T16:25:04.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: reflection
+tags:
+  - סיפור
+  - נזירים
+  - משא
+  - שחרור
+  - עבר
 featuredImage:
-  src: "/images/posts/the-monks-burden.jpg"
-  alt: "הרי ההימלאיה מכוסי שלג — המשא שנזירים נושאים"
-  caption: "לשחרר את המשא — הדרך לחופש"
+  src: /images/posts/the-monks-burden.jpg
+  alt: הרי ההימלאיה מכוסי שלג — המשא שנזירים נושאים
+  caption: לשחרר את המשא — הדרך לחופש
+  showInGallery: false
 ---
-
 סיפור לשבת
 תשחרר כולם אומרים לי.
 תשחררו אני מיעץ לכולם.

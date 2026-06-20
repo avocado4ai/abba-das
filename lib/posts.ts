@@ -4,18 +4,31 @@ import matter from "gray-matter";
 import { cache } from "react";
 import { getOctokit, getGitHubConfig } from "./github-client";
 
+export interface GalleryImage {
+  src: string;
+  alt?: string;
+  caption?: string;
+  showInGallery?: boolean;
+  aiGenerated?: boolean;
+}
+
 export interface PostData {
   title: string;
   content: string;
   date: string;
   slug: string;
+  author?: string;
+  archived?: boolean;
   weather?: string;
   tags?: string[];
   featuredImage?: {
     src: string;
     alt?: string;
     caption?: string;
+    showInGallery?: boolean;
+    aiGenerated?: boolean;
   };
+  gallery?: GalleryImage[];
   contentType?: "story" | "audio-story" | "whatsapp-friday" | "photo" | "message" | "memory";
   category?: "family" | "memories" | "thoughts" | "inspiration" | "reflection" | "moments";
 }
@@ -34,17 +47,36 @@ function postFromMarkdown(slug: string, markdown: string): PostData {
             src: rawFeaturedImage.src,
             alt: rawFeaturedImage.alt || rawFeaturedImage.title || frontmatter.title || slug,
             caption: rawFeaturedImage.caption || rawFeaturedImage.description || "",
+            showInGallery: typeof rawFeaturedImage.showInGallery === "boolean" ? rawFeaturedImage.showInGallery : undefined,
+            aiGenerated: rawFeaturedImage.aiGenerated === true ? true : undefined,
           }
         : undefined;
+
+  const rawGallery = frontmatter.gallery;
+  const gallery: GalleryImage[] | undefined =
+    Array.isArray(rawGallery)
+      ? rawGallery
+          .filter((item): item is Record<string, unknown> => item && typeof item === "object" && typeof item.src === "string")
+          .map((item) => ({
+            src: item.src as string,
+            alt: typeof item.alt === "string" ? item.alt : undefined,
+            caption: typeof item.caption === "string" ? item.caption : undefined,
+            showInGallery: typeof item.showInGallery === "boolean" ? item.showInGallery : undefined,
+            aiGenerated: item.aiGenerated === true ? true : undefined,
+          }))
+      : undefined;
 
   return {
     title: frontmatter.title || slug,
     date: frontmatter.date || "",
+    author: frontmatter.author || "",
+    archived: frontmatter.archived === true ? true : undefined,
     weather: frontmatter.weather || "sunny",
     tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
     slug,
     content,
     featuredImage,
+    gallery: gallery?.length ? gallery : undefined,
     contentType: frontmatter.contentType || "story",
     category: frontmatter.category || "memories",
   };
@@ -198,6 +230,8 @@ function postToMarkdown(post: PostData) {
   const frontmatter: Record<string, unknown> = {
     title: post.title,
     date: post.date,
+    author: post.author || "",
+    archived: post.archived === true ? true : undefined,
     weather: post.weather || "sunny",
     contentType: post.contentType || "story",
     category: post.category || "memories",
@@ -205,11 +239,25 @@ function postToMarkdown(post: PostData) {
   };
 
   if (post.featuredImage?.src) {
-    frontmatter.featuredImage = {
+    const fi: Record<string, unknown> = {
       src: post.featuredImage.src,
       alt: post.featuredImage.alt || post.title,
       caption: post.featuredImage.caption || "",
     };
+    if (post.featuredImage.aiGenerated) fi.aiGenerated = true;
+    if (post.featuredImage.showInGallery === false) fi.showInGallery = false;
+    frontmatter.featuredImage = fi;
+  }
+
+  if (post.gallery?.length) {
+    frontmatter.gallery = post.gallery.map((img) => {
+      const g: Record<string, unknown> = { src: img.src };
+      if (img.alt) g.alt = img.alt;
+      if (img.caption) g.caption = img.caption;
+      if (img.aiGenerated) g.aiGenerated = true;
+      if (img.showInGallery === false) g.showInGallery = false;
+      return g;
+    });
   }
 
   return matter.stringify(post.content.trim() + "\n", frontmatter);
@@ -288,4 +336,60 @@ export async function savePost(post: PostData) {
     ...(await savePostLocal(post)),
     source: "local" as const,
   };
+}
+
+export async function deletePost(slug: string) {
+  const config = getGitHubConfig();
+  const client = getOctokit();
+  if (!config || !client) {
+    throw new Error("Missing GitHub configuration");
+  }
+
+  assertSafeSlug(slug);
+
+  const path = `content/posts/${slug}.md`;
+
+  const { data } = await client.rest.repos.getContent({
+    owner: config.owner,
+    repo: config.repo,
+    path,
+    ref: BRANCH,
+  });
+
+  if (Array.isArray(data)) {
+    throw new Error("Unexpected response");
+  }
+
+  await client.rest.repos.deleteFile({
+    owner: config.owner,
+    repo: config.repo,
+    path,
+    message: `Delete post: ${slug}`,
+    sha: data.sha,
+    branch: BRANCH,
+  });
+
+  // Also delete the comments file if it exists
+  try {
+    const { data: commentData } = await client.rest.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: `content/comments/${slug}.json`,
+      ref: BRANCH,
+    });
+    if (!Array.isArray(commentData)) {
+      await client.rest.repos.deleteFile({
+        owner: config.owner,
+        repo: config.repo,
+        path: `content/comments/${slug}.json`,
+        message: `Delete comments for post: ${slug}`,
+        sha: commentData.sha,
+        branch: BRANCH,
+      });
+    }
+  } catch {
+    // Comments file may not exist — fine
+  }
+
+  return { success: true, slug };
 }

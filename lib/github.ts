@@ -123,6 +123,56 @@ export const getCommentsForPost = cache(async (slug: string): Promise<CommentDat
 });
 
 /**
+ * Deletes a comment by ID from a post's comments file in GitHub.
+ */
+export async function deleteCommentFromGitHub(slug: string, commentId: string) {
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+
+  if (!config || !octokit) {
+    throw new Error("GitHub configuration missing");
+  }
+
+  const path = `content/comments/${slug}.json`;
+  const message = `Delete comment from post: ${slug}`;
+
+  let currentComments: CommentData[] = [];
+  let sha: string | undefined;
+
+  const { data } = await octokit.rest.repos.getContent({
+    owner: config.owner,
+    repo: config.repo,
+    path,
+    ref: BRANCH,
+  });
+
+  if (!Array.isArray(data) && "content" in data) {
+    sha = data.sha;
+    currentComments = JSON.parse(Buffer.from(data.content, "base64").toString("utf-8"));
+  }
+
+  const updatedComments = currentComments.filter(comment => comment.id !== commentId);
+
+  if (updatedComments.length === currentComments.length) {
+    throw new Error("Comment not found");
+  }
+
+  const contentBase64 = Buffer.from(JSON.stringify(updatedComments, null, 2)).toString("base64");
+
+  const response = await octokit.rest.repos.createOrUpdateFileContents({
+    owner: config.owner,
+    repo: config.repo,
+    path,
+    content: contentBase64,
+    message,
+    sha,
+    branch: BRANCH,
+  });
+
+  return response.data;
+}
+
+/**
  * Saves a blog post as a Markdown file to the GitHub repository.
  */
 export async function savePostToGitHub(post: PostData) {

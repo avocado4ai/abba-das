@@ -1,16 +1,21 @@
 ---
-title: "המחק והעיפרון"
-date: "2026-05-21T16:25:02.000Z"
-weather: "sunny"
-tags: ["סיפור","מחיקה","תיקון","כאב","תקווה"]
-contentType: "whatsapp-friday"
-category: "reflection"
+title: המחק והעיפרון
+date: '2026-05-21T16:25:02.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: reflection
+tags:
+  - סיפור
+  - מחיקה
+  - תיקון
+  - כאב
+  - תקווה
 featuredImage:
-  src: "/images/posts/eraser-and-pencil.jpg"
-  alt: "נוף מרשים של ואדי ירוק — כמו מחיקה שמגלה יופי חדש"
-  caption: "לפעמים המחיקה מגלה משהו יפה יותר"
+  src: /images/posts/eraser-and-pencil.jpg
+  alt: נוף מרשים של ואדי ירוק — כמו מחיקה שמגלה יופי חדש
+  caption: לפעמים המחיקה מגלה משהו יפה יותר
+  showInGallery: false
 ---
-
 סיפור לשבת,
 המחק והעיפרון,
 

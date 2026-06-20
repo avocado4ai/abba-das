@@ -41,7 +41,7 @@ export default function StoryImage({ slug, title, className = '', src, alt, capt
 
   if (src && !imgError) {
     return (
-      <figure className={`relative w-full overflow-hidden bg-navy/10 ${className}`}>
+      <figure className={`relative w-full overflow-hidden bg-background ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}

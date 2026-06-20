@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Download, BarChart3, BookOpen, Printer } from 'lucide-react';
+import { Menu, X, Download, BarChart3, BookOpen, Printer, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PostData } from '@/lib/posts';
 
@@ -84,6 +84,16 @@ export default function MobileNav({ posts }: { posts: PostData[] }) {
               >
                 <BookOpen className="w-4 h-4 text-coral shrink-0" aria-hidden="true" />
                 ספר אורחים
+              </Link>
+
+              <Link
+                href="/gallery"
+                role="menuitem"
+                className="flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-coral/10 transition-colors duration-200 text-base font-medium text-foreground cursor-pointer"
+                onClick={() => setIsOpen(false)}
+              >
+                <Camera className="w-4 h-4 text-coral shrink-0" aria-hidden="true" />
+                גלריה
               </Link>
 
               <button

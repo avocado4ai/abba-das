@@ -1,16 +1,21 @@
 ---
-title: "הדרך להפסיק לדאוג"
-date: "2026-06-12T14:06:12.000Z"
-weather: "sunny"
-tags: ["סיפור","דאגה","שלוה","קבלה","חיים"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: הדרך להפסיק לדאוג
+date: '2026-06-12T14:06:12.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - דאגה
+  - שלוה
+  - קבלה
+  - חיים
 featuredImage:
-  src: "/images/posts/stop-worrying.jpg"
-  alt: "אבנים ביצה שקטה — שלווה ורוגע"
-  caption: "לשים את הדאגות בצד ולנשום"
+  src: /images/posts/stop-worrying.jpg
+  alt: אבנים ביצה שקטה — שלווה ורוגע
+  caption: לשים את הדאגות בצד ולנשום
+  showInGallery: false
 ---
-
 חברים יקרים. עוד שבוע עבר. נשארו עוד שבועיים שהמטפלת תחזור ואז השקט והשלווה.
 בינתיים החלטתי "להיות חכם ולא צודק". זה קצת עוזר, אבל אני מתבשל בפנים.
 העצה, טובה, קצת מקדמת ובעיקר משאירה את המציאות עם תקווה עתידית.
