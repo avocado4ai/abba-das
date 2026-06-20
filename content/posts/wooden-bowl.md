@@ -1,16 +1,21 @@
 ---
-title: "קערת העץ"
-date: "2026-05-21T16:25:02.000Z"
-weather: "sunny"
-tags: ["סיפור","זקנה","משפחה","כבוד","הורים"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: קערת העץ
+date: '2026-05-21T16:25:02.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - זקנה
+  - משפחה
+  - כבוד
+  - הורים
 featuredImage:
-  src: "/images/posts/wooden-bowl.jpg"
-  alt: "כוס חמה עם אדים — חום הבית וכבוד ההורים"
-  caption: "כבד את אביך ואת אמך"
+  src: /images/posts/wooden-bowl.jpg
+  alt: כוס חמה עם אדים — חום הבית וכבוד ההורים
+  caption: כבד את אביך ואת אמך
+  showInGallery: false
 ---
-
 סיפור לשבת. לפני כמה שבועות כתבתי על ענין האוכל, האכילה ואי הנעימות שבפומביות הענין.
 למרות שהחלטתי שיותר לא אקח את מיקי שלי, למסעדה או דומה לה, איני עומד בזה. למה? כי אני יודע שהיא אוהבת את זה. ומה כבר נשאר לה מהנאות החיים...
 אז הנה, סיפור מקורב ומתאים.

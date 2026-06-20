@@ -4,14 +4,15 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { CommentData } from '@/lib/github';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 interface CommentsProps {
   slug: string;
   initialComments: CommentData[];
+  isAdmin?: boolean;
 }
 
-export default function Comments({ slug, initialComments }: CommentsProps) {
+export default function Comments({ slug, initialComments, isAdmin = false }: CommentsProps) {
   const [comments, setComments] = useState<CommentData[]>(initialComments);
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
@@ -19,6 +20,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +67,27 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
       setError('אירעה שגיאה בשליחת התגובה. אנא נסה שוב.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('למחוק את התגובה?')) return;
+    setDeletingId(commentId);
+    setError(null);
+    try {
+      const response = await fetch(`/api/comments?slug=${slug}&id=${commentId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setComments(prev => prev.filter(c => c.id !== commentId));
+      } else {
+        const data = await response.json();
+        setError(data.error || 'נכשל במחיקת התגובה');
+      }
+    } catch {
+      setError('אירעה שגיאה במחיקת התגובה');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -168,7 +191,7 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
       <div className="space-y-6 sm:space-y-12" role="region" aria-label={`${comments.length} תגובות`}>
         {comments.length > 0 ? (
           <ol className="list-none space-y-6 sm:space-y-12">
-            {comments.map((comment, index) => (
+            {comments.map((comment) => (
               <li key={comment.id} className="group">
                 <article className="focus-within:ring-2 focus-within:ring-sage/50 rounded-2xl px-4 py-4 border border-border-theme shadow-sm hover:shadow-md hover:bg-white/8 transition-all duration-250">
                   <div className="flex items-start gap-3 mb-2">
@@ -186,6 +209,17 @@ export default function Comments({ slug, initialComments }: CommentsProps) {
                         <time className="text-sm text-muted-theme" dateTime={new Date(comment.date).toISOString()}>
                           {format(new Date(comment.date), 'dd/MM/yyyy HH:mm', { locale: he })}
                         </time>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            disabled={deletingId === comment.id}
+                            className="mr-auto p-1 text-muted-theme/40 hover:text-red-500 transition-colors duration-250 disabled:opacity-40"
+                            title="מחק תגובה"
+                            aria-label="מחק תגובה"
+                          >
+                            <Trash2 size={14} aria-hidden="true" />
+                          </button>
+                        )}
                       </div>
                       <div className="font-stories text-base sm:text-lg text-foreground/90 leading-relaxed">
                         {comment.message}

@@ -1,16 +1,21 @@
 ---
-title: "הדלת כמשל והבנות"
-date: "2026-05-21T16:25:03.000Z"
-weather: "sunny"
-tags: ["סיפור","דלת","בנות","משפחה","מסירות"]
-contentType: "whatsapp-friday"
-category: "family"
+title: הדלת כמשל והבנות
+date: '2026-05-21T16:25:03.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: family
+tags:
+  - סיפור
+  - דלת
+  - בנות
+  - משפחה
+  - מסירות
 featuredImage:
-  src: "/images/posts/the-door-and-daughters.jpg"
-  alt: "דלת ישנה בבית — ממשל על משפחה ומסירות"
-  caption: "הדלת שתמיד פתוחה לאהובים"
+  src: /images/posts/the-door-and-daughters.jpg
+  alt: דלת ישנה בבית — ממשל על משפחה ומסירות
+  caption: הדלת שתמיד פתוחה לאהובים
+  showInGallery: false
 ---
-
 סיפור לשבת
 
 הדלת כמשל והבנות

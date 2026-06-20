@@ -3,6 +3,9 @@ import Comments from "@/components/Comments";
 import Link from "next/link";
 import { ArrowRight, MessageSquareText } from "lucide-react";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "ספר אורחים | אבא-דס",
@@ -11,6 +14,8 @@ export const metadata = {
 
 export default async function GuestbookPage() {
   const initialComments = await getCommentsForPost("guestbook");
+  const session = await auth();
+  const isAdmin = !!session;
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -50,7 +55,7 @@ export default async function GuestbookPage() {
             </div>
           </div>
 
-          <Comments slug="guestbook" initialComments={initialComments} />
+          <Comments slug="guestbook" initialComments={initialComments} isAdmin={isAdmin} />
         </div>
       </main>
 

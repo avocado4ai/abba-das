@@ -1,16 +1,21 @@
 ---
-title: "שלושה זקנים"
-date: "2026-06-08T10:44:16.000Z"
-weather: "sunny"
-tags: ["סיפור","אהבה","עושר","הצלחה","משפחה"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: שלושה זקנים
+date: '2026-06-08T10:44:16.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - אהבה
+  - עושר
+  - הצלחה
+  - משפחה
 featuredImage:
-  src: "/images/posts/three-old-men.jpg"
-  alt: "עמק מפואר בשקיעה — כמו שלושה חכמים מסתכלים אל תוך החיים"
-  caption: "מה הנכנס לביתנו — אהבה, עושר או הצלחה?"
+  src: /images/posts/three-old-men.jpg
+  alt: עמק מפואר בשקיעה — כמו שלושה חכמים מסתכלים אל תוך החיים
+  caption: 'מה הנכנס לביתנו — אהבה, עושר או הצלחה?'
+  showInGallery: false
 ---
-
 סיפור לשבת מותאם לנו:
 בכפר אחד, ראתה אישה 3 אנשים זקנים יושבים בשקט מחוץ לביתה במשך זמן רב.
 האישה יצאה החוצה אליהם והזמינה אותם לביתה לאכול משהו.

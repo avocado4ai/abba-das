@@ -1,16 +1,21 @@
 ---
-title: "זווית צילום"
-date: "2026-05-21T16:25:02.000Z"
-weather: "sunny"
-tags: ["סיפור","פרספקטיבה","הצלחה","אושר","השראה"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: זווית צילום
+date: '2026-05-21T16:25:02.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - פרספקטיבה
+  - הצלחה
+  - אושר
+  - השראה
 featuredImage:
-  src: "/images/posts/camera-angle.jpg"
-  alt: "נוף מרהיב — הכל תלוי בזווית שבה מסתכלים"
-  caption: "זווית הצילום משנה הכל"
+  src: /images/posts/camera-angle.jpg
+  alt: נוף מרהיב — הכל תלוי בזווית שבה מסתכלים
+  caption: זווית הצילום משנה הכל
+  showInGallery: false
 ---
-
 סיפור לשבת,
 
 "זווית צילום" 

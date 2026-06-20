@@ -1,16 +1,21 @@
 ---
-title: "את מי הייתם לוקחים טרמפ?"
-date: "2026-05-21T16:25:03.000Z"
-weather: "rainy"
-tags: ["סיפור","דילמה","חשיבה","מוסר","יצירתיות"]
-contentType: "whatsapp-friday"
-category: "reflection"
+title: את מי הייתם לוקחים טרמפ?
+date: '2026-05-21T16:25:03.000Z'
+weather: rainy
+contentType: whatsapp-friday
+category: reflection
+tags:
+  - סיפור
+  - דילמה
+  - חשיבה
+  - מוסר
+  - יצירתיות
 featuredImage:
-  src: "/images/posts/hitchhiking-dilemma.jpg"
-  alt: "כביש מתפתל בין עצי אורן בערפל — דילמה של הדרך"
-  caption: "לפעמים הדרך הנכונה היא הפחות ברורה"
+  src: /images/posts/hitchhiking-dilemma.jpg
+  alt: כביש מתפתל בין עצי אורן בערפל — דילמה של הדרך
+  caption: לפעמים הדרך הנכונה היא הפחות ברורה
+  showInGallery: false
 ---
-
 סיפור לשבת,
 כמה גמישות מחשבתית, לולינות, סבלנות וחשיבה ארוכת טווח נדרשים מאתנו. מי מסוגל לחשוב צעד קדימה ולהשיג את מי שכל שניה מפתיע. נכון שאיננו מלאכים, שוגים לא פעם, אבל בסופו של דבר, אם לא נתקבל לעבודה, יפתחו לנו שערי גן עדן. 
 

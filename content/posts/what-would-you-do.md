@@ -1,16 +1,21 @@
 ---
-title: "מה אתה היית עושה?"
-date: "2026-05-21T16:25:03.000Z"
-weather: "rainy"
-tags: ["סיפור","שיפוט","אהבה","הקרבה","משפחה"]
-contentType: "whatsapp-friday"
-category: "reflection"
+title: מה אתה היית עושה?
+date: '2026-05-21T16:25:03.000Z'
+weather: rainy
+contentType: whatsapp-friday
+category: reflection
+tags:
+  - סיפור
+  - שיפוט
+  - אהבה
+  - הקרבה
+  - משפחה
 featuredImage:
-  src: "/images/posts/what-would-you-do.jpg"
-  alt: "כביש מפותל בנוף — מה הייתם בוחרים בצומת הזה?"
-  caption: "שאלה שאין לה תשובה קלה"
+  src: /images/posts/what-would-you-do.jpg
+  alt: כביש מפותל בנוף — מה הייתם בוחרים בצומת הזה?
+  caption: שאלה שאין לה תשובה קלה
+  showInGallery: false
 ---
-
 הסבל, חוסר הודאות, העתיד האפל, במיוחד בימים אלה של חוסר תקווה, יכולים להניע מחשבות וכוונות לכל מקום.
 המחשבה והתשובה של האב היא כל כך אמיתית, נדרשת, נכונה, כל כך מחדדת את מהות הצורך בקיום החיים.
 אחרי שתקראו - תבינו.

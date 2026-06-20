@@ -3,11 +3,13 @@ import PostList from "@/components/PostList";
 import ExportButton from "@/components/ExportButton";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import DynamicStats from "@/components/DynamicStats";
+
 import OnThisDay from "@/components/OnThisDay";
 import ContentTypeGuide from "@/components/ContentTypeGuide";
 import Image from "next/image";
 import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
+import { Camera } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,10 @@ export default async function Home() {
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/guestbook" className="text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250 hover:underline">
               ספר אורחים
+            </Link>
+            <Link href="/gallery" className="flex items-center gap-1.5 text-sm font-medium text-muted-theme hover:text-coral transition-colors duration-250 hover:underline">
+              <Camera className="w-4 h-4" aria-hidden="true" />
+              גלריה
             </Link>
             <ThemeSwitcher />
             <ExportButton posts={posts} />

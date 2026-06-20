@@ -1,16 +1,21 @@
 ---
-title: "מטבע של 10 שקלים"
-date: "2026-05-21T16:25:04.000Z"
-weather: "sunny"
-tags: ["סיפור","מטבע","חמדנות","לקח","יצר"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: מטבע של 10 שקלים
+date: '2026-05-21T16:25:04.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - מטבע
+  - חמדנות
+  - לקח
+  - יצר
 featuredImage:
-  src: "/images/posts/the-coin-trap.jpg"
-  alt: "נוף פתוח ומרחב — כשהחמדנות מסתירה את מה שחשוב"
-  caption: "לא הכל נוצץ הוא זהב"
+  src: /images/posts/the-coin-trap.jpg
+  alt: נוף פתוח ומרחב — כשהחמדנות מסתירה את מה שחשוב
+  caption: לא הכל נוצץ הוא זהב
+  showInGallery: false
 ---
-
 חברים יקרים
 בימים קשים אלה, בסערת הארועים המקשים על השיגרה שנכפתה עלינו, אין ספק שנדע מה באמת חשוב...
 שבת שלום שקטה ורגועה!

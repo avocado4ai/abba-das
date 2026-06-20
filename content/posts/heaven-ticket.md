@@ -1,16 +1,21 @@
 ---
-title: "כרטיס הכניסה לגן עדן"
-date: "2026-05-21T16:25:02.000Z"
-weather: "sunny"
-tags: ["סיפור","חברים","גן עדן","גיהנום","נאמנות"]
-contentType: "whatsapp-friday"
-category: "inspiration"
+title: כרטיס הכניסה לגן עדן
+date: '2026-05-21T16:25:02.000Z'
+weather: sunny
+contentType: whatsapp-friday
+category: inspiration
+tags:
+  - סיפור
+  - חברים
+  - גן עדן
+  - גיהנום
+  - נאמנות
 featuredImage:
-  src: "/images/posts/heaven-ticket.jpg"
-  alt: "אדם וכלבו יושבים על הר מול ים ועננים — בדרך לגן עדן"
-  caption: "נאמנות היא הכרטיס לגן עדן"
+  src: /images/posts/heaven-ticket.jpg
+  alt: אדם וכלבו יושבים על הר מול ים ועננים — בדרך לגן עדן
+  caption: נאמנות היא הכרטיס לגן עדן
+  showInGallery: false
 ---
-
 סיפור לשבת. כמה דיברנו על "חברים" שבעת הזו נמצאנו נטושים! אז הנה סיפור עם לקח קטן בצידו. הכל לשם המטפורה.
 
 כרטיס הכניסה לגן עדן - סיפור בחרוזים

@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { parseWhatsAppExport, WhatsAppMessage } from '@/lib/whatsapp-parser';
-import { Upload, FileText, AlertCircle, Loader2, Save, ArrowRight, ExternalLink, X, CheckCircle2, Inbox, BookOpen, Image as ImageIcon, WandSparkles, Copy, Plus, RefreshCw, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { AlertCircle, Loader2, Save, ArrowRight, ExternalLink, CheckCircle2, BookOpen, Image as ImageIcon, Plus, RefreshCw, MessageCircle, Trash2, Eye, EyeOff, Camera, Archive, Search, Upload, LayoutGrid, List as ListIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -14,11 +13,14 @@ const generateSlug = (dateStr: string) => {
   return `${dateStr}-${randomSuffix}`;
 };
 
-function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+type GalleryDraftImage = {
+  src: string;
+  alt?: string;
+  caption?: string;
+};
 
 type PostDraft = {
+  author: string;
   title: string;
   slug: string;
   date: string;
@@ -27,9 +29,12 @@ type PostDraft = {
   weather: string;
   contentType: string;
   category: string;
+  archived: boolean;
   imageSrc: string;
   imageAlt: string;
   imageCaption: string;
+  imageAiGenerated?: boolean;
+  gallery: GalleryDraftImage[];
 };
 
 type AdminCommentGroup = {
@@ -39,6 +44,7 @@ type AdminCommentGroup = {
 };
 
 const createEmptyDraft = (): PostDraft => ({
+  author: '',
   title: '',
   slug: generateSlug(format(new Date(), 'yyyy-MM-dd')),
   date: new Date().toISOString().slice(0, 10),
@@ -47,12 +53,15 @@ const createEmptyDraft = (): PostDraft => ({
   weather: 'sunny',
   contentType: 'story',
   category: 'memories',
+  archived: false,
   imageSrc: '',
   imageAlt: '',
   imageCaption: '',
+  gallery: [],
 });
 
 const postToDraft = (post: PostData): PostDraft => ({
+  author: post.author || '',
   title: post.title,
   slug: post.slug,
   date: post.date ? new Date(post.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
@@ -61,9 +70,11 @@ const postToDraft = (post: PostData): PostDraft => ({
   weather: post.weather || 'sunny',
   contentType: post.contentType || 'story',
   category: post.category || 'memories',
+  archived: post.archived === true,
   imageSrc: post.featuredImage?.src || '',
   imageAlt: post.featuredImage?.alt || post.title,
   imageCaption: post.featuredImage?.caption || '',
+  gallery: (post.gallery || []).map(g => ({ src: g.src, alt: g.alt, caption: g.caption })),
 });
 
 const splitTags = (tagsText: string) =>
@@ -73,25 +84,25 @@ const splitTags = (tagsText: string) =>
     .filter(Boolean);
 
 export default function AdminPage() {
-  const [sender, setSender] = useState('');
-  const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
   const [publishedPosts, setPublishedPosts] = useState<PostData[]>([]);
   const [commentGroups, setCommentGroups] = useState<AdminCommentGroup[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [isParsing, setIsParsing] = useState(false);
-  const [isSaving, setIsSaving] = useState<number | null>(null);
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [senderError, setSenderError] = useState<string | null>(null);
-  const [messageMetadata, setMessageMetadata] = useState<Record<number, {contentType: string; category: string; weather: string}>>({});
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [postDraft, setPostDraft] = useState<PostDraft>(() => createEmptyDraft());
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isUploadingDraftImage, setIsUploadingDraftImage] = useState(false);
-  const [isGeneratingGeminiImage, setIsGeneratingGeminiImage] = useState(false);
-  const [geminiPrompt, setGeminiPrompt] = useState('');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [postSearch, setPostSearch] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  // galleryOverrides: key = "slug:featured" or "slug:gallery:N" → showInGallery boolean
+  const [galleryOverrides, setGalleryOverrides] = useState<Record<string, boolean>>({});
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
+  const [galleryView, setGalleryView] = useState<'grid' | 'list'>('grid');
+  const [gallerySort, setGallerySort] = useState<'post' | 'date' | 'ai'>('post');
 
 
   useEffect(() => {
@@ -141,64 +152,49 @@ export default function AdminPage() {
     };
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) {
-      setError('אנא בחר קבצים');
-      return;
-    }
-    if (!sender.trim()) {
-      setSenderError('אנא הזן שם שולח תחילה');
-      return;
-    }
-
-    setIsParsing(true);
-    setError(null);
-    setSenderError(null);
-    setSuccess(null);
-
-    try {
-      const txtFile = files.find(f => f.name.endsWith('.txt'));
-      const otherFiles = files.filter(f => !f.name.endsWith('.txt'));
-
-      if (otherFiles.length > 0) {
-        setAttachedFiles(prev => [...prev, ...otherFiles]);
-      }
-
-      if (txtFile) {
-        const text = await txtFile.text();
-        const parsedMessages = parseWhatsAppExport(text, sender);
-        setMessages(parsedMessages);
-        if (parsedMessages.length === 0) {
-          setError('לא נמצאו הודעות עבור שולח זה.');
-        } else {
-          setSuccess(`נטענו ${parsedMessages.length} הודעות, ו-${otherFiles.length} קבצים מצורפים`);
+  // Paste handler for images
+  useEffect(() => {
+    if (!isEditorOpen) return;
+    const handler = async (e: ClipboardEvent) => {
+      const file = Array.from(e.clipboardData?.files || []).find(f => f.type.startsWith('image/'));
+      if (file) {
+        e.preventDefault();
+        const url = await uploadFile(file);
+        if (url) {
+          setPostDraft((current) => ({
+            ...current,
+            gallery: [...current.gallery, { src: url, alt: file.name, caption: '' }],
+          }));
+          setSuccess('תמונה הודבקה ונוספה לגלריה');
         }
-      } else {
-        setSuccess(`נוספו ${otherFiles.length} קבצים מצורפים`);
       }
-    } catch {
-      setError('נכשל בניתוח הקבצים.');
-    } finally {
-      setIsParsing(false);
-      // Reset file input
-      e.target.value = '';
-    }
-  };
+    };
+    document.addEventListener('paste', handler);
+    return () => document.removeEventListener('paste', handler);
+  }, [isEditorOpen]);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append("file", file);
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
-      if (!res.ok) throw new Error('Upload failed');
+      clearTimeout(timeout);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Upload failed (${res.status})`);
+      }
       const data = await res.json();
       return data.url;
     } catch (e) {
-      console.error(e);
+      const msg = e instanceof Error ? e.message : 'תקלה בהעלאה';
+      setError(msg);
+      console.error('Upload error:', e);
       return null;
     }
   };
@@ -241,17 +237,22 @@ export default function AdminPage() {
   const startEditingPost = (post: PostData) => {
     setEditingSlug(post.slug);
     setPostDraft(postToDraft(post));
-    setGeminiPrompt('');
     setError(null);
     setSuccess(null);
+    setIsEditorOpen(true);
   };
 
   const startNewPost = () => {
     setEditingSlug(null);
     setPostDraft(createEmptyDraft());
-    setGeminiPrompt('');
     setError(null);
     setSuccess(null);
+    setIsEditorOpen(true);
+  };
+
+  const closeEditor = () => {
+    setIsEditorOpen(false);
+    setEditingSlug(null);
   };
 
   const buildPostFromDraft = (): PostData => ({
@@ -259,18 +260,27 @@ export default function AdminPage() {
     slug: postDraft.slug.trim(),
     content: postDraft.content.trim(),
     date: new Date(postDraft.date).toISOString(),
+    author: postDraft.author.trim() || undefined,
+    archived: postDraft.archived || undefined,
     tags: splitTags(postDraft.tagsText),
     weather: postDraft.weather,
     contentType: postDraft.contentType as PostData['contentType'],
     category: postDraft.category as PostData['category'],
-    featuredImage: postDraft.imageSrc.trim()
-      ? {
-          src: postDraft.imageSrc.trim(),
-          alt: postDraft.imageAlt.trim() || postDraft.title.trim(),
-          caption: postDraft.imageCaption.trim(),
-        }
-      : undefined,
-  });
+        featuredImage: postDraft.imageSrc.trim()
+          ? {
+              src: postDraft.imageSrc.trim(),
+              alt: postDraft.imageAlt.trim() || postDraft.title.trim(),
+              caption: postDraft.imageCaption.trim(),
+              aiGenerated: postDraft.imageAiGenerated || undefined,
+              showInGallery: postDraft.imageAiGenerated ? false : undefined,
+            }
+          : undefined,
+      gallery: postDraft.gallery.length > 0 ? postDraft.gallery.map(g => ({
+        src: g.src,
+        alt: g.alt || undefined,
+        caption: g.caption || undefined,
+      })) : undefined,
+    });
 
   const handleSaveDraft = async () => {
     if (!postDraft.title.trim() || !postDraft.slug.trim() || !postDraft.content.trim()) {
@@ -332,164 +342,107 @@ export default function AdminPage() {
     }
   };
 
-  const buildGeminiPrompt = async () => {
-    const prompt = `צור תמונה ראשית לפוסט זיכרון משפחתי בעברית.
-
-כותרת הפוסט: ${postDraft.title || 'ללא כותרת'}
-תקציר התוכן: ${postDraft.content.slice(0, 700)}
-
-סגנון: איור/צילום רך, מכבד ואינטימי, צבעים תואמים לאתר אבא-דס: ירוק מרווה, קורל עדין, זהב חם, רקע בהיר ונקי. בלי טקסט בתוך התמונה. קומפוזיציה שמתאימה לכרטיס בלוג אופקי ולמסך מובייל.
-
-החזר גם:
-1. תיאור ALT קצר בעברית
-2. קפשן קצר לתמונה`;
-
-    setGeminiPrompt(prompt);
+  const handleToggleGallery = async (
+    slug: string,
+    type: 'featured' | 'gallery',
+    index: number | undefined,
+    currentValue: boolean
+  ) => {
+    const key = type === 'featured' ? `${slug}:featured` : `${slug}:gallery:${index}`;
+    const newValue = !currentValue;
+    setTogglingKey(key);
+    setGalleryOverrides((prev) => ({ ...prev, [key]: newValue }));
     try {
-      await navigator.clipboard.writeText(prompt);
-      setSuccess('הפרומפט הועתק. אפשר לפתוח את Gemini ולהדביק אותו שם.');
+      const res = await fetch('/api/posts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, type, index, showInGallery: newValue }),
+      });
+      if (!res.ok) {
+        // revert on error
+        setGalleryOverrides((prev) => ({ ...prev, [key]: currentValue }));
+        setError('נכשל בעדכון הגלריה');
+      }
     } catch {
-      setSuccess('הפרומפט מוכן להעתקה ידנית.');
-    }
-  };
-
-  const createGeminiPrompt = () => `צור תמונה ראשית לפוסט זיכרון משפחתי בעברית.
-
-כותרת הפוסט: ${postDraft.title || 'ללא כותרת'}
-תקציר התוכן: ${postDraft.content.slice(0, 900)}
-
-סגנון: תמונה או איור רך, מכבד ואינטימי, צבעים תואמים לאתר אבא-דס: ירוק מרווה, קורל עדין, זהב חם, רקע בהיר ונקי. בלי טקסט בתוך התמונה. בלי לוגו. קומפוזיציה אופקית 16:9 שמתאימה לכרטיס בלוג ולמסך מובייל.`;
-
-  const handleGenerateGeminiImage = async () => {
-    if (!postDraft.title.trim() && !postDraft.content.trim()) {
-      setError('צריך כותרת או תוכן כדי ליצור תמונה');
-      return;
-    }
-
-    setIsGeneratingGeminiImage(true);
-    setError(null);
-    setSuccess(null);
-
-    const prompt = geminiPrompt.trim() || createGeminiPrompt();
-    setGeminiPrompt(prompt);
-
-    try {
-      const res = await fetch('/api/admin/generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          title: postDraft.slug || postDraft.title || 'post-image',
-          aspectRatio: '16:9',
-        }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || 'יצירת התמונה נכשלה');
-
-      updateDraft({
-        imageSrc: data.url,
-        imageAlt: postDraft.imageAlt || postDraft.title || 'תמונה ראשית לפוסט',
-        imageCaption: postDraft.imageCaption || 'תמונה שנוצרה בעזרת Gemini',
-      });
-      setSuccess('התמונה נוצרה ונשמרה כתמונה ראשית. יש לשמור את הפוסט כדי לעדכן את הבלוג.');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'אירעה שגיאה ביצירת התמונה');
+      setGalleryOverrides((prev) => ({ ...prev, [key]: currentValue }));
+      setError('אירעה שגיאה בעדכון הגלריה');
     } finally {
-      setIsGeneratingGeminiImage(false);
+      setTogglingKey(null);
     }
   };
 
-  const handleSavePost = async (index: number, msg: WhatsAppMessage) => {
-    setIsSaving(index);
-    setError(null);
-    setSuccess(null);
-
-    let finalContent = msg.content;
-
-    // Process attachments
-    if (msg.attachments && msg.attachments.length > 0) {
-      const failedUploads: string[] = [];
-      for (const attachmentName of msg.attachments) {
-        const fileToUpload = attachedFiles.find(f => f.name === attachmentName);
-        if (fileToUpload) {
-          try {
-            const url = await uploadFile(fileToUpload);
-            if (url) {
-              // Replace the attachment placeholder with markdown
-              const isVideo = fileToUpload.type.startsWith('video/');
-              const markdownMedia = isVideo ? `\n\n<video controls src="${url}"></video>\n\n` : `\n\n![${attachmentName}](${url})\n\n`;
-
-              // Regex to replace either "filename.jpg (file attached)" or "<attached: filename.jpg>"
-              const escaped = escapeRegExp(attachmentName);
-              const regex = new RegExp(`${escaped}\\s*\\(file attached\\)|<attached:\\s*${escaped}>`, 'gi');
-              finalContent = finalContent.replace(regex, markdownMedia);
-            }
-          } catch {
-            failedUploads.push(attachmentName);
-            finalContent += `\n\n<!-- קובץ לא הועלה: ${attachmentName} -->\n\n`;
-          }
-        }
-      }
-      if (failedUploads.length > 0) {
-        setError(`חלק מהקבצים לא הועלו: ${failedUploads.join(', ')}`);
-      }
-    }
-
-    const dateStr = format(msg.date, 'yyyy-MM-dd');
-    const firstLine = finalContent.split('\n')[0].trim();
-    // remove markdown image syntax from title if present
-    const cleanFirstLine = firstLine.replace(/!\[.*?\]\(.*?\)/g, '').trim();
-    const title = cleanFirstLine.substring(0, 50) || `סיפור מ-${dateStr}`;
-    const slug = generateSlug(dateStr);
-
+  const handleDeleteComment = async (slug: string, commentId: string) => {
+    if (!window.confirm('למחוק את התגובה?')) return;
     try {
-      const metadata = messageMetadata[index] || { contentType: 'story', category: 'memories', weather: 'sunny' };
-
-      const res = await fetch('/api/github', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content: finalContent,
-          date: msg.date.toISOString(),
-          slug,
-          tags: msg.tags || [],
-          contentType: metadata.contentType,
-          category: metadata.category,
-          weather: metadata.weather,
-        }),
+      const response = await fetch(`/api/comments?slug=${slug}&id=${commentId}`, {
+        method: 'DELETE',
       });
-
-      if (!res.ok) throw new Error('נכשל בשמירת הסיפור');
-
-      setMessages(prev => prev.filter((_, i) => i !== index));
-      setSuccess('הסיפור נשמר בהצלחה!');
-
-      setIsLoadingPosts(true);
-      try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setPublishedPosts(data);
-        }
-      } catch {
-        console.error('Failed to fetch published posts');
-      } finally {
-        setIsLoadingPosts(false);
+      if (response.ok) {
+        await refreshComments();
+        setSuccess('התגובה נמחקה בהצלחה');
+      } else {
+        const data = await response.json();
+        setError(data.error || 'נכשל במחיקת התגובה');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'אירעה שגיאה לא ידועה');
-    } finally {
-      setIsSaving(null);
+    } catch {
+      setError('אירעה שגיאה במחיקת התגובה');
     }
   };
 
-  const dismissMessage = (index: number) => {
-    setMessages(prev => prev.filter((_, i) => i !== index));
+  const handleDeletePost = async (slug: string) => {
+    setShowDeleteConfirm(slug);
+    setDeletePassword('');
+  };
+
+  const confirmDeletePost = async () => {
+    const slug = showDeleteConfirm;
+    if (!slug) return;
+    try {
+      const response = await fetch(`/api/posts?slug=${slug}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': deletePassword },
+      });
+      if (response.ok) {
+        setShowDeleteConfirm(null);
+        setDeletePassword('');
+        await refreshPosts();
+        setSuccess('הפוסט נמחק בהצלחה');
+        closeEditor();
+      } else {
+        const data = await response.json();
+        setError(data.error || 'סיסמה שגויה או נכשל במחיקת הפוסט');
+      }
+    } catch {
+      setError('אירעה שגיאה במחיקת הפוסט');
+    }
+  };
+
+  const cancelDeletePost = () => {
+    setShowDeleteConfirm(null);
+    setDeletePassword('');
   };
 
   const totalComments = commentGroups.reduce((total, group) => total + group.comments.length, 0);
+  const totalImages = publishedPosts.reduce((total, post) => {
+    let count = 0;
+    if (post.featuredImage?.src) {
+      const key = `${post.slug}:featured`;
+      const aiGen = !!post.featuredImage.aiGenerated;
+      const defaultShow = !aiGen;
+      const show = key in galleryOverrides ? galleryOverrides[key] : (post.featuredImage.showInGallery ?? defaultShow);
+      if (show) count++;
+    }
+    if (post.gallery?.length) {
+      post.gallery.forEach((img, i) => {
+        const key = `${post.slug}:gallery:${i}`;
+        const aiGen = !!img.aiGenerated;
+        const defaultShow = !aiGen;
+        const show = key in galleryOverrides ? galleryOverrides[key] : (img.showInGallery ?? defaultShow);
+        if (show) count++;
+      });
+    }
+    return total + count;
+  }, 0);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300 dir-rtl" dir="rtl">
@@ -497,7 +450,7 @@ export default function AdminPage() {
         <header className="mb-6 sm:mb-10 border-b border-border-theme pb-5 sm:pb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4 sm:gap-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3 tracking-tight">ניהול הבלוג</h1>
-            <p className="text-sm sm:text-base text-sage font-medium">ייבוא הודעות וואטסאפ והפיכתן לסיפורים</p>
+            <p className="text-sm sm:text-base text-sage font-medium">ניהול פוסטים, תגובות וגלריה</p>
           </div>
           <div className="flex items-center justify-between gap-3 self-stretch md:self-auto">
             <Link href="/" className="flex min-h-10 items-center gap-2 rounded-full border border-border-theme bg-white/5 px-4 text-sm font-bold text-muted-theme hover:text-navy transition-colors duration-250 group">
@@ -508,115 +461,62 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
-          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
-            <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
-              <Inbox className="w-4 h-4" aria-hidden="true" />
-              ממתינות
-            </div>
-            <div className="text-2xl font-bold text-foreground">{messages.length}</div>
-          </div>
-          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
+          <button
+            type="button"
+            onClick={() => document.getElementById('posts-editor')?.scrollIntoView({ behavior: 'smooth' })}
+            className="rounded-2xl border border-border-theme bg-white/5 p-4 text-right hover:border-sage/40 transition-colors"
+          >
             <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
               <BookOpen className="w-4 h-4" aria-hidden="true" />
-              פורסמו
+              פוסטים שפורסמו
             </div>
             <div className="text-2xl font-bold text-foreground">{publishedPosts.length}</div>
-          </div>
-          <div className="rounded-2xl border border-border-theme bg-white/5 p-4">
+          </button>
+          <button
+            type="button"
+            onClick={() => document.getElementById('gallery-management')?.scrollIntoView({ behavior: 'smooth' })}
+            className="rounded-2xl border border-border-theme bg-white/5 p-4 text-right hover:border-sage/40 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
+              <Camera className="w-4 h-4" aria-hidden="true" />
+              תמונות
+            </div>
+            <div className="text-2xl font-bold text-foreground">{totalImages}</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => document.getElementById('comments-overview')?.scrollIntoView({ behavior: 'smooth' })}
+            className="rounded-2xl border border-border-theme bg-white/5 p-4 text-right hover:border-sage/40 transition-colors"
+          >
             <div className="flex items-center gap-2 text-muted-theme text-xs font-bold mb-1">
               <MessageCircle className="w-4 h-4" aria-hidden="true" />
               תגובות
             </div>
             <div className="text-2xl font-bold text-foreground">{totalComments}</div>
-          </div>
+          </button>
         </div>
 
-        {/* Upload Section */}
-        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 items-end">
-            <div className="space-y-2 sm:space-y-3">
-              <label htmlFor="sender-input" className="block text-sm font-bold text-muted-theme">זיהוי השולח (שם כפי שמופיע בוואטסאפ)</label>
-              <input
-                id="sender-input"
-                type="text"
-                value={sender}
-                onChange={(e) => {
-                  setSender(e.target.value);
-                  if (senderError) setSenderError(null);
-                }}
-                onBlur={() => {
-                  if (!sender.trim() && sender) {
-                    setSenderError('שם השולח לא יכול להיות ריק');
-                  }
-                }}
-                placeholder="למשל: אבא"
-                aria-required="true"
-                aria-invalid={!!senderError}
-                aria-describedby={senderError ? "sender-error" : undefined}
-                className={`w-full min-h-12 p-3 sm:p-4 rounded-2xl border-2 bg-white/5 outline-none transition-all text-base sm:text-lg focus:ring-2 focus:ring-sage/50 ${
-                  senderError
-                    ? 'border-red-500/50 focus:ring-red-500/30'
-                    : 'border-border-theme'
-                }`}
-              />
-              {senderError && (
-                <p id="sender-error" className="text-sm text-red-500 font-medium animate-in fade-in">
-                  ⚠️ {senderError}
-                </p>
-              )}
-            </div>
-            
-            <div className="relative">
-              <input
-                type="file"
-                accept=".txt,.jpg,.jpeg,.png,.gif,.mp4,.webp"
-                multiple
-                onChange={handleFileUpload}
-                className="hidden"
-                id="file-upload"
-                disabled={!sender || isParsing}
-              />
-              <label
-                htmlFor="file-upload"
-                className={`flex min-h-14 flex-col items-center justify-center gap-1.5 sm:gap-2 p-4 rounded-2xl cursor-pointer text-base sm:text-lg font-bold ${
-                  !sender ? 'bg-muted-theme/10 text-muted-theme cursor-not-allowed' : 'bg-navy text-cream hover:bg-navy/90'
-                } transition-all duration-250`}
-              >
-                <div className="flex items-center gap-3">
-                  {isParsing ? <Loader2 className="animate-spin" /> : <Upload size={24} />}
-                  <span>טעינת קובץ (txt + תמונות)</span>
-                </div>
-                {attachedFiles.length > 0 && (
-                  <span className="text-sm font-normal text-cream/70">
-                    {attachedFiles.length} קבצים ממתינים לפרסום
-                  </span>
-                )}
-              </label>
-            </div>
+        {(error || success) && (
+          <div
+            className={`mb-6 sm:mb-10 p-3 sm:p-4 rounded-2xl flex items-center gap-3 text-sm sm:text-base font-medium animate-in fade-in slide-in-from-top-2 ${
+              error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
+            }`}
+            role="alert"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {error ? <AlertCircle size={20} aria-hidden="true" /> : <CheckCircle2 size={20} aria-hidden="true" />}
+            <span>{error || success}</span>
           </div>
-
-          {(error || success) && (
-            <div
-              className={`mt-5 sm:mt-6 p-3 sm:p-4 rounded-2xl flex items-center gap-3 text-sm sm:text-base font-medium animate-in fade-in slide-in-from-top-2 ${
-                error ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-sage/10 text-sage border border-sage/20'
-              }`}
-              role="alert"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {error ? <AlertCircle size={20} aria-hidden="true" /> : <CheckCircle2 size={20} aria-hidden="true" />}
-              <span>{error || success}</span>
-            </div>
-          )}
-        </section>
+        )}
 
         {/* Post Editor */}
-        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+        <section id="posts-editor" className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold">עריכת פוסטים</h2>
-              <p className="text-sm text-muted-theme">פוסטים, תמונות ראשיות ותוכן הבלוג מנוהלים מכאן</p>
+              <p className="text-sm text-muted-theme">ניהול ותוכן הבלוג</p>
             </div>
             <button
               type="button"
@@ -628,248 +528,19 @@ export default function AdminPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-5">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label htmlFor="post-title" className="block text-xs font-bold text-muted-theme mb-2">כותרת</label>
-                  <input
-                    id="post-title"
-                    value={postDraft.title}
-                    onChange={(e) => updateDraft({ title: e.target.value })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-base outline-none focus:ring-2 focus:ring-sage/50"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="post-slug" className="block text-xs font-bold text-muted-theme mb-2">מזהה URL</label>
-                  <input
-                    id="post-slug"
-                    value={postDraft.slug}
-                    onChange={(e) => updateDraft({ slug: e.target.value.trim() })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-mono outline-none focus:ring-2 focus:ring-sage/50"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="post-date" className="block text-xs font-bold text-muted-theme mb-2">תאריך</label>
-                  <input
-                    id="post-date"
-                    type="date"
-                    value={postDraft.date}
-                    onChange={(e) => updateDraft({ date: e.target.value })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="post-content" className="block text-xs font-bold text-muted-theme mb-2">תוכן הפוסט</label>
-                <textarea
-                  id="post-content"
-                  value={postDraft.content}
-                  onChange={(e) => updateDraft({ content: e.target.value })}
-                  rows={10}
-                  className="w-full rounded-xl border border-border-theme bg-white/5 p-3 text-base leading-8 outline-none focus:ring-2 focus:ring-sage/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label htmlFor="edit-content-type" className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
-                  <select
-                    id="edit-content-type"
-                    value={postDraft.contentType}
-                    onChange={(e) => updateDraft({ contentType: e.target.value })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                  >
-                    <option value="story">סיפור</option>
-                    <option value="audio-story">סיפור אודיו</option>
-                    <option value="whatsapp-friday">וואטס יום ו׳</option>
-                    <option value="photo">תמונה</option>
-                    <option value="message">הודעה</option>
-                    <option value="memory">זיכרון</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="edit-category" className="block text-xs font-bold text-muted-theme mb-2">קטגוריה</label>
-                  <select
-                    id="edit-category"
-                    value={postDraft.category}
-                    onChange={(e) => updateDraft({ category: e.target.value })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                  >
-                    <option value="family">משפחה</option>
-                    <option value="memories">זכרונות</option>
-                    <option value="thoughts">מחשבות</option>
-                    <option value="inspiration">השראה</option>
-                    <option value="reflection">הרהור</option>
-                    <option value="moments">רגעים</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="edit-weather" className="block text-xs font-bold text-muted-theme mb-2">מזג אוויר</label>
-                  <select
-                    id="edit-weather"
-                    value={postDraft.weather}
-                    onChange={(e) => updateDraft({ weather: e.target.value })}
-                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                  >
-                    <option value="sunny">שמש</option>
-                    <option value="cloudy">עננים</option>
-                    <option value="rainy">גשום</option>
-                    <option value="windy">רוחות</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="post-tags" className="block text-xs font-bold text-muted-theme mb-2">תגיות</label>
-                <input
-                  id="post-tags"
-                  value={postDraft.tagsText}
-                  onChange={(e) => updateDraft({ tagsText: e.target.value })}
-                  placeholder="משפחה, זכרונות, חוף"
-                  className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                />
-              </div>
-
-              <div className="rounded-2xl border border-border-theme bg-navy/[0.02] p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <ImageIcon className="w-4 h-4 text-sage" aria-hidden="true" />
-                  <h3 className="text-sm font-bold">תמונה ראשית ותמונות בתוכן</h3>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
-                    value={postDraft.imageSrc}
-                    onChange={(e) => updateDraft({ imageSrc: e.target.value })}
-                    placeholder="URL לתמונה ראשית"
-                    className="min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                    aria-label="כתובת תמונה ראשית"
-                  />
-                  <input
-                    value={postDraft.imageAlt}
-                    onChange={(e) => updateDraft({ imageAlt: e.target.value })}
-                    placeholder="ALT לתמונה"
-                    className="min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                    aria-label="תיאור אלטרנטיבי לתמונה"
-                  />
-                  <input
-                    value={postDraft.imageCaption}
-                    onChange={(e) => updateDraft({ imageCaption: e.target.value })}
-                    placeholder="קפשן קצר"
-                    className="sm:col-span-2 min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
-                    aria-label="קפשן לתמונה"
-                  />
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-bold hover:border-sage/40">
-                    <Upload className="w-4 h-4" aria-hidden="true" />
-                    העלה כתמונה ראשית
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={isUploadingDraftImage}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) void handleDraftImageUpload(file, 'featured');
-                        e.target.value = '';
-                      }}
-                    />
-                  </label>
-                  <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-sm font-bold hover:border-sage/40">
-                    <Plus className="w-4 h-4" aria-hidden="true" />
-                    הוסף תמונה לתוכן
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={isUploadingDraftImage}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) void handleDraftImageUpload(file, 'content');
-                        e.target.value = '';
-                      }}
-                    />
-                  </label>
-                </div>
-
-                {postDraft.imageSrc && (
-                  <div className="mt-4 overflow-hidden rounded-2xl border border-border-theme bg-white/5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={postDraft.imageSrc}
-                      alt={postDraft.imageAlt || postDraft.title}
-                      className="h-44 w-full object-cover"
-                    />
-                    <div className="p-3 text-xs text-muted-theme">
-                      {postDraft.imageCaption || postDraft.imageAlt || 'תמונה ראשית לפוסט'}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-border-theme bg-warm-gold/10 p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h3 className="flex items-center gap-2 text-sm font-bold">
-                      <WandSparkles className="w-4 h-4 text-warm-gold" aria-hidden="true" />
-                      עזרת Gemini לתמונה
-                    </h3>
-                    <p className="text-xs text-muted-theme">יצירת פרומפט מותאם לצבעים ולסגנון האתר</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={handleGenerateGeminiImage}
-                      disabled={isGeneratingGeminiImage}
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-sage px-3 text-xs font-bold text-white disabled:opacity-60"
-                    >
-                      {isGeneratingGeminiImage ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <WandSparkles className="w-4 h-4" aria-hidden="true" />}
-                      צור תמונה
-                    </button>
-                    <button
-                      type="button"
-                      onClick={buildGeminiPrompt}
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-navy px-3 text-xs font-bold text-cream"
-                    >
-                      <Copy className="w-4 h-4" aria-hidden="true" />
-                      העתק פרומפט
-                    </button>
-                    <a
-                      href="https://gemini.google.com/app"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border-theme bg-white/5 px-3 text-xs font-bold"
-                    >
-                      Gemini
-                      <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                    </a>
-                  </div>
-                </div>
-                {geminiPrompt && (
-                  <textarea
-                    readOnly
-                    value={geminiPrompt}
-                    rows={5}
-                    className="mt-3 w-full rounded-xl border border-border-theme bg-white/5 p-3 text-xs leading-6 outline-none"
-                    aria-label="פרומפט Gemini"
-                  />
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={isSavingDraft}
-                className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-2xl bg-sage px-6 text-base font-bold text-white hover:bg-sage/90 disabled:opacity-60"
-              >
-                {isSavingDraft ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Save className="w-5 h-5" aria-hidden="true" />}
-                {editingSlug ? 'עדכן פוסט' : 'שמור פוסט חדש'}
-              </button>
-            </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-5">
+            {/* Left — Posts List */}
             <aside className="space-y-3">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-theme" aria-hidden="true" />
+                <input
+                  type="text"
+                  value={postSearch}
+                  onChange={(e) => setPostSearch(e.target.value)}
+                  placeholder="חיפוש פוסטים..."
+                  className="w-full min-h-10 rounded-xl border border-border-theme bg-white/5 pr-9 pl-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                />
+              </div>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-muted-theme">פוסטים קיימים</h3>
                 <button
@@ -881,34 +552,671 @@ export default function AdminPage() {
                   <RefreshCw className={`w-4 h-4 ${isLoadingPosts ? 'animate-spin' : ''}`} aria-hidden="true" />
                 </button>
               </div>
-              <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
-                {publishedPosts.map((post) => (
-                  <button
-                    key={post.slug}
-                    type="button"
-                    onClick={() => startEditingPost(post)}
-                    className={`w-full rounded-xl border p-3 text-right transition-colors ${
-                      postDraft.slug === post.slug
-                        ? 'border-sage bg-sage/10'
-                        : 'border-border-theme bg-white/5 hover:border-sage/40'
-                    }`}
-                  >
-                    <span className="block truncate text-sm font-bold">{post.title}</span>
-                    <span className="mt-1 block text-xs text-muted-theme">
-                      {post.date ? format(new Date(post.date), 'dd/MM/yyyy') : 'ללא תאריך'}
-                    </span>
-                  </button>
-                ))}
-                {publishedPosts.length === 0 && !isLoadingPosts && (
+              <div className="max-h-[600px] space-y-2 overflow-y-auto pr-1">
+                {publishedPosts
+                  .filter((p) => p.title.toLowerCase().includes(postSearch.toLowerCase()))
+                  .map((post) => (
+                    <div
+                      key={post.slug}
+                      className={`group flex items-center gap-1 rounded-xl border transition-colors ${
+                        postDraft.slug === post.slug && isEditorOpen
+                          ? 'border-sage bg-sage/10'
+                          : 'border-border-theme bg-white/5 hover:border-sage/40'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => startEditingPost(post)}
+                        className="min-w-0 flex-1 p-3 text-right"
+                      >
+                        <span className="block truncate text-sm font-bold">{post.title}</span>
+                        <span className="mt-1 block text-xs text-muted-theme">
+                          {post.date ? format(new Date(post.date), 'dd/MM/yyyy') : 'ללא תאריך'}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePost(post.slug)}
+                        className="shrink-0 p-2 ml-1 text-muted-theme/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        title="מחק פוסט"
+                        aria-label={`מחק את הפוסט "${post.title}"`}
+                      >
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                {publishedPosts.filter((p) => p.title.toLowerCase().includes(postSearch.toLowerCase())).length === 0 && !isLoadingPosts && (
                   <p className="rounded-xl border border-dashed border-border-theme p-4 text-sm text-muted-theme">אין פוסטים להצגה.</p>
                 )}
               </div>
             </aside>
+
+            {/* Right — Editor Panel */}
+            {isEditorOpen ? (
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+                {/* Author */}
+                <div>
+                  <label htmlFor="post-author" className="block text-xs font-bold text-muted-theme mb-2">מחבר</label>
+                  <input
+                    id="post-author"
+                    value={postDraft.author}
+                    onChange={(e) => updateDraft({ author: e.target.value })}
+                    placeholder="שם המחבר"
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-base outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="post-title" className="block text-xs font-bold text-muted-theme mb-2">כותרת</label>
+                    <input
+                      id="post-title"
+                      value={postDraft.title}
+                      onChange={(e) => updateDraft({ title: e.target.value })}
+                      className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-base outline-none focus:ring-2 focus:ring-sage/50"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="post-date" className="block text-xs font-bold text-muted-theme mb-2">תאריך פרסום</label>
+                    <input
+                      id="post-date"
+                      type="date"
+                      value={postDraft.date}
+                      onChange={(e) => updateDraft({ date: e.target.value })}
+                      className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="post-content" className="block text-xs font-bold text-muted-theme mb-2">תוכן הפוסט</label>
+                  <textarea
+                    id="post-content"
+                    value={postDraft.content}
+                    onChange={(e) => updateDraft({ content: e.target.value })}
+                    rows={10}
+                    className="w-full rounded-xl border border-border-theme bg-white/5 p-3 text-base leading-8 outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+
+                {/* Images */}
+                <div className="rounded-2xl border border-border-theme bg-navy/[0.02] p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ImageIcon className="w-4 h-4 text-sage" aria-hidden="true" />
+                    <h3 className="text-sm font-bold">תמונה ראשית וגלריה</h3>
+                  </div>
+
+                  {/* Gallery image list */}
+                  <div className="space-y-2 mb-3">
+                    {postDraft.gallery.map((img, i) => (
+                      <div key={i} className={`flex items-center gap-2 rounded-xl border p-2 transition-all ${
+                        postDraft.imageSrc === img.src ? 'border-sage bg-sage/5' : 'border-border-theme bg-white/5'
+                      }`}>
+                        <div className="relative shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img.src} alt={img.alt || ''} className="w-12 h-12 rounded-lg object-cover" />
+                          {postDraft.imageSrc === img.src && (
+                            <span className="absolute -top-1.5 -left-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-warm-gold text-white text-[10px] font-bold shadow">★</span>
+                          )}
+                          <span className="absolute -bottom-1.5 -right-1.5 w-4 h-4 flex items-center justify-center rounded-full bg-sage text-white text-[9px]">📌</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <input
+                            value={img.alt || ''}
+                            onChange={(e) => {
+                              const newGallery = [...postDraft.gallery];
+                              newGallery[i] = { ...newGallery[i], alt: e.target.value };
+                              updateDraft({ gallery: newGallery });
+                            }}
+                            placeholder="ALT"
+                            className="w-full mb-1 rounded-lg border border-border-theme bg-white/5 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-sage/50"
+                          />
+                          <input
+                            value={img.caption || ''}
+                            onChange={(e) => {
+                              const newGallery = [...postDraft.gallery];
+                              newGallery[i] = { ...newGallery[i], caption: e.target.value };
+                              updateDraft({ gallery: newGallery });
+                            }}
+                            placeholder="קפשן"
+                            className="w-full rounded-lg border border-border-theme bg-white/5 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-sage/50"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1 shrink-0">
+                          {i > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newGallery = [...postDraft.gallery];
+                                [newGallery[i - 1], newGallery[i]] = [newGallery[i], newGallery[i - 1]];
+                                updateDraft({ gallery: newGallery });
+                              }}
+                              className="p-1 text-muted-theme hover:text-sage"
+                              title="הזז למעלה"
+                            >
+                              ↑
+                            </button>
+                          )}
+                          {i < postDraft.gallery.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newGallery = [...postDraft.gallery];
+                                [newGallery[i], newGallery[i + 1]] = [newGallery[i + 1], newGallery[i]];
+                                updateDraft({ gallery: newGallery });
+                              }}
+                              className="p-1 text-muted-theme hover:text-sage"
+                              title="הזז למטה"
+                            >
+                              ↓
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => updateDraft({ imageSrc: img.src, imageAlt: img.alt || postDraft.title, imageCaption: img.caption || '' })}
+                            className={`p-1 rounded ${postDraft.imageSrc === img.src ? 'text-warm-gold' : 'text-muted-theme hover:text-sage'}`}
+                            title="קבע כתמונה ראשית"
+                          >
+                            ★
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateDraft({ gallery: postDraft.gallery.filter((_, j) => j !== i) })}
+                            className="p-1 text-muted-theme hover:text-red-500"
+                            title="הסר מהגלריה"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add to gallery — drag & drop + paste */}
+                  <div className="flex flex-wrap gap-2">
+                    <label className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border-theme bg-white/5 px-3 text-xs font-bold hover:border-sage/40 hover:bg-sage/5 transition-all cursor-pointer"
+                      onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--color-sage, #7a9a7a)'; }}
+                      onDragLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        e.currentTarget.style.borderColor = '';
+                        const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+                        if (file) {
+                          setIsUploadingDraftImage(true);
+                          const url = await uploadFile(file);
+                          if (url) {
+                            setPostDraft((current) => ({ ...current, gallery: [...current.gallery, { src: url, alt: file.name, caption: '' }] }));
+                            setSuccess('תמונה נוספה לגלריה');
+                          } else {
+                            setError('העלאת התמונה נכשלה');
+                          }
+                          setIsUploadingDraftImage(false);
+                        }
+                      }}
+                    >
+                      <Upload className="w-4 h-4" aria-hidden="true" />
+                      {isUploadingDraftImage ? 'מעלה...' : 'גרור או לחץ להוספת תמונה'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingDraftImage}
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (files) {
+                            setIsUploadingDraftImage(true);
+                            for (const file of Array.from(files)) {
+                              const url = await uploadFile(file);
+                              if (url) {
+                                setPostDraft((current) => ({ ...current, gallery: [...current.gallery, { src: url, alt: file.name, caption: '' }] }));
+                              }
+                            }
+                            setSuccess('תמונות נוספו לגלריה');
+                            setIsUploadingDraftImage(false);
+                          }
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+
+                    {/* Gallery Image Picker */}
+                    {publishedPosts.some(p => p.featuredImage?.src || p.gallery?.length) && (
+                      <div className="flex flex-wrap gap-1 items-center">
+                        <span className="text-xs text-muted-theme ml-1">מגלריה:</span>
+                        {(() => {
+                          const allImgs = publishedPosts.flatMap(p => {
+                            const imgs: { src: string; alt?: string }[] = [];
+                            if (p.featuredImage?.src) imgs.push({ src: p.featuredImage.src, alt: p.featuredImage.alt });
+                            if (p.gallery?.length) p.gallery.forEach(g => imgs.push({ src: g.src, alt: g.alt }));
+                            return imgs;
+                          });
+                          return [...new Map(allImgs.map(i => [i.src, i])).values()].map((img) => {
+                            const isPinned = postDraft.gallery.some(g => g.src === img.src);
+                            return (
+                              <button
+                                key={img.src}
+                                type="button"
+                                onClick={() => {
+                                  if (isPinned) {
+                                    updateDraft({ gallery: postDraft.gallery.filter(g => g.src !== img.src) });
+                                  } else {
+                                    updateDraft({ gallery: [...postDraft.gallery, { src: img.src, alt: img.alt || '', caption: '' }] });
+                                  }
+                                }}
+                                className={`relative shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all hover:border-sage/60 ${
+                                  isPinned ? 'border-sage' : 'border-border-theme'
+                                }`}
+                                title={isPinned ? 'לחץ להסרה מהגלריה' : (img.alt || 'הוסף לגלריה')}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={img.src} alt={img.alt || ''} className={`w-full h-full object-cover ${isPinned ? 'opacity-60' : ''}`} loading="lazy" />
+                                {isPinned && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 flex items-center justify-center rounded-full bg-sage text-white text-[7px]">📌</span>
+                                )}
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Featured image preview */}
+                  {postDraft.imageSrc && (
+                    <div className="mt-4 overflow-hidden rounded-2xl border border-sage/30 bg-white/5">
+                      <div className="flex items-center gap-2 px-3 pt-2">
+                        <span className="text-xs font-bold text-sage">★ תמונה ראשית</span>
+                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={postDraft.imageSrc}
+                        alt={postDraft.imageAlt || postDraft.title}
+                        className="h-44 w-full object-cover"
+                      />
+                      <div className="p-3 text-xs text-muted-theme">
+                        {postDraft.imageCaption || postDraft.imageAlt || 'תמונה ראשית לפוסט'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label htmlFor="edit-content-type" className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
+                    <select
+                      id="edit-content-type"
+                      value={postDraft.contentType}
+                      onChange={(e) => updateDraft({ contentType: e.target.value })}
+                      className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    >
+                      <option value="story">סיפור</option>
+                      <option value="audio-story">סיפור אודיו</option>
+                      <option value="whatsapp-friday">וואטס יום ו׳</option>
+                      <option value="photo">תמונה</option>
+                      <option value="message">הודעה</option>
+                      <option value="memory">זיכרון</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="edit-category" className="block text-xs font-bold text-muted-theme mb-2">קטגוריה</label>
+                    <select
+                      id="edit-category"
+                      value={postDraft.category}
+                      onChange={(e) => updateDraft({ category: e.target.value })}
+                      className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    >
+                      <option value="family">משפחה</option>
+                      <option value="memories">זכרונות</option>
+                      <option value="thoughts">מחשבות</option>
+                      <option value="inspiration">השראה</option>
+                      <option value="reflection">הרהור</option>
+                      <option value="moments">רגעים</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="edit-weather" className="block text-xs font-bold text-muted-theme mb-2">מזג אוויר</label>
+                    <select
+                      id="edit-weather"
+                      value={postDraft.weather}
+                      onChange={(e) => updateDraft({ weather: e.target.value })}
+                      className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                    >
+                      <option value="sunny">שמש</option>
+                      <option value="cloudy">עננים</option>
+                      <option value="rainy">גשום</option>
+                      <option value="windy">רוחות</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="post-tags" className="block text-xs font-bold text-muted-theme mb-2">תגיות</label>
+                  <input
+                    id="post-tags"
+                    value={postDraft.tagsText}
+                    onChange={(e) => updateDraft({ tagsText: e.target.value })}
+                    placeholder="משפחה, זכרונות, חוף"
+                    className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isSavingDraft}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-3 rounded-2xl bg-sage px-6 text-base font-bold text-white hover:bg-sage/90 disabled:opacity-60"
+                  >
+                    {isSavingDraft ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Save className="w-5 h-5" aria-hidden="true" />}
+                    {editingSlug ? 'עדכן פוסט' : 'פרסם פוסט'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateDraft({ archived: !postDraft.archived })}
+                    className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-6 text-sm font-bold transition-all ${
+                      postDraft.archived
+                        ? 'bg-warm-gold/10 text-warm-gold border-warm-gold/30'
+                        : 'border-border-theme text-muted-theme hover:border-warm-gold/40'
+                    }`}
+                  >
+                    <Archive className="w-4 h-4" aria-hidden="true" />
+                    {postDraft.archived ? 'ביטול ארכוב' : 'ארכב פוסט'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <BookOpen className="w-12 h-12 text-muted-theme/20 mb-4" aria-hidden="true" />
+                <p className="text-muted-theme font-medium">בחר פוסט מהרשימה או צור פוסט חדש</p>
+              </div>
+            )}
           </div>
         </section>
 
+        {/* Delete Password Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/50 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm mx-4 border border-border-theme" dir="rtl">
+              <h3 className="text-lg font-bold mb-2">אישור מחיקה</h3>
+              <p className="text-sm text-muted-theme mb-4">יש להזין סיסמת מנהל כדי למחוק את הפוסט</p>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="סיסמת מנהל"
+                className="w-full min-h-11 rounded-xl border border-border-theme bg-white/5 px-3 text-sm outline-none focus:ring-2 focus:ring-sage/50 mb-4"
+                onKeyDown={(e) => { if (e.key === 'Enter') confirmDeletePost(); }}
+              />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={cancelDeletePost}
+                  className="flex-1 min-h-11 rounded-xl border border-border-theme bg-white/5 text-sm font-bold"
+                >
+                  ביטול
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeletePost}
+                  className="flex-1 min-h-11 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600"
+                >
+                  מחק פוסט
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Gallery Management */}
+        <section id="gallery-management" className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-coral/15 shrink-0">
+              <Camera className="w-5 h-5 text-coral" aria-hidden="true" />
+            </span>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold">ניהול גלריה</h2>
+              <p className="text-sm text-muted-theme">בחר אילו תמונות יופיעו בדף הגלריה. תמונות AI לא מוצגות כברירת מחדל.</p>
+            </div>
+            <div className="flex gap-1 items-center" dir="ltr">
+              {/* Sort */}
+              <select
+                value={gallerySort}
+                onChange={(e) => setGallerySort(e.target.value as typeof gallerySort)}
+                className="appearance-none rounded-lg border border-border-theme bg-white/5 px-2 py-1.5 text-xs font-medium outline-none focus:ring-2 focus:ring-sage/50 cursor-pointer"
+                aria-label="מיון"
+              >
+                <option value="post">לפי פוסט</option>
+                <option value="date">לפי תאריך</option>
+                <option value="ai">AI אחרונים</option>
+              </select>
+              {/* View toggle */}
+              <button
+                type="button"
+                onClick={() => setGalleryView('grid')}
+                className={`p-1.5 rounded-lg border transition-colors ${galleryView === 'grid' ? 'bg-sage/10 border-sage/30 text-sage' : 'border-transparent text-muted-theme hover:border-border-theme'}`}
+                aria-label="תצוגת רשת"
+              >
+                <LayoutGrid className="w-4 h-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setGalleryView('list')}
+                className={`p-1.5 rounded-lg border transition-colors ${galleryView === 'list' ? 'bg-sage/10 border-sage/30 text-sage' : 'border-transparent text-muted-theme hover:border-border-theme'}`}
+                aria-label="תצוגת רשימה"
+              >
+                <ListIcon className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* Upload new image to gallery — drag & drop + paste */}
+          <div className="mb-6 rounded-2xl border-2 border-dashed border-border-theme bg-white/5 p-4 transition-colors">
+            <label className="flex flex-col sm:flex-row items-center justify-center gap-3 cursor-pointer"
+              onDragOver={(e) => { e.preventDefault(); e.currentTarget.closest('div')!.style.borderColor = 'var(--color-sage, #7a9a7a)'; }}
+              onDragLeave={(e) => { (e.currentTarget.closest('div') as HTMLElement).style.borderColor = ''; }}
+              onDrop={async (e) => {
+                e.preventDefault();
+                const div = e.currentTarget.closest('div') as HTMLElement;
+                if (div) div.style.borderColor = '';
+                const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+                if (file) {
+                  const url = await uploadFile(file);
+                  if (url) setSuccess('התמונה הועלתה. כעת בחר לאיזה פוסט להוסיף אותה.');
+                  else setError('העלאת התמונה נכשלה');
+                }
+              }}
+            >
+              <span className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-navy px-4 text-sm font-bold text-cream hover:bg-navy/90 transition-colors">
+                <Upload className="w-4 h-4" aria-hidden="true" />
+                העלאת תמונה חדשה לגלריה
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const url = await uploadFile(file);
+                    if (url) {
+                      setSuccess('התמונה הועלתה. כעת בחר לאיזה פוסט להוסיף אותה.');
+                    } else {
+                      setError('העלאת התמונה נכשלה');
+                    }
+                  }
+                  e.target.value = '';
+                }}
+              />
+              <p className="text-xs text-muted-theme">גרור תמונה לכאן, הדבק (Ctrl+V), או לחץ לבחירה</p>
+            </label>
+          </div>
+
+          {isLoadingPosts ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-8 h-8 animate-spin text-sage" aria-hidden="true" />
+            </div>
+          ) : (() => {
+            // Collect all images from all posts
+            type GalleryEntry = {
+              slug: string;
+              postTitle: string;
+              postDate: string;
+              type: 'featured' | 'gallery';
+              index?: number;
+              src: string;
+              alt?: string;
+              aiGenerated?: boolean;
+              showInGallery: boolean;
+            };
+            const entries: GalleryEntry[] = publishedPosts.flatMap((post) => {
+              const results: GalleryEntry[] = [];
+              if (post.gallery?.length) {
+                post.gallery.forEach((img, i) => {
+                  const key = `${post.slug}:gallery:${i}`;
+                  const aiGen = !!img.aiGenerated;
+                  const defaultShow = !aiGen;
+                  const show = key in galleryOverrides ? galleryOverrides[key] : (img.showInGallery ?? defaultShow);
+                  results.push({ slug: post.slug, postTitle: post.title, postDate: post.date, type: 'gallery', index: i, src: img.src, alt: img.alt, aiGenerated: aiGen, showInGallery: show });
+                });
+              } else if (post.featuredImage?.src) {
+                const key = `${post.slug}:featured`;
+                const aiGen = !!post.featuredImage.aiGenerated;
+                const defaultShow = !aiGen;
+                const show = key in galleryOverrides ? galleryOverrides[key] : (post.featuredImage.showInGallery ?? defaultShow);
+                results.push({ slug: post.slug, postTitle: post.title, postDate: post.date, type: 'featured', src: post.featuredImage.src, alt: post.featuredImage.alt, aiGenerated: aiGen, showInGallery: show });
+              }
+              return results;
+            });
+
+            if (entries.length === 0) {
+              return (
+                <p className="rounded-xl border border-dashed border-border-theme p-6 text-center text-sm text-muted-theme">
+                  אין תמונות. הוסף שדה <code className="font-mono text-xs">gallery</code> לפרונטמטר של פוסט כדי לנהל תמונות כאן.
+                </p>
+              );
+            }
+
+            const sorted = [...entries].sort((a, b) => {
+              if (gallerySort === 'ai') return Number(a.aiGenerated) - Number(b.aiGenerated);
+              if (gallerySort === 'date') return new Date(b.postDate).getTime() - new Date(a.postDate).getTime();
+              return a.postTitle.localeCompare(b.postTitle, 'he');
+            });
+
+            if (galleryView === 'list') {
+              return (
+                <div className="space-y-2">
+                  {sorted.map((entry) => {
+                    const key = entry.type === 'featured' ? `${entry.slug}:featured` : `${entry.slug}:gallery:${entry.index}`;
+                    const isPending = togglingKey === key;
+                    return (
+                      <div key={key} className="flex items-center gap-3 rounded-xl border border-border-theme bg-white/5 p-2.5 transition-colors hover:bg-white/[0.07]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={entry.src}
+                          alt={entry.alt || entry.postTitle}
+                          className={`w-12 h-12 rounded-lg object-cover shrink-0 ${entry.showInGallery ? 'opacity-100' : 'opacity-40'}`}
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{entry.postTitle}</p>
+                          <p className="text-xs text-muted-theme truncate">{entry.src.split('/').pop()}</p>
+                          <div className="flex gap-2 mt-0.5">
+                            {entry.aiGenerated && <span className="text-[10px] font-bold text-warm-gold">AI</span>}
+                            {entry.type === 'featured' && <span className="text-[10px] font-bold text-sage">ראשית</span>}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleGallery(entry.slug, entry.type, entry.index, entry.showInGallery)}
+                          disabled={isPending}
+                          className={[
+                            'shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors duration-200',
+                            entry.showInGallery
+                              ? 'bg-sage/10 text-sage hover:bg-red-500/10 hover:text-red-500'
+                              : 'bg-coral/10 text-coral hover:bg-coral/20',
+                            isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer',
+                          ].join(' ')}
+                          aria-label={entry.showInGallery ? 'הסר מגלריה' : 'הוסף לגלריה'}
+                        >
+                          {isPending ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                          ) : entry.showInGallery ? (
+                            <><Eye className="w-3.5 h-3.5" aria-hidden="true" />מוצגת</>
+                          ) : (
+                            <><EyeOff className="w-3.5 h-3.5" aria-hidden="true" />מוסתרת</>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {sorted.map((entry) => {
+                  const key = entry.type === 'featured' ? `${entry.slug}:featured` : `${entry.slug}:gallery:${entry.index}`;
+                  const isPending = togglingKey === key;
+                  return (
+                    <div key={key} className="group relative rounded-xl overflow-hidden border border-border-theme bg-white/5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={entry.src}
+                        alt={entry.alt || entry.postTitle}
+                        className={`w-full aspect-square object-cover transition-opacity duration-200 ${entry.showInGallery ? 'opacity-100' : 'opacity-40'}`}
+                        loading="lazy"
+                      />
+                      {/* AI badge */}
+                      {entry.aiGenerated && (
+                        <span className="absolute top-1.5 right-1.5 rounded-full bg-warm-gold/90 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          AI
+                        </span>
+                      )}
+                      {/* Hidden overlay */}
+                      {!entry.showInGallery && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-navy/30 pointer-events-none">
+                          <EyeOff className="w-6 h-6 text-white/70" aria-hidden="true" />
+                        </div>
+                      )}
+                      {/* Info + toggle */}
+                      <div className="p-2">
+                        <p className="text-xs text-muted-theme truncate mb-1.5">{entry.postTitle}</p>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleGallery(entry.slug, entry.type, entry.index, entry.showInGallery)}
+                          disabled={isPending}
+                          className={[
+                            'w-full flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-colors duration-200',
+                            entry.showInGallery
+                              ? 'bg-sage/10 text-sage hover:bg-red-500/10 hover:text-red-500'
+                              : 'bg-coral/10 text-coral hover:bg-coral/20',
+                            isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer',
+                          ].join(' ')}
+                          aria-label={entry.showInGallery ? 'הסר מגלריה' : 'הוסף לגלריה'}
+                        >
+                          {isPending ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                          ) : entry.showInGallery ? (
+                            <><Eye className="w-3.5 h-3.5" aria-hidden="true" />מוצגת</>
+                          ) : (
+                            <><EyeOff className="w-3.5 h-3.5" aria-hidden="true" />מוסתרת</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </section>
+
         {/* Comments Overview */}
-        <section className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
+        <section id="comments-overview" className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12 border border-border-theme">
           <div className="flex items-center justify-between gap-3 mb-5">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold">תגובות אחרונות</h2>
@@ -946,6 +1254,15 @@ export default function AdminPage() {
                           <time dateTime={new Date(comment.date).toISOString()}>
                             {format(new Date(comment.date), 'dd/MM/yyyy HH:mm')}
                           </time>
+                          <button
+                            onClick={() => handleDeleteComment(group.slug, comment.id)}
+                            className="mr-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-theme hover:bg-red-500/10 hover:text-red-500 transition-colors duration-200"
+                            title="מחק תגובה"
+                            aria-label="מחק תגובה"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                            מחק
+                          </button>
                         </div>
                         <p className="text-sm leading-7 text-foreground/90">{comment.message}</p>
                       </article>
@@ -971,198 +1288,7 @@ export default function AdminPage() {
           )}
         </section>
 
-        {/* Messages List */}
-        <section className="space-y-5 sm:space-y-8">
-          <div className="flex justify-between items-center border-b border-border-theme pb-3 sm:pb-4">
-            <h2 className="text-xl sm:text-2xl font-bold">הודעות חדשות ({messages.length})</h2>
-            {messages.length > 0 && (
-              <button
-                onClick={() => setMessages([])}
-                className="text-sm font-bold text-red-400 hover:text-red-500 transition-colors duration-250"
-              >
-                נקה הכל
-              </button>
-            )}
-          </div>
-          
-          <div className="space-y-4 sm:space-y-6">
-            {messages.map((msg, index) => (
-              <div key={index} className="bg-white/5 rounded-2xl sm:rounded-3xl shadow-sm border border-border-theme overflow-hidden group hover:border-sage/30 transition-all hover:shadow-md animate-in fade-in zoom-in-95 duration-300">
-                <div className="bg-navy/[0.02] px-4 sm:px-6 py-3 border-b border-border-theme flex justify-between items-center text-xs font-bold text-muted-theme">
-                  <span className="font-mono">{format(msg.date, 'dd/MM/yyyy HH:mm')}</span>
-                  <div className="flex items-center gap-4">
-                    <span>{msg.sender}</span>
-                    <button
-                      onClick={() => dismissMessage(index)}
-                      className="p-1 hover:text-red-400 transition-colors duration-250"
-                      title="הסר"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                </div>
-                <div className="p-4 sm:p-8">
-                  <p className="whitespace-pre-wrap text-base sm:text-xl leading-relaxed text-foreground/90 mb-5 sm:mb-6 font-stories">{msg.content}</p>
-                  
-                  {/* Tags Editor */}
-                  <div className="flex flex-wrap gap-2 mb-5 sm:mb-8 items-center bg-navy/[0.02] p-3 sm:p-4 rounded-2xl border border-border-theme">
-                    <span className="text-xs font-bold text-muted-theme ml-2">תגיות:</span>
-                    {msg.tags?.map((tag, tIndex) => (
-                      <span key={tIndex} className="bg-sage/10 text-sage text-xs font-bold px-3 py-1 rounded-full flex items-center gap-2 group/tag">
-                        #{tag}
-                        <button
-                          onClick={() => {
-                            const newTags = msg.tags?.filter((_, i) => i !== tIndex);
-                            const newMessages = [...messages];
-                            newMessages[index] = { ...msg, tags: newTags };
-                            setMessages(newMessages);
-                          }}
-                          className="hover:text-red-500 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
-                    ))}
-                    <input
-                      type="text"
-                      placeholder="הוסף תגית (ואנטר)..."
-                      className="bg-transparent text-xs font-medium outline-none text-navy placeholder:text-muted-theme/40 min-w-[120px] focus:ring-1 focus:ring-sage/50 rounded px-1"
-                      aria-label="הוסף תגית חדשה"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const val = e.currentTarget.value.trim().replace(/^#/, '');
-                          if (val) {
-                            const newTags = [...(msg.tags || []), val];
-                            const newMessages = [...messages];
-                            newMessages[index] = { ...msg, tags: newTags };
-                            setMessages(newMessages);
-                            e.currentTarget.value = '';
-                          }
-                        }
-                      }}
-                    />
-                  </div>
-
-                  {/* Content Metadata Editor */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-8 bg-navy/[0.02] p-3 sm:p-4 rounded-2xl border border-border-theme">
-                    <div>
-                      <label htmlFor={`type-${index}`} className="block text-xs font-bold text-muted-theme mb-2">סוג תוכן</label>
-                      <select
-                        id={`type-${index}`}
-                        value={messageMetadata[index]?.contentType || 'story'}
-                        onChange={(e) => {
-                          setMessageMetadata(prev => ({
-                            ...prev,
-                            [index]: { ...prev[index], contentType: e.target.value }
-                          }));
-                        }}
-                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
-                      >
-                        <option value="story">סיפור</option>
-                        <option value="audio-story">סיפור אודיו</option>
-                        <option value="whatsapp-friday">וואטס יום ו׳</option>
-                        <option value="photo">תמונה</option>
-                        <option value="message">הודעה</option>
-                        <option value="memory">זיכרון</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor={`cat-${index}`} className="block text-xs font-bold text-muted-theme mb-2">קטגוריה</label>
-                      <select
-                        id={`cat-${index}`}
-                        value={messageMetadata[index]?.category || 'memories'}
-                        onChange={(e) => {
-                          setMessageMetadata(prev => ({
-                            ...prev,
-                            [index]: { ...prev[index], category: e.target.value }
-                          }));
-                        }}
-                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
-                      >
-                        <option value="family">משפחה</option>
-                        <option value="memories">זכרונות</option>
-                        <option value="thoughts">מחשבות</option>
-                        <option value="inspiration">השראה</option>
-                        <option value="reflection">הרהור</option>
-                        <option value="moments">רגעים</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor={`weather-${index}`} className="block text-xs font-bold text-muted-theme mb-2">מזג אוויר</label>
-                      <select
-                        id={`weather-${index}`}
-                        value={messageMetadata[index]?.weather || 'sunny'}
-                        onChange={(e) => {
-                          setMessageMetadata(prev => ({
-                            ...prev,
-                            [index]: { ...prev[index], weather: e.target.value }
-                          }));
-                        }}
-                        className="w-full min-h-11 p-2 rounded-xl border border-border-theme bg-white/5 text-sm font-medium outline-none focus:ring-1 focus:ring-sage/50 text-navy"
-                      >
-                        <option value="sunny">שמש</option>
-                        <option value="cloudy">עננים</option>
-                        <option value="rainy">גשום</option>
-                        <option value="windy">רוחות</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => handleSavePost(index, msg)}
-                      disabled={isSaving !== null}
-                      aria-busy={isSaving === index}
-                      aria-label={isSaving === index ? 'ממתין לשמירת הסיפור' : 'שמור סיפור זה'}
-                      className="flex min-h-12 w-full sm:w-auto items-center justify-center gap-3 bg-sage text-white px-6 sm:px-8 py-3 rounded-2xl font-bold hover:bg-sage/90 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:ring-offset-2"
-                    >
-                      {isSaving === index ? <Loader2 className="animate-spin" size={20} aria-hidden="true" /> : <Save size={20} aria-hidden="true" />}
-                      <span>{isSaving === index ? 'שומר...' : 'שמור כסיפור'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {messages.length === 0 && !isParsing && (
-              <div className="text-center py-14 sm:py-24 bg-white/[0.02] rounded-2xl sm:rounded-3xl border-2 border-dashed border-border-theme">
-                <FileText className="mx-auto text-muted-theme/20 mb-4 sm:mb-6" size={56} />
-                <p className="text-muted-theme text-base sm:text-lg font-medium">העלה קובץ שיחה כדי לראות הודעות כאן</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Published Posts List */}
-        <section className="mt-16 sm:mt-32 pt-8 sm:pt-16 border-t border-border-theme">
-          <div className="flex items-center gap-4 mb-5 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold">סיפורים שכבר פורסמו</h2>
-            {isLoadingPosts && <Loader2 className="w-5 h-5 animate-spin text-sage" />}
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {publishedPosts.map((post) => (
-              <div key={post.slug} className="bg-white/5 p-4 sm:p-5 rounded-2xl border border-border-theme flex justify-between items-center group hover:bg-white/10 hover:shadow-sm transition-all">
-                <div className="overflow-hidden">
-                  <h4 className="font-bold text-navy truncate mb-1 group-hover:text-sage transition-colors">{post.title}</h4>
-                  <p className="text-xs font-bold text-muted-theme">{format(new Date(post.date), 'dd/MM/yyyy')}</p>
-                </div>
-                <Link
-                  href={`/post/${post.slug}`}
-                  target="_blank"
-                  className="p-3 text-muted-theme/20 hover:text-navy bg-white/5 rounded-xl group-hover:bg-sage/10 group-hover:text-sage transition-all duration-250"
-                >
-                  <ExternalLink className="w-5 h-5" />
-                </Link>
-              </div>
-            ))}
-            {publishedPosts.length === 0 && !isLoadingPosts && (
-              <p className="text-muted-theme italic font-medium">עדיין לא פורסמו סיפורים.</p>
-            )}
-          </div>
-        </section>
+        {/* Published Posts List - hidden, posts managed via editor sidebar */}
       </div>
     </div>
   );

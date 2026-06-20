@@ -1,16 +1,21 @@
 ---
-title: "הירושה ששברה"
-date: "2026-05-21T16:25:02.000Z"
-weather: "cloudy"
-tags: ["סיפור","משפחה","ירושה","אחים","סליחה"]
-contentType: "whatsapp-friday"
-category: "reflection"
+title: הירושה ששברה
+date: '2026-05-21T16:25:02.000Z'
+weather: cloudy
+contentType: whatsapp-friday
+category: reflection
+tags:
+  - סיפור
+  - משפחה
+  - ירושה
+  - אחים
+  - סליחה
 featuredImage:
-  src: "/images/posts/the-inheritance.jpg"
-  alt: "בית ישן בין עצים — ירושה שהפרידה ואחדה"
-  caption: "מה שנשאר אחרי ההורים — יותר מרכוש"
+  src: /images/posts/the-inheritance.jpg
+  alt: בית ישן בין עצים — ירושה שהפרידה ואחדה
+  caption: מה שנשאר אחרי ההורים — יותר מרכוש
+  showInGallery: false
 ---
-
 סיפור לשבת,
 
 הירושה ששברה

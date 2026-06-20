@@ -6,11 +6,13 @@ import ScrollToTop from "@/components/ScrollToTop";
 const heebo = Heebo({
   variable: "--font-heebo",
   subsets: ["hebrew", "latin"],
+  preload: false,
 });
 
 const assistant = Assistant({
   variable: "--font-assistant",
   subsets: ["hebrew", "latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

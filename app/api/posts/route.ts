@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { getAllPosts, savePost, type PostData } from '@/lib/posts';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAllPosts, getPostBySlug, savePost, deletePost, type PostData } from '@/lib/posts';
 import { auth } from '@/auth';
 
 export async function GET() {
@@ -122,5 +122,68 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Failed to create post', details: String(error) }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { slug, type, index, showInGallery } = await request.json() as {
+      slug: string;
+      type: 'featured' | 'gallery';
+      index?: number;
+      showInGallery: boolean;
+    };
+
+    if (!slug || !type || typeof showInGallery !== 'boolean') {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const post = await getPostBySlug(slug);
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    if (type === 'featured' && post.featuredImage) {
+      post.featuredImage = { ...post.featuredImage, showInGallery };
+    } else if (type === 'gallery' && post.gallery && typeof index === 'number') {
+      post.gallery = post.gallery.map((img, i) =>
+        i === index ? { ...img, showInGallery } : img
+      );
+    } else {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
+    await savePost(post);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('PATCH /api/posts error:', error);
+    return NextResponse.json({ error: 'Failed to update gallery setting' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get('slug');
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Missing slug' }, { status: 400 });
+    }
+
+    await deletePost(slug);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
   }
 }
