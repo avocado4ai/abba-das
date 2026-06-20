@@ -1,17 +1,22 @@
 ---
-title: "מיקי יקרה שלי"
-date: "2025-10-07"
-weather: "cloudy"
-tags: ["מיקי","יום הולדת","7 באוקטובר","אהבה","מכתב"]
-contentType: "whatsapp-friday"
-category: "family"
+title: מיקי יקרה שלי
+date: 2025-10-07
+weather: cloudy
+contentType: whatsapp-friday
+category: family
+tags:
+  - מיקי
+  - יום הולדת
+  - 7 באוקטובר
+  - אהבה
+  - מכתב
 featuredImage:
-  src: "/images/posts/00000035-PHOTO-2026-06-10-09-41-50.jpg"
-  alt: "רוני ומיקי — תמונת חתונה שחור לבן"
-  caption: "אז וגם עכשיו — נשארים ביחד"
+  src: /images/posts/00000035-PHOTO-2026-06-10-09-41-50.jpg
+  alt: רוני ומיקי — תמונת חתונה שחור לבן
+  caption: אז וגם עכשיו — נשארים ביחד
 ---
+ב 
 
-1
 07/10/2025
 מיקי בת 76
 
