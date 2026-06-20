@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, Loader2, Save, ArrowRight, ExternalLink, CheckCircle2, BookOpen, Image as ImageIcon, Plus, RefreshCw, MessageCircle, Trash2, Eye, EyeOff, Camera, Archive, Search, Upload, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { AlertCircle, Loader2, Save, ArrowRight, ExternalLink, CheckCircle2, BookOpen, Image as ImageIcon, Plus, RefreshCw, MessageCircle, Trash2, Eye, EyeOff, Camera, Archive, Search, Upload, LayoutGrid, List as ListIcon, WandSparkles, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -103,6 +103,10 @@ export default function AdminPage() {
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [galleryView, setGalleryView] = useState<'grid' | 'list'>('grid');
   const [gallerySort, setGallerySort] = useState<'post' | 'date' | 'ai'>('post');
+  const [hideAiImages, setHideAiImages] = useState(false);
+  const [lastUploadedUrl, setLastUploadedUrl] = useState<string | null>(null);
+  const [assignToPostSlug, setAssignToPostSlug] = useState('');
+  const [isAssigningImage, setIsAssigningImage] = useState(false);
 
 
   useEffect(() => {
@@ -420,6 +424,36 @@ export default function AdminPage() {
   const cancelDeletePost = () => {
     setShowDeleteConfirm(null);
     setDeletePassword('');
+  };
+
+  const handleAssignImageToPost = async () => {
+    if (!lastUploadedUrl || !assignToPostSlug) return;
+    const post = publishedPosts.find(p => p.slug === assignToPostSlug);
+    if (!post) { setError('פוסט לא נמצא'); return; }
+    setIsAssigningImage(true);
+    try {
+      const updatedPost = {
+        ...post,
+        gallery: [...(post.gallery || []), { src: lastUploadedUrl, alt: '', caption: '' }],
+      };
+      const res = await fetch('/api/github', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPost),
+      });
+      if (res.ok) {
+        setLastUploadedUrl(null);
+        setAssignToPostSlug('');
+        setSuccess('התמונה נוספה לגלריה של הפוסט');
+        await refreshPosts();
+      } else {
+        setError('נכשל בשמירת התמונה לפוסט');
+      }
+    } catch {
+      setError('אירעה שגיאה');
+    } finally {
+      setIsAssigningImage(false);
+    }
   };
 
   const totalComments = commentGroups.reduce((total, group) => total + group.comments.length, 0);
@@ -981,6 +1015,17 @@ export default function AdminPage() {
               <p className="text-sm text-muted-theme">בחר אילו תמונות יופיעו בדף הגלריה. תמונות AI לא מוצגות כברירת מחדל.</p>
             </div>
             <div className="flex gap-1 items-center" dir="ltr">
+              {/* Hide AI toggle */}
+              <button
+                type="button"
+                onClick={() => setHideAiImages(v => !v)}
+                className={`flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${hideAiImages ? 'bg-warm-gold/10 border-warm-gold/40 text-warm-gold' : 'border-border-theme text-muted-theme hover:border-border-theme/70'}`}
+                aria-pressed={hideAiImages}
+                title="הסתר תמונות AI"
+              >
+                <WandSparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                הסתר AI
+              </button>
               {/* Sort */}
               <select
                 value={gallerySort}
@@ -1024,7 +1069,7 @@ export default function AdminPage() {
                 const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
                 if (file) {
                   const url = await uploadFile(file);
-                  if (url) setSuccess('התמונה הועלתה. כעת בחר לאיזה פוסט להוסיף אותה.');
+                  if (url) { setLastUploadedUrl(url); setAssignToPostSlug(''); }
                   else setError('העלאת התמונה נכשלה');
                 }
               }}
@@ -1041,11 +1086,8 @@ export default function AdminPage() {
                   const file = e.target.files?.[0];
                   if (file) {
                     const url = await uploadFile(file);
-                    if (url) {
-                      setSuccess('התמונה הועלתה. כעת בחר לאיזה פוסט להוסיף אותה.');
-                    } else {
-                      setError('העלאת התמונה נכשלה');
-                    }
+                    if (url) { setLastUploadedUrl(url); setAssignToPostSlug(''); }
+                    else setError('העלאת התמונה נכשלה');
                   }
                   e.target.value = '';
                 }}
@@ -1053,6 +1095,62 @@ export default function AdminPage() {
               <p className="text-xs text-muted-theme">גרור תמונה לכאן, הדבק (Ctrl+V), או לחץ לבחירה</p>
             </label>
           </div>
+
+          {/* Uploaded image — assign to post */}
+          {lastUploadedUrl && (
+            <div className="mb-6 rounded-2xl border border-sage/40 bg-sage/5 p-4">
+              <p className="text-sm font-bold text-sage mb-3">התמונה הועלתה — שייך אותה לפוסט:</p>
+              <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={lastUploadedUrl} alt="תמונה שהועלתה" className="w-16 h-16 rounded-xl object-cover shrink-0 border border-border-theme" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      readOnly
+                      value={lastUploadedUrl}
+                      className="flex-1 min-w-0 rounded-lg border border-border-theme bg-white/5 px-3 py-1.5 text-xs font-mono text-muted-theme truncate"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard.writeText(lastUploadedUrl); setSuccess('URL הועתק'); }}
+                      className="shrink-0 p-1.5 rounded-lg border border-border-theme hover:bg-white/10 text-muted-theme transition-colors"
+                      aria-label="העתק URL"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <select
+                      value={assignToPostSlug}
+                      onChange={e => setAssignToPostSlug(e.target.value)}
+                      className="flex-1 min-w-0 rounded-lg border border-border-theme bg-white/5 px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-sage/50"
+                    >
+                      <option value="">בחר פוסט...</option>
+                      {publishedPosts.map(p => (
+                        <option key={p.slug} value={p.slug}>{p.title}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleAssignImageToPost}
+                      disabled={!assignToPostSlug || isAssigningImage}
+                      className="shrink-0 flex items-center gap-1.5 rounded-lg bg-sage px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40 hover:bg-sage/80 transition-colors"
+                    >
+                      {isAssigningImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                      הוסף
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLastUploadedUrl(null)}
+                      className="shrink-0 px-2 py-1.5 rounded-lg border border-border-theme text-xs text-muted-theme hover:text-foreground transition-colors"
+                    >
+                      ביטול
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {isLoadingPosts ? (
             <div className="flex justify-center py-10">
@@ -1091,15 +1189,19 @@ export default function AdminPage() {
               return results;
             });
 
-            if (entries.length === 0) {
+            const visibleEntries = hideAiImages ? entries.filter(e => !e.aiGenerated) : entries;
+
+            if (visibleEntries.length === 0) {
               return (
                 <p className="rounded-xl border border-dashed border-border-theme p-6 text-center text-sm text-muted-theme">
-                  אין תמונות. הוסף שדה <code className="font-mono text-xs">gallery</code> לפרונטמטר של פוסט כדי לנהל תמונות כאן.
+                  {hideAiImages && entries.length > 0 ? 'כל התמונות הן AI. בטל את הסינון כדי לראות אותן.' : 'אין תמונות. הוסף שדה '}
+                  {!hideAiImages && <code className="font-mono text-xs">gallery</code>}
+                  {!hideAiImages && ' לפרונטמטר של פוסט כדי לנהל תמונות כאן.'}
                 </p>
               );
             }
 
-            const sorted = [...entries].sort((a, b) => {
+            const sorted = [...visibleEntries].sort((a, b) => {
               if (gallerySort === 'ai') return Number(a.aiGenerated) - Number(b.aiGenerated);
               if (gallerySort === 'date') return new Date(b.postDate).getTime() - new Date(a.postDate).getTime();
               return a.postTitle.localeCompare(b.postTitle, 'he');
