@@ -1,12 +1,31 @@
 import { getOctokit, getGitHubConfig } from "./github-client";
 import { promises as fs } from "fs";
 import path from "path";
+import sharp from "sharp";
 
 const UPLOADS_PATH = "public/images/uploads";
 const BRANCH = "main";
+const MAX_GITHUB_BYTES = 900 * 1024; // stay under GitHub's 1MB contents-API limit
 
 function sanitizeFilename(filename: string) {
   return filename.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+}
+
+async function compressForUpload(buffer: Buffer, filename: string): Promise<{ buffer: Buffer; filename: string }> {
+  const isImage = /\.(jpe?g|png|gif|webp|heic|heif|tiff?)$/i.test(filename);
+  if (!isImage || buffer.length <= MAX_GITHUB_BYTES) return { buffer, filename };
+
+  try {
+    const compressed = await sharp(buffer)
+      .resize(2048, 2048, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 85, progressive: true })
+      .toBuffer();
+
+    const outName = filename.replace(/\.[^.]+$/, ".jpg");
+    return { buffer: compressed, filename: outName };
+  } catch {
+    return { buffer, filename };
+  }
 }
 
 async function uploadToGitHub(buffer: Buffer, filename: string) {
@@ -17,9 +36,10 @@ async function uploadToGitHub(buffer: Buffer, filename: string) {
     throw new Error("GitHub configuration missing. Set GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO.");
   }
 
-  const key = `${Date.now()}-${sanitizeFilename(filename)}`;
+  const { buffer: uploadBuffer, filename: uploadFilename } = await compressForUpload(buffer, filename);
+  const key = `${Date.now()}-${sanitizeFilename(uploadFilename)}`;
   const filePath = `${UPLOADS_PATH}/${key}`;
-  const contentBase64 = buffer.toString("base64");
+  const contentBase64 = uploadBuffer.toString("base64");
 
   let sha: string | undefined;
   try {
