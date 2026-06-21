@@ -394,3 +394,22 @@ export async function deletePost(slug: string) {
 
   return { success: true, slug };
 }
+
+export async function removeImageFromAllPosts(imageUrl: string): Promise<void> {
+  const posts = await getAllPosts();
+  const affected = posts.filter(
+    (p) => p.featuredImage?.src === imageUrl || p.gallery?.some((g) => g.src === imageUrl)
+  );
+
+  await Promise.all(
+    affected.map(async (post) => {
+      const updated: PostData = { ...post };
+      if (updated.featuredImage?.src === imageUrl) updated.featuredImage = undefined;
+      if (updated.gallery) {
+        const filtered = updated.gallery.filter((g) => g.src !== imageUrl);
+        updated.gallery = filtered.length > 0 ? filtered : undefined;
+      }
+      await savePost(updated);
+    })
+  );
+}

@@ -106,6 +106,7 @@ export default function AdminPage() {
   const [lastUploadedUrl, setLastUploadedUrl] = useState<string | null>(null);
   const [assignToPostSlug, setAssignToPostSlug] = useState('');
   const [isAssigningImage, setIsAssigningImage] = useState(false);
+  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -452,6 +453,29 @@ export default function AdminPage() {
       setError('אירעה שגיאה');
     } finally {
       setIsAssigningImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (url: string) => {
+    if (!window.confirm('למחוק את התמונה ולהסיר אותה מכל הפוסטים?')) return;
+    setDeletingImageUrl(url);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      if (res.ok) {
+        setSuccess('התמונה נמחקה והוסרה מהפוסטים');
+        await refreshPosts();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'נכשל במחיקת התמונה');
+      }
+    } catch {
+      setError('אירעה שגיאה במחיקת התמונה');
+    } finally {
+      setDeletingImageUrl(null);
     }
   };
 
@@ -1235,6 +1259,17 @@ export default function AdminPage() {
                             <><EyeOff className="w-3.5 h-3.5" aria-hidden="true" />מוסתרת</>
                           )}
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(entry.src)}
+                          disabled={deletingImageUrl === entry.src}
+                          className="shrink-0 p-1.5 rounded-lg border border-transparent text-muted-theme hover:border-red-500/30 hover:text-red-500 transition-colors duration-200"
+                          aria-label="מחק תמונה"
+                        >
+                          {deletingImageUrl === entry.src
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     );
                   })}
@@ -1271,27 +1306,40 @@ export default function AdminPage() {
                       {/* Info + toggle */}
                       <div className="p-2">
                         <p className="text-xs text-muted-theme truncate mb-1.5">{entry.postTitle}</p>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleGallery(entry.slug, entry.type, entry.index, entry.showInGallery)}
-                          disabled={isPending}
-                          className={[
-                            'w-full flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-colors duration-200',
-                            entry.showInGallery
-                              ? 'bg-sage/10 text-sage hover:bg-red-500/10 hover:text-red-500'
-                              : 'bg-coral/10 text-coral hover:bg-coral/20',
-                            isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer',
-                          ].join(' ')}
-                          aria-label={entry.showInGallery ? 'הסר מגלריה' : 'הוסף לגלריה'}
-                        >
-                          {isPending ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                          ) : entry.showInGallery ? (
-                            <><Eye className="w-3.5 h-3.5" aria-hidden="true" />מוצגת</>
-                          ) : (
-                            <><EyeOff className="w-3.5 h-3.5" aria-hidden="true" />מוסתרת</>
-                          )}
-                        </button>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleGallery(entry.slug, entry.type, entry.index, entry.showInGallery)}
+                            disabled={isPending}
+                            className={[
+                              'flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-colors duration-200',
+                              entry.showInGallery
+                                ? 'bg-sage/10 text-sage hover:bg-red-500/10 hover:text-red-500'
+                                : 'bg-coral/10 text-coral hover:bg-coral/20',
+                              isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer',
+                            ].join(' ')}
+                            aria-label={entry.showInGallery ? 'הסר מגלריה' : 'הוסף לגלריה'}
+                          >
+                            {isPending ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                            ) : entry.showInGallery ? (
+                              <><Eye className="w-3.5 h-3.5" aria-hidden="true" />מוצגת</>
+                            ) : (
+                              <><EyeOff className="w-3.5 h-3.5" aria-hidden="true" />מוסתרת</>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteImage(entry.src)}
+                            disabled={deletingImageUrl === entry.src}
+                            className="p-1.5 rounded-lg border border-transparent text-muted-theme hover:border-red-500/30 hover:text-red-500 transition-colors duration-200"
+                            aria-label="מחק תמונה"
+                          >
+                            {deletingImageUrl === entry.src
+                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              : <Trash2 className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );

@@ -83,6 +83,34 @@ async function uploadToLocal(buffer: Buffer, filename: string) {
   };
 }
 
+export async function deleteImageFromStorage(url: string): Promise<void> {
+  const match = url.match(/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[^/]+\/(.+)/);
+  if (!match) return; // local path or external URL — nothing to delete
+
+  const filePath = match[1];
+  const config = getGitHubConfig();
+  const octokit = getOctokit();
+  if (!config || !octokit) throw new Error("GitHub configuration missing.");
+
+  const { data } = await octokit.rest.repos.getContent({
+    owner: config.owner,
+    repo: config.repo,
+    path: filePath,
+    ref: BRANCH,
+  });
+
+  if (Array.isArray(data) || !("sha" in data)) throw new Error("File not found in repository.");
+
+  await octokit.rest.repos.deleteFile({
+    owner: config.owner,
+    repo: config.repo,
+    path: filePath,
+    message: `Delete image: ${filePath.split("/").pop()}`,
+    sha: data.sha,
+    branch: BRANCH,
+  });
+}
+
 export async function uploadBufferToMediaStorage({
   buffer,
   filename,

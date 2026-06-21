@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { uploadBufferToMediaStorage } from "@/lib/media-storage";
+import { uploadBufferToMediaStorage, deleteImageFromStorage } from "@/lib/media-storage";
+import { removeImageFromAllPosts } from "@/lib/posts";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_MIME_TYPES = [
@@ -54,6 +55,27 @@ export async function POST(req: NextRequest) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to upload file" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { url } = await req.json() as { url: string };
+    if (!url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
+
+    await deleteImageFromStorage(url);
+    await removeImageFromAllPosts(url);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete image error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to delete image" },
       { status: 500 }
     );
   }
