@@ -102,7 +102,7 @@ export default function AdminPage() {
   const [galleryOverrides, setGalleryOverrides] = useState<Record<string, boolean>>({});
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [galleryView, setGalleryView] = useState<'grid' | 'list'>('grid');
-  const [gallerySort, setGallerySort] = useState<'post' | 'date' | 'ai'>('post');
+  const [gallerySort, setGallerySort] = useState<'post' | 'date' | 'shown'>('post');
   const [lastUploadedUrl, setLastUploadedUrl] = useState<string | null>(null);
   const [assignToPostSlug, setAssignToPostSlug] = useState('');
   const [isAssigningImage, setIsAssigningImage] = useState(false);
@@ -1023,7 +1023,7 @@ export default function AdminPage() {
               >
                 <option value="post">לפי פוסט</option>
                 <option value="date">לפי תאריך</option>
-                <option value="ai">AI אחרונים</option>
+                <option value="shown">מוצגות בלבד</option>
               </select>
               {/* View toggle */}
               <button
@@ -1186,7 +1186,7 @@ export default function AdminPage() {
             }
 
             const sorted = [...entries].sort((a, b) => {
-              if (gallerySort === 'ai') return Number(a.aiGenerated) - Number(b.aiGenerated);
+              if (gallerySort === 'shown') return Number(b.showInGallery) - Number(a.showInGallery);
               if (gallerySort === 'date') return new Date(b.postDate).getTime() - new Date(a.postDate).getTime();
               return a.postTitle.localeCompare(b.postTitle, 'he');
             });
