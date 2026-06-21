@@ -1012,7 +1012,7 @@ export default function AdminPage() {
             </span>
             <div className="flex-1">
               <h2 className="text-xl sm:text-2xl font-bold">ניהול גלריה</h2>
-              <p className="text-sm text-muted-theme">בחר אילו תמונות יופיעו בדף הגלריה. תמונות AI לא מוצגות כברירת מחדל.</p>
+              <p className="text-sm text-muted-theme">בחר אילו תמונות יופיעו בדף הגלריה.</p>
             </div>
             <div className="flex gap-1 items-center" dir="ltr">
               {/* Hide AI toggle */}
