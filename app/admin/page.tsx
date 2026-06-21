@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, Loader2, Save, ArrowRight, ExternalLink, CheckCircle2, BookOpen, Image as ImageIcon, Plus, RefreshCw, MessageCircle, Trash2, Eye, EyeOff, Camera, Archive, Search, Upload, LayoutGrid, List as ListIcon, WandSparkles, Copy } from 'lucide-react';
+import { AlertCircle, Loader2, Save, ArrowRight, ExternalLink, CheckCircle2, BookOpen, Image as ImageIcon, Plus, RefreshCw, MessageCircle, Trash2, Eye, EyeOff, Camera, Archive, Search, Upload, LayoutGrid, List as ListIcon, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -103,7 +103,6 @@ export default function AdminPage() {
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [galleryView, setGalleryView] = useState<'grid' | 'list'>('grid');
   const [gallerySort, setGallerySort] = useState<'post' | 'date' | 'ai'>('post');
-  const [hideAiImages, setHideAiImages] = useState(false);
   const [lastUploadedUrl, setLastUploadedUrl] = useState<string | null>(null);
   const [assignToPostSlug, setAssignToPostSlug] = useState('');
   const [isAssigningImage, setIsAssigningImage] = useState(false);
@@ -1015,17 +1014,6 @@ export default function AdminPage() {
               <p className="text-sm text-muted-theme">בחר אילו תמונות יופיעו בדף הגלריה.</p>
             </div>
             <div className="flex gap-1 items-center" dir="ltr">
-              {/* Hide AI toggle */}
-              <button
-                type="button"
-                onClick={() => setHideAiImages(v => !v)}
-                className={`flex items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${hideAiImages ? 'bg-warm-gold/10 border-warm-gold/40 text-warm-gold' : 'border-border-theme text-muted-theme hover:border-border-theme/70'}`}
-                aria-pressed={hideAiImages}
-                title="הסתר תמונות AI"
-              >
-                <WandSparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                הסתר AI
-              </button>
               {/* Sort */}
               <select
                 value={gallerySort}
@@ -1189,19 +1177,15 @@ export default function AdminPage() {
               return results;
             });
 
-            const visibleEntries = hideAiImages ? entries.filter(e => !e.aiGenerated) : entries;
-
-            if (visibleEntries.length === 0) {
+            if (entries.length === 0) {
               return (
                 <p className="rounded-xl border border-dashed border-border-theme p-6 text-center text-sm text-muted-theme">
-                  {hideAiImages && entries.length > 0 ? 'כל התמונות הן AI. בטל את הסינון כדי לראות אותן.' : 'אין תמונות. הוסף שדה '}
-                  {!hideAiImages && <code className="font-mono text-xs">gallery</code>}
-                  {!hideAiImages && ' לפרונטמטר של פוסט כדי לנהל תמונות כאן.'}
+                  אין תמונות. הוסף שדה <code className="font-mono text-xs">gallery</code> לפרונטמטר של פוסט כדי לנהל תמונות כאן.
                 </p>
               );
             }
 
-            const sorted = [...visibleEntries].sort((a, b) => {
+            const sorted = [...entries].sort((a, b) => {
               if (gallerySort === 'ai') return Number(a.aiGenerated) - Number(b.aiGenerated);
               if (gallerySort === 'date') return new Date(b.postDate).getTime() - new Date(a.postDate).getTime();
               return a.postTitle.localeCompare(b.postTitle, 'he');
