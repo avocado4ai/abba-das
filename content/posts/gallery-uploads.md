@@ -7,9 +7,5 @@ contentType: photo
 category: moments
 tags: []
 archived: true
-gallery:
-  - src: >-
-      https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782212548182-1000565401.jpg
-    caption: נסיון
 ---
 אוסף תמונות גלריה עצמאיות.
