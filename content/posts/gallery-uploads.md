@@ -17,5 +17,7 @@ gallery:
     caption: הדס עם מיקי
   - src: >-
       https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782215552308-1000566378.jpg
+  - src: >-
+      https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782215568646-1000566377.jpg
 ---
 אוסף תמונות גלריה עצמאיות.
