@@ -26,6 +26,25 @@ export default function GalleryAdminPage() {
   const [standaloneCaption, setStandaloneCaption] = useState('');
   const [isSavingStandalone, setIsSavingStandalone] = useState(false);
 
+  async function uploadFile(file: File): Promise<string | null> {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData, signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Upload failed (${res.status})`);
+      }
+      return (await res.json()).url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'תקלה בהעלאה');
+      return null;
+    }
+  }
+
   useEffect(() => {
     let isMounted = true;
     const loadPosts = async () => {
@@ -59,10 +78,9 @@ export default function GalleryAdminPage() {
     };
     document.addEventListener('paste', handler);
     return () => document.removeEventListener('paste', handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const refreshPosts = async () => {
+  async function refreshPosts() {
     setIsLoadingPosts(true);
     try {
       const res = await fetch('/api/posts');
@@ -73,26 +91,7 @@ export default function GalleryAdminPage() {
     } finally {
       setIsLoadingPosts(false);
     }
-  };
-
-  const uploadFile = async (file: File): Promise<string | null> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData, signal: controller.signal });
-      clearTimeout(timeout);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Upload failed (${res.status})`);
-      }
-      return (await res.json()).url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'תקלה בהעלאה');
-      return null;
-    }
-  };
+  }
 
   const handleToggleGallery = async (
     slug: string,

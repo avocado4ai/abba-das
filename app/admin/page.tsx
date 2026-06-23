@@ -147,28 +147,7 @@ export default function AdminPage() {
     };
   }, []);
 
-  // Paste handler — adds images to the post editor gallery when the editor is open
-  useEffect(() => {
-    if (!isEditorOpen) return;
-    const handler = async (e: ClipboardEvent) => {
-      const file = Array.from(e.clipboardData?.files || []).find(f => f.type.startsWith('image/'));
-      if (file) {
-        e.preventDefault();
-        const url = await uploadFile(file);
-        if (url) {
-          setPostDraft((current) => ({
-            ...current,
-            gallery: [...current.gallery, { src: url, alt: file.name, caption: '' }],
-          }));
-          setSuccess('תמונה הודבקה ונוספה לגלריה');
-        }
-      }
-    };
-    document.addEventListener('paste', handler);
-    return () => document.removeEventListener('paste', handler);
-  }, [isEditorOpen]);
-
-  const uploadFile = async (file: File): Promise<string | null> => {
+  async function uploadFile(file: File): Promise<string | null> {
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -192,7 +171,28 @@ export default function AdminPage() {
       console.error('Upload error:', e);
       return null;
     }
-  };
+  }
+
+  // Paste handler — adds images to the post editor gallery when the editor is open
+  useEffect(() => {
+    if (!isEditorOpen) return;
+    const handler = async (e: ClipboardEvent) => {
+      const file = Array.from(e.clipboardData?.files || []).find(f => f.type.startsWith('image/'));
+      if (file) {
+        e.preventDefault();
+        const url = await uploadFile(file);
+        if (url) {
+          setPostDraft((current) => ({
+            ...current,
+            gallery: [...current.gallery, { src: url, alt: file.name, caption: '' }],
+          }));
+          setSuccess('תמונה הודבקה ונוספה לגלריה');
+        }
+      }
+    };
+    document.addEventListener('paste', handler);
+    return () => document.removeEventListener('paste', handler);
+  }, [isEditorOpen]);
 
   const refreshPosts = async () => {
     setIsLoadingPosts(true);
@@ -304,36 +304,6 @@ export default function AdminPage() {
       setError(err instanceof Error ? err.message : 'אירעה שגיאה לא ידועה');
     } finally {
       setIsSavingDraft(false);
-    }
-  };
-
-  const handleDraftImageUpload = async (file: File, mode: 'featured' | 'content') => {
-    setIsUploadingDraftImage(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const url = await uploadFile(file);
-      if (!url) throw new Error('העלאת התמונה נכשלה');
-
-      if (mode === 'featured') {
-        updateDraft({
-          imageSrc: url,
-          imageAlt: postDraft.imageAlt || postDraft.title || file.name,
-          imageCaption: postDraft.imageCaption,
-        });
-      } else {
-        const alt = postDraft.imageAlt || postDraft.title || file.name;
-        updateDraft({
-          content: `${postDraft.content.trim()}\n\n![${alt}](${url})\n`,
-        });
-      }
-
-      setSuccess('התמונה הועלתה בהצלחה');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'אירעה שגיאה בהעלאת התמונה');
-    } finally {
-      setIsUploadingDraftImage(false);
     }
   };
 
