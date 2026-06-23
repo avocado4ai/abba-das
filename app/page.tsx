@@ -14,7 +14,7 @@ import { Camera } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const posts = await getAllPosts();
+  const posts = (await getAllPosts()).filter((p) => !p.archived);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-sage/30 transition-colors duration-300">
