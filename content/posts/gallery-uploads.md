@@ -23,5 +23,7 @@ gallery:
       https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782215581921-1000566376.jpg
   - src: >-
       https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782215597039-1000566373.jpg
+  - src: >-
+      https://raw.githubusercontent.com/avocado4ai/abba-das/main/public/images/uploads/1782218563610-1000566374.jpg
 ---
 אוסף תמונות גלריה עצמאיות.
