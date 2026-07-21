@@ -134,9 +134,8 @@ test.describe('Post detail', () => {
 test.describe('Admin auth & accessibility', () => {
   test('admin login page renders Hebrew form', async ({ page }) => {
     await page.goto(`${BASE}/auth/signin`);
-    await expect(page.locator('input[name="username"], input[type="text"]').first()).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
-    // Submit button disabled until both fields filled
+    // Submit button disabled until password is filled
     const submitBtn = page.getByRole('button', { name: /כניסה|התחבר|sign/i }).first();
     if (await submitBtn.isVisible()) {
       await expect(submitBtn).toBeDisabled();

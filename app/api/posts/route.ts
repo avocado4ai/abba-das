@@ -173,6 +173,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (adminPassword) {
+      const provided = request.headers.get('x-admin-password');
+      if (provided !== adminPassword) {
+        return NextResponse.json({ error: 'סיסמה שגויה' }, { status: 403 });
+      }
+    }
+
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
 
